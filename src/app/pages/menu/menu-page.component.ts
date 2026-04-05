@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { HeaderComponent } from '../../components/header/header.component';
 import { FooterComponent } from '../../components/footer/footer.component';
@@ -18,6 +18,18 @@ export class MenuPageComponent {
   readonly cart = inject(CartService);
   readonly categories = MENU_CATEGORIES;
 
+  selectedItem = signal<MenuItem | null>(null);
+
+  openDetail(item: MenuItem): void {
+    this.selectedItem.set(item);
+    document.body.style.overflow = 'hidden';
+  }
+
+  closeDetail(): void {
+    this.selectedItem.set(null);
+    document.body.style.overflow = '';
+  }
+
   scrollTo(id: string): void {
     const el = document.getElementById(id);
     if (!el) return;
@@ -35,5 +47,10 @@ export class MenuPageComponent {
       priceValue: item.priceValue,
       image: item.image,
     });
+  }
+
+  addToCartFromDetail(item: MenuItem): void {
+    this.addToCart(item);
+    this.closeDetail();
   }
 }

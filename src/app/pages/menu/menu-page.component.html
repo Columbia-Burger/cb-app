@@ -39,10 +39,10 @@
         <div class="row row-cols-2 row-cols-sm-2 row-cols-lg-3 row-cols-xl-4 g-3">
           @for (item of cat.items; track item.name) {
             <div class="col">
-              <div class="menu-card card h-100">
+              <div class="menu-card card h-100" (click)="openDetail(item)">
                 <div class="menu-card__img-wrapper">
                   <img
-                    [src]="item.image"
+                    [src]="item.image || 'assets/burger.jpg'"
                     [alt]="item.name"
                     class="card-img-top menu-card__img"
                     loading="lazy"
@@ -56,11 +56,11 @@
                 <div class="card-footer menu-card__footer">
                   <span class="menu-card__price">{{ item.price }}</span>
                   @if (cart.quantityOf(item.name) === 0) {
-                    <button class="btn btn-add" (click)="addToCart(item)">
+                    <button class="btn btn-add" (click)="addToCart(item); $event.stopPropagation()">
                       <i class="fas fa-plus me-1"></i> Agregar
                     </button>
                   } @else {
-                    <div class="card-qty-controls">
+                    <div class="card-qty-controls" (click)="$event.stopPropagation()">
                       <button class="qty-btn" (click)="cart.decrement(item.name)">
                         <i class="fas fa-minus"></i>
                       </button>
@@ -92,5 +92,49 @@
 </div>
 
 <app-footer />
-
 <app-cart />
+
+<!-- Modal detalle de producto -->
+@if (selectedItem()) {
+  <div class="detail-overlay" (click)="closeDetail()">
+    <div class="detail-modal" (click)="$event.stopPropagation()">
+
+      <button class="detail-modal__close" (click)="closeDetail()">
+        <i class="fas fa-times"></i>
+      </button>
+
+      <div class="detail-modal__img-wrapper">
+        <img
+          [src]="selectedItem()!.image || 'assets/burger.jpg'"
+          [alt]="selectedItem()!.name"
+          class="detail-modal__img"
+          onerror="this.src='assets/burger.jpg'"
+        />
+      </div>
+
+      <div class="detail-modal__body">
+        <h2 class="detail-modal__name">{{ selectedItem()!.name }}</h2>
+        <p class="detail-modal__desc">{{ selectedItem()!.description }}</p>
+        <div class="detail-modal__footer">
+          <span class="detail-modal__price">{{ selectedItem()!.price }}</span>
+          @if (cart.quantityOf(selectedItem()!.name) === 0) {
+            <button class="detail-modal__btn-add" (click)="addToCartFromDetail(selectedItem()!)">
+              <i class="fas fa-plus me-2"></i> Agregar al carrito
+            </button>
+          } @else {
+            <div class="detail-modal__qty">
+              <button class="qty-btn" (click)="cart.decrement(selectedItem()!.name)">
+                <i class="fas fa-minus"></i>
+              </button>
+              <span class="qty-value">{{ cart.quantityOf(selectedItem()!.name) }}</span>
+              <button class="qty-btn" (click)="cart.increment(selectedItem()!.name)">
+                <i class="fas fa-plus"></i>
+              </button>
+            </div>
+          }
+        </div>
+      </div>
+
+    </div>
+  </div>
+}
