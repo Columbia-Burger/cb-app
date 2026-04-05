@@ -1,0 +1,115 @@
+<!-- Botón flotante del carrito -->
+<button class="cart-fab" (click)="toggle()" aria-label="Abrir carrito">
+  <i class="fas fa-shopping-cart"></i>
+  @if (cart.itemCount() > 0) {
+    <span class="cart-fab__badge">{{ cart.itemCount() }}</span>
+  }
+</button>
+
+<!-- Overlay -->
+@if (isOpen()) {
+  <div class="cart-overlay" (click)="close()"></div>
+}
+
+<!-- Drawer -->
+<div class="cart-drawer" [class.cart-drawer--open]="isOpen()">
+
+  <div class="cart-drawer__header">
+    <h2 class="cart-drawer__title">
+      <i class="fas fa-shopping-cart me-2"></i> Tu Pedido
+    </h2>
+    <button class="cart-drawer__close" (click)="close()" aria-label="Cerrar carrito">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+
+  <div class="cart-drawer__body">
+    @if (cart.items().length === 0) {
+      <div class="cart-empty">
+        <i class="fas fa-shopping-basket cart-empty__icon"></i>
+        <p class="cart-empty__text">Tu carrito está vacío</p>
+        <p class="cart-empty__hint">Agrega productos desde el menú</p>
+      </div>
+    } @else {
+      <ul class="cart-list">
+        @for (item of cart.items(); track item.name) {
+          <li class="cart-item">
+            <img
+              [src]="item.image"
+              [alt]="item.name"
+              class="cart-item__img"
+              onerror="this.src='assets/burger.jpg'"
+            />
+            <div class="cart-item__info">
+              <span class="cart-item__name">{{ item.name }}</span>
+              <span class="cart-item__price">{{ item.price }}</span>
+            </div>
+            <div class="cart-item__controls">
+              <button class="qty-btn" (click)="cart.decrement(item.name)" aria-label="Quitar uno">
+                <i class="fas fa-minus"></i>
+              </button>
+              <span class="qty-value">{{ item.quantity }}</span>
+              <button class="qty-btn" (click)="cart.increment(item.name)" aria-label="Agregar uno">
+                <i class="fas fa-plus"></i>
+              </button>
+            </div>
+            <button class="cart-item__remove" (click)="cart.remove(item.name)" aria-label="Eliminar">
+              <i class="fas fa-trash"></i>
+            </button>
+          </li>
+        }
+      </ul>
+    }
+  </div>
+
+  @if (cart.items().length > 0) {
+    <div class="cart-drawer__footer">
+      <!-- Selector de barrio -->
+      <div class="cart-zone">
+        <label class="cart-zone__label" for="zoneSelect">
+          <i class="fas fa-motorcycle me-2"></i>Barrio de entrega
+        </label>
+        <select
+          id="zoneSelect"
+          class="cart-zone__select"
+          (change)="onZoneChange($any($event.target).value)"
+        >
+          <option value="">Selecciona tu barrio</option>
+          @for (zone of zones; track zone.name) {
+            <option [value]="zone.name">
+              {{ zone.name }} — ${{ zone.price.toLocaleString('es-CO') }}
+            </option>
+          }
+        </select>
+      </div>
+
+      <!-- Subtotal -->
+      <div class="cart-total cart-total--sub">
+        <span class="cart-total__label">Subtotal</span>
+        <span class="cart-total__value cart-total__value--sub">{{ cart.formattedTotal() }}</span>
+      </div>
+
+      <!-- Domicilio -->
+      @if (selectedZone) {
+        <div class="cart-total cart-total--delivery">
+          <span class="cart-total__label">Domicilio ({{ selectedZone.name }})</span>
+          <span class="cart-total__value cart-total__value--delivery">+ {{ formattedDelivery() }}</span>
+        </div>
+      }
+
+      <!-- Total final -->
+      <div class="cart-total cart-total--grand">
+        <span class="cart-total__label">Total</span>
+        <span class="cart-total__value">{{ formattedGrandTotal() }}</span>
+      </div>
+
+      <button class="btn-order" (click)="orderOnWhatsApp()">
+        <i class="fab fa-whatsapp me-2"></i> Ordenar por WhatsApp
+      </button>
+      <button class="btn-clear" (click)="cart.clear()">
+        <i class="fas fa-trash me-1"></i> Vaciar carrito
+      </button>
+    </div>
+  }
+
+</div>

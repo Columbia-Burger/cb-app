@@ -1,0 +1,192 @@
+$brand-orange: #f3a51f;
+$brand-dark: #1a1a1a;
+$header-h: 7rem;
+
+// ── Contenedor principal ─────────────────────────────────────────────────────
+.header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 1000;
+  background-color: transparent;
+  transition: background-color 0.35s ease, box-shadow 0.35s ease, backdrop-filter 0.35s ease;
+
+  &--scrolled {
+    background-color: rgba(26, 26, 26, 0.92);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    box-shadow: 0 2px 20px rgba(0, 0, 0, 0.4);
+  }
+}
+
+.header__inner {
+  max-width: 1280px;
+  margin: 0 auto;
+  height: $header-h;
+  padding: 0 2.4rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+// ── Logo ─────────────────────────────────────────────────────────────────────
+.header__brand {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+}
+
+.header__logo {
+  height: 5.2rem;
+  width: auto;
+  background-color: #ffffff;
+  border-radius: 50%;
+  padding: 0.3rem;
+  transition: transform 0.2s;
+
+  &:hover {
+    transform: scale(1.05);
+  }
+}
+
+// ── Nav desktop ──────────────────────────────────────────────────────────────
+.header__nav {
+  display: none;
+  align-items: center;
+  gap: 0.4rem;
+
+  @media (min-width: 900px) {
+    display: flex;
+  }
+}
+
+.header__link {
+  color: rgba(255, 255, 255, 0.85);
+  text-decoration: none;
+  font-size: 1.4rem;
+  font-weight: 600;
+  padding: 0.6rem 1.4rem;
+  border-radius: 2rem;
+  border: 2px solid transparent;
+  transition: color 0.2s, border-color 0.2s;
+  letter-spacing: 0.02em;
+
+  &:hover,
+  &--active {
+    color: $brand-orange;
+    border-color: rgba(243, 165, 31, 0.4);
+  }
+}
+
+.header__cta {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 1rem;
+  padding: 0.7rem 2rem;
+  background-color: #25d366;
+  color: #fff;
+  font-size: 1.4rem;
+  font-weight: 700;
+  text-decoration: none;
+  border-radius: 3rem;
+  transition: background-color 0.2s, transform 0.2s;
+
+  &:hover {
+    background-color: #1ebe5d;
+    color: #fff;
+    transform: translateY(-2px);
+  }
+}
+
+// ── Toggle hamburguesa (mobile) ───────────────────────────────────────────────
+.header__toggle {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.4rem;
+
+  @media (min-width: 900px) {
+    display: none;
+  }
+}
+
+.header__toggle-bar {
+  display: block;
+  width: 2.6rem;
+  height: 2.5px;
+  background-color: #fff;
+  border-radius: 2px;
+  transition: transform 0.3s, opacity 0.3s;
+
+  &:nth-child(1).open {
+    transform: translateY(7.5px) rotate(45deg);
+  }
+
+  &:nth-child(2).open {
+    opacity: 0;
+  }
+
+  &:nth-child(3).open {
+    transform: translateY(-7.5px) rotate(-45deg);
+  }
+}
+
+// ── Nav mobile ───────────────────────────────────────────────────────────────
+.header__mobile-nav {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.4rem;
+  overflow: hidden;
+  max-height: 0;
+  padding: 0 2.4rem;
+  background-color: rgba(26, 26, 26, 0.97);
+  transition: max-height 0.35s ease, padding 0.35s ease;
+
+  &--open {
+    max-height: 32rem;
+    padding: 1.2rem 2.4rem 2rem;
+  }
+
+  @media (min-width: 900px) {
+    display: none;
+  }
+}
+
+.header__mobile-link {
+  color: rgba(255, 255, 255, 0.85);
+  text-decoration: none;
+  font-size: 1.6rem;
+  font-weight: 600;
+  padding: 1rem 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  transition: color 0.2s;
+
+  &:hover {
+    color: $brand-orange;
+  }
+}
+
+.header__mobile-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 0.8rem;
+  padding: 1rem;
+  background-color: #25d366;
+  color: #fff;
+  font-size: 1.5rem;
+  font-weight: 700;
+  text-decoration: none;
+  border-radius: 3rem;
+
+  &:hover {
+    background-color: #1ebe5d;
+    color: #fff;
+  }
+}

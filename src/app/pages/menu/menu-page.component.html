@@ -1,0 +1,96 @@
+<app-header />
+
+<div class="menu-page">
+
+  <!-- Hero del menú -->
+  <div class="menu-hero">
+    <div class="menu-hero__content">
+      <h1 class="menu-hero__title">Nuestro Menú</h1>
+      <p class="menu-hero__subtitle">Todo hecho con amor y sabor colombiano</p>
+      <div class="menu-hero__actions">
+        <a routerLink="/" class="btn btn-back btn-lg">
+          <i class="fas fa-arrow-left me-2"></i> Volver al Inicio
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Navegación de categorías -->
+  <nav class="category-nav">
+    <div class="category-nav__inner">
+      @for (cat of categories; track cat.id) {
+        <button class="category-nav__link" (click)="scrollTo(cat.id)">
+          <span class="category-nav__icon">{{ cat.icon }}</span>
+          <span>{{ cat.title }}</span>
+        </button>
+      }
+    </div>
+  </nav>
+
+  <!-- Secciones por categoría -->
+  <div class="menu-content">
+    @for (cat of categories; track cat.id) {
+      <section [id]="cat.id" class="menu-section">
+        <div class="menu-section__header">
+          <span class="menu-section__icon">{{ cat.icon }}</span>
+          <h2 class="menu-section__title">{{ cat.title }}</h2>
+        </div>
+
+        <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 row-cols-xl-4 g-4">
+          @for (item of cat.items; track item.name) {
+            <div class="col">
+              <div class="menu-card card h-100">
+                <div class="menu-card__img-wrapper">
+                  <img
+                    [src]="item.image"
+                    [alt]="item.name"
+                    class="card-img-top menu-card__img"
+                    loading="lazy"
+                    onerror="this.src='assets/burger.jpg'"
+                  />
+                </div>
+                <div class="card-body menu-card__body">
+                  <h5 class="menu-card__name">{{ item.name }}</h5>
+                  <p class="menu-card__desc">{{ item.description }}</p>
+                </div>
+                <div class="card-footer menu-card__footer">
+                  <span class="menu-card__price">{{ item.price }}</span>
+                  @if (cart.quantityOf(item.name) === 0) {
+                    <button class="btn btn-add" (click)="addToCart(item)">
+                      <i class="fas fa-plus me-1"></i> Agregar
+                    </button>
+                  } @else {
+                    <div class="card-qty-controls">
+                      <button class="qty-btn" (click)="cart.decrement(item.name)">
+                        <i class="fas fa-minus"></i>
+                      </button>
+                      <span class="qty-value">{{ cart.quantityOf(item.name) }}</span>
+                      <button class="qty-btn" (click)="cart.increment(item.name)">
+                        <i class="fas fa-plus"></i>
+                      </button>
+                    </div>
+                  }
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      </section>
+    }
+  </div>
+
+  <!-- CTA final -->
+  <div class="menu-cta">
+    <p class="menu-cta__text">¿Listo para pedir? Agrega tus productos y ordena por WhatsApp</p>
+    <div class="menu-cta__actions">
+      <a routerLink="/" class="btn btn-back btn-lg">
+        <i class="fas fa-arrow-left me-2"></i> Volver al Inicio
+      </a>
+    </div>
+  </div>
+
+</div>
+
+<app-footer />
+
+<app-cart />

@@ -1,0 +1,28 @@
+<section class="section-favorites">
+
+  <div class="favorites-header">
+    <div class="badge-favorites">
+      <span class="badge-favorites__star">★</span>
+      Siempre Favoritos
+      <span class="badge-favorites__star">★</span>
+    </div>
+    <h2 class="favorites-title">Los que nunca<br><span class="favorites-title--highlight">fallan</span></h2>
+  </div>
+
+  <ul class="ul-favorite">
+    @for (item of favorites; track item.image) {
+      <li class="favorite-card">
+        <div class="favorite-card__img-wrapper">
+          <img [src]="item.image" [alt]="item.name" class="favorite-card__img" />
+        </div>
+        <span class="favorite-card__name">{{ item.name }}</span>
+      </li>
+    }
+  </ul>
+
+  <a class="btn-order" routerLink="/menu">
+    Ver Menú Completo
+    <i class="fas fa-arrow-right ms-2"></i>
+  </a>
+
+</section>

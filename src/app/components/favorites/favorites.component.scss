@@ -1,0 +1,145 @@
+$brand-orange: #f3a51f;
+$brand-dark: #1a1a1a;
+
+// ── Sección ──────────────────────────────────────────────────────────────────
+.section-favorites {
+  margin: 3rem 2rem;
+  background-color: $brand-dark;
+  border-radius: 1.6rem;
+  padding: 3.2rem 2.8rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3rem;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.18);
+}
+
+// ── Header ───────────────────────────────────────────────────────────────────
+.favorites-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.2rem;
+  text-align: center;
+}
+
+.badge-favorites {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  background-color: $brand-orange;
+  color: $brand-dark;
+  font-size: 1.2rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 0.5rem 1.4rem;
+  border-radius: 2rem;
+
+  &__star {
+    font-size: 1rem;
+  }
+}
+
+.favorites-title {
+  font-size: clamp(3rem, 5vw, 4.8rem);
+  font-weight: 900;
+  line-height: 1.1;
+  color: #ffffff;
+  margin: 0;
+  text-transform: uppercase;
+
+  &--highlight {
+    color: $brand-orange;
+  }
+}
+
+// ── Grid de tarjetas ─────────────────────────────────────────────────────────
+.ul-favorite {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+
+  @media (min-width: 900px) {
+    flex-direction: row;
+    justify-content: center;
+  }
+}
+
+// ── Tarjeta individual ───────────────────────────────────────────────────────
+.favorite-card {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.2rem;
+  background-color: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 1.2rem;
+  padding: 1.6rem;
+  transition: transform 0.25s, background-color 0.25s;
+
+  &:hover {
+    transform: translateY(-6px);
+    background-color: rgba(243, 165, 31, 0.1);
+    border-color: rgba(243, 165, 31, 0.3);
+  }
+
+  &__img-wrapper {
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    border-radius: 1rem;
+    overflow: hidden;
+  }
+
+  &__img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.35s;
+
+    .favorite-card:hover & {
+      transform: scale(1.06);
+    }
+  }
+
+  &__name {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: #ffffff;
+    text-align: center;
+    letter-spacing: 0.02em;
+  }
+}
+
+// ── Botón ────────────────────────────────────────────────────────────────────
+.btn-order {
+  display: inline-flex;
+  align-items: center;
+  padding: 1rem 3rem;
+  background-color: $brand-orange;
+  color: $brand-dark;
+  font-size: 1.5rem;
+  font-weight: 800;
+  text-decoration: none;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-radius: 3rem;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 0 20px rgba(243, 165, 31, 0.4);
+  transition: box-shadow 0.3s, transform 0.2s;
+
+  &:hover {
+    box-shadow:
+      0 0 10px $brand-orange,
+      0 0 40px $brand-orange,
+      0 0 80px rgba(243, 165, 31, 0.4);
+    transform: translateY(-2px);
+    color: $brand-dark;
+  }
+}

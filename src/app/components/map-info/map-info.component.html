@@ -1,0 +1,67 @@
+<section class="section-contact">
+
+  <!-- Header de la sección -->
+  <div class="contact-header">
+    <div class="badge-contact">
+      <span>★</span> Contáctanos <span>★</span>
+    </div>
+    <h2 class="contact-title">Encuéntranos &<br><span class="contact-title--highlight">Escríbenos</span></h2>
+  </div>
+
+  <div class="contact-body">
+
+    <!-- Columna izquierda: info + mapa -->
+    <div class="contact-info">
+
+      <div class="info-block">
+        <div class="info-block__icon"><i class="fas fa-map-marker-alt"></i></div>
+        <div>
+          <p class="info-block__label">Dirección</p>
+          <p class="info-block__value">Carrera 4 Bis #56-30 sur<br><strong>Danubio Azul, Usme</strong></p>
+        </div>
+      </div>
+
+      <div class="info-block">
+        <div class="info-block__icon"><i class="fas fa-clock"></i></div>
+        <div>
+          <p class="info-block__label">Horarios</p>
+          <p class="info-block__value"><strong>Lunes a Viernes:</strong> 4:00 pm – 10:30 pm</p>
+          <p class="info-block__value"><strong>Sábados y Domingos:</strong> 4:00 pm – 11:00 pm</p>
+        </div>
+      </div>
+
+      <div class="info-block">
+        <div class="info-block__icon"><i class="fas fa-phone"></i></div>
+        <div>
+          <p class="info-block__label">Teléfono / Domicilios</p>
+          <p class="info-block__value">+57 322-826-2989</p>
+        </div>
+      </div>
+
+      <a [href]="whatsappUrl" target="_blank" rel="noopener noreferrer" class="btn-whatsapp-info">
+        <i class="fab fa-whatsapp me-2"></i> Pedir por WhatsApp
+      </a>
+
+      <div class="map-wrapper">
+        <iframe
+          [src]="mapUrl"
+          width="600"
+          height="300"
+          style="border: 0"
+          allowfullscreen=""
+          loading="lazy"
+          referrerpolicy="no-referrer-when-downgrade"
+          title="Ubicación Columbia Burger"
+        ></iframe>
+      </div>
+
+    </div>
+
+    <!-- Columna derecha: formulario -->
+    <div class="contact-form-wrapper">
+      <app-contact-form />
+    </div>
+
+  </div>
+
+</section>
