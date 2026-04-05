@@ -1,10 +1,6 @@
 import { Component } from '@angular/core';
 import { RouterLink } from '@angular/router';
-
-interface FavoriteProduct {
-  name: string;
-  image: string;
-}
+import { FAVORITES, FavoriteProduct } from '../../data/featured.data';
 
 @Component({
   selector: 'app-favorites',
@@ -14,9 +10,5 @@ interface FavoriteProduct {
   styleUrl: './favorites.component.scss',
 })
 export class FavoritesComponent {
-  readonly favorites: FavoriteProduct[] = [
-    { name: 'Nombre Producto', image: 'assets/burger.jpg' },
-    { name: 'Nombre Producto', image: 'assets/burger.jpg' },
-    { name: 'Nombre Producto', image: 'assets/burger.jpg' },
-  ];
+  readonly favorites: FavoriteProduct[] = FAVORITES;
 }
