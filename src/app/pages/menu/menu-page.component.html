@@ -5,7 +5,7 @@
   <!-- Hero del menú -->
   <div class="menu-hero">
     <div class="menu-hero__content">
-      <h1 class="menu-hero__title">Nuestro Menú</h1>
+      <h1 class="menu-hero__title">Nuestro <span>Menú</span></h1>
       <p class="menu-hero__subtitle">Todo hecho con amor y sabor colombiano</p>
       <div class="menu-hero__actions">
         <a routerLink="/" class="btn btn-back btn-lg">
@@ -36,7 +36,7 @@
           <h2 class="menu-section__title">{{ cat.title }}</h2>
         </div>
 
-        <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 row-cols-xl-4 g-4">
+        <div class="row row-cols-2 row-cols-sm-2 row-cols-lg-3 row-cols-xl-4 g-3">
           @for (item of cat.items; track item.name) {
             <div class="col">
               <div class="menu-card card h-100">
