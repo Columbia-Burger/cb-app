@@ -7,21 +7,19 @@
       <span class="badge-especial__star">★</span>
     </div>
 
-    <h2 class="especial-title">Hamburguesa<br><span class="especial-title--highlight">Artesanal</span></h2>
+    <h2 class="especial-title">{{ special.name.split(' ')[0] }}<br>
+      <span class="especial-title--highlight">{{ special.name.split(' ').slice(1).join(' ') }}</span>
+    </h2>
 
-    <p class="especial-tagline">Tu nuevo gusto culposo</p>
+    <p class="especial-tagline">{{ special.tagline }}</p>
 
-    <p class="especial-desc">
-      Pan bimbo artesanal, carne ahumada de 130 gr, tocineta, jamón,
-      queso doble crema gratinado, papitas chips, cebolla grille,
-      verduras frescas, salsa de tomate y mayonesa.
-    </p>
+    <p class="especial-desc">{{ special.description }}</p>
 
-    <div class="especial-price">$18.000</div>
+    <div class="especial-price">{{ special.price }}</div>
   </article>
 
   <picture class="picture-especial">
-    <img src="assets/burger.jpg" alt="Hamburguesa especial de la semana" class="image" />
+    <img [src]="special.image" [alt]="special.name" class="image" />
   </picture>
 
 </section>

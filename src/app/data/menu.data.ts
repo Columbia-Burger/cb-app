@@ -18,7 +18,7 @@ export const MENU_CATEGORIES: MenuCategory[] = [
           'Pan bimbo brio, 2 carnes de res de 100 gm, doble queso cheddar, tocineta, pepinillos, verduras frescas y salsa tomate y mayonesa.',
         price: '$23.000',
         priceValue: 23000,
-        image: '',
+        image: 'https://res.cloudinary.com/diaymnuut/image/upload/v1775406323/IMG_3938_j19c4d.jpg',
       },
       {
         name: 'Cheese Burger',
