@@ -15,7 +15,7 @@ export const MENU_CATEGORIES: MenuCategory[] = [
       {
         name: 'Columbia Burger',
         description:
-          'Pan bimbo brio, 2 carnes de res de 100 gm, doble queso cheddar, tocineta, pepinillos, verduras frescas y salsa tomate y mayonesa.',
+          'Pan bimbo brillo, 2 carnes de res de 100 gm, doble queso cheddar, tocineta, pepinillos, verduras frescas y salsa tomate y mayonesa.',
         price: '$23.000',
         priceValue: 23000,
         image: 'https://res.cloudinary.com/diaymnuut/image/upload/v1775406266/IMG_3943_fbwypr.jpg',
@@ -23,7 +23,7 @@ export const MENU_CATEGORIES: MenuCategory[] = [
       {
         name: 'Cheese Burger',
         description:
-          'Pan bimbo brio, 2 carnes de res de 100 gm, tocineta, doble queso cheddar y salsa miel-mostaza de la casa.',
+          'Pan bimbo brillo, 2 carnes de res de 100 gm, tocineta, doble queso cheddar y salsa miel-mostaza de la casa.',
         price: '$20.000',
         priceValue: 20000,
         image: 'https://res.cloudinary.com/diaymnuut/image/upload/v1775422516/DSC03447_zkxzfz.jpg',
@@ -31,7 +31,7 @@ export const MENU_CATEGORIES: MenuCategory[] = [
       {
         name: 'Potato Burger',
         description:
-          'Pan bimbo brio, 1 carne de res 130 gm, doble queso cheddar, papas a la francesa dentro de la burger, tomate, lechuga crespa y salsa tártara.',
+          'Pan bimbo brillo, 1 carne de res 130 gm, doble queso cheddar, papas a la francesa dentro de la burger, tomate, lechuga crespa y salsa tártara.',
         price: '$20.000',
         priceValue: 20000,
         image: 'https://res.cloudinary.com/diaymnuut/image/upload/v1775406369/IMG_3920_at2llt.jpg',
@@ -47,7 +47,7 @@ export const MENU_CATEGORIES: MenuCategory[] = [
       {
         name: 'Cheddar Burger',
         description:
-          'Pan bimbo brio, 1 carne de res 130 gm, tocineta, cebolla grille, queso mozzarella gratinado bañada en salsa cheddar y verduras frescas.',
+          'Pan bimbo brillo, 1 carne de res 130 gm, tocineta, cebolla grille, queso mozzarella gratinado bañada en salsa cheddar y verduras frescas.',
         price: '$20.500',
         priceValue: 20500,
         image: 'https://res.cloudinary.com/diaymnuut/image/upload/v1775406312/IMG_3923_hdldtp.jpg',
@@ -55,7 +55,7 @@ export const MENU_CATEGORIES: MenuCategory[] = [
       {
         name: 'Chiken Deluxe',
         description:
-          'Pan bimbo brio, pollo apanado 130 gm, doble queso cheddar, tocineta, salsa de la casa y verduras frescas.',
+          'Pan bimbo brillo, pollo apanado 130 gm, doble queso cheddar, tocineta, salsa de la casa y verduras frescas.',
         price: '$20.000',
         priceValue: 20000,
         image: 'https://res.cloudinary.com/diaymnuut/image/upload/v1775422531/DSC03368_deucgr.jpg',
@@ -63,7 +63,7 @@ export const MENU_CATEGORIES: MenuCategory[] = [
       {
         name: "Lala's Burger",
         description:
-          'Pan bimbo brio, pollo 130 gm, maíz tierno, queso mozzarella, cebolla, salsa dulce maíz y verduras frescas.',
+          'Pan bimbo brillo, pollo 130 gm, maíz tierno, queso mozzarella, cebolla, salsa dulce maíz y verduras frescas.',
         price: '$20.000',
         priceValue: 20000,
         image: 'https://res.cloudinary.com/diaymnuut/image/upload/v1775422494/DSC03422_bfeul0.jpg',
@@ -71,7 +71,7 @@ export const MENU_CATEGORIES: MenuCategory[] = [
       {
         name: 'Spicy Burger',
         description:
-          'Pan bimbo brio, carne de res ahumada de 130 gm, tocineta, jalapeños, queso mozzarella gratinado, salsa BBQ, verduras y salsa de tomate y mayonesa.',
+          'Pan bimbo brillo, carne de res ahumada de 130 gm, tocineta, jalapeños, queso mozzarella gratinado, salsa BBQ, verduras y salsa de tomate y mayonesa.',
         price: '$18.000',
         priceValue: 18000,
         image: 'https://res.cloudinary.com/diaymnuut/image/upload/v1775406302/IMG_3927_v1zkze.jpg',
@@ -79,7 +79,7 @@ export const MENU_CATEGORIES: MenuCategory[] = [
       {
         name: 'Nena Burger',
         description:
-          'Pan Bimbo Brio, 130 gr de carne de res, 130 gr de pollo, queso cheddar, tocineta, tomate, lechuga y salsa tártara.',
+          'Pan Bimbo brillo, 130 gr de carne de res, 130 gr de pollo, queso cheddar, tocineta, tomate, lechuga y salsa tártara.',
         price: '$26.000',
         priceValue: 26000,
         image: 'https://res.cloudinary.com/diaymnuut/image/upload/v1775435251/nena_u9j82s.jpg',
