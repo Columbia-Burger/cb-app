@@ -500,4 +500,48 @@ $card-radius: 1.4rem;
       font-size: 2rem;
     }
   }
+
+  &__flavors {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+  }
+
+  &__flavors-label {
+    font-size: 1.2rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: $brand-orange;
+    margin: 0;
+  }
+}
+
+.flavor-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.8rem;
+}
+
+.flavor-pill {
+  padding: 0.5rem 1.4rem;
+  border-radius: 2rem;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  background: transparent;
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 1.3rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.2s, background-color 0.2s, color 0.2s;
+
+  &:hover {
+    border-color: $brand-orange;
+    color: $brand-white;
+  }
+
+  &--active {
+    border-color: $brand-orange;
+    background-color: $brand-orange;
+    color: $brand-dark;
+  }
 }

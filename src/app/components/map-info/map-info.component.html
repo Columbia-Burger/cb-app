@@ -13,34 +13,38 @@
     <!-- Columna izquierda: info + mapa -->
     <div class="contact-info">
 
-      <div class="info-block">
-        <div class="info-block__icon"><i class="fas fa-map-marker-alt"></i></div>
-        <div>
-          <p class="info-block__label">Dirección</p>
-          <p class="info-block__value">Carrera 4 Bis #56-30 sur<br><strong>Danubio Azul, Usme</strong></p>
+      <div class="info-row">
+        <div class="info-block">
+          <div class="info-block__icon"><i class="fas fa-map-marker-alt"></i></div>
+          <div>
+            <p class="info-block__label">Dirección</p>
+            <p class="info-block__value">Carrera 4 Bis #56-30 sur<br><strong>Danubio Azul, Usme</strong></p>
+          </div>
+        </div>
+
+        <div class="info-block">
+          <div class="info-block__icon"><i class="fas fa-clock"></i></div>
+          <div>
+            <p class="info-block__label">Horarios</p>
+            <p class="info-block__value"><strong>Lunes a Viernes:</strong> 4:00 pm – 10:30 pm</p>
+            <p class="info-block__value"><strong>Sábados y Domingos:</strong> 4:00 pm – 11:00 pm</p>
+          </div>
         </div>
       </div>
 
-      <div class="info-block">
-        <div class="info-block__icon"><i class="fas fa-clock"></i></div>
-        <div>
-          <p class="info-block__label">Horarios</p>
-          <p class="info-block__value"><strong>Lunes a Viernes:</strong> 4:00 pm – 10:30 pm</p>
-          <p class="info-block__value"><strong>Sábados y Domingos:</strong> 4:00 pm – 11:00 pm</p>
+      <div class="info-row">
+        <div class="info-block">
+          <div class="info-block__icon"><i class="fas fa-phone"></i></div>
+          <div>
+            <p class="info-block__label">Teléfono / Domicilios</p>
+            <p class="info-block__value">+57 322-826-2989</p>
+          </div>
         </div>
-      </div>
 
-      <div class="info-block">
-        <div class="info-block__icon"><i class="fas fa-phone"></i></div>
-        <div>
-          <p class="info-block__label">Teléfono / Domicilios</p>
-          <p class="info-block__value">+57 322-826-2989</p>
-        </div>
+        <a [href]="whatsappUrl" target="_blank" rel="noopener noreferrer" class="btn-whatsapp-info">
+          <i class="fab fa-whatsapp me-2"></i> Pedir por WhatsApp
+        </a>
       </div>
-
-      <a [href]="whatsappUrl" target="_blank" rel="noopener noreferrer" class="btn-whatsapp-info">
-        <i class="fab fa-whatsapp me-2"></i> Pedir por WhatsApp
-      </a>
 
       <div class="map-wrapper">
         <iframe

@@ -56,6 +56,14 @@
             <button class="cart-item__remove" (click)="cart.remove(item.name)" aria-label="Eliminar">
               <i class="fas fa-trash"></i>
             </button>
+            <input
+              type="text"
+              class="cart-item__note"
+              placeholder="Ej: sin cebolla, extra salsa…"
+              [value]="item.note"
+              (input)="cart.updateNote(item.name, $any($event.target).value)"
+              maxlength="80"
+            />
           </li>
         }
       </ul>

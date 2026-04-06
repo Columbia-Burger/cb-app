@@ -4,6 +4,7 @@ export interface MenuItem {
   price: string;
   priceValue: number;
   image: string; // Cloudinary URL — dejar '' hasta tener el link
+  flavors?: string[];
 }
 
 export interface MenuCategory {

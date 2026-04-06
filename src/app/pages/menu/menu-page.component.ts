@@ -19,14 +19,17 @@ export class MenuPageComponent {
   readonly categories = MENU_CATEGORIES;
 
   selectedItem = signal<MenuItem | null>(null);
+  selectedFlavor = signal<string | null>(null);
 
   openDetail(item: MenuItem): void {
     this.selectedItem.set(item);
+    this.selectedFlavor.set(item.flavors?.[0] ?? null);
     document.body.style.overflow = 'hidden';
   }
 
   closeDetail(): void {
     this.selectedItem.set(null);
+    this.selectedFlavor.set(null);
     document.body.style.overflow = '';
   }
 
@@ -41,6 +44,10 @@ export class MenuPageComponent {
   }
 
   addToCart(item: MenuItem): void {
+    if (item.flavors?.length) {
+      this.openDetail(item);
+      return;
+    }
     this.cart.addItem({
       name: item.name,
       price: item.price,
@@ -50,7 +57,14 @@ export class MenuPageComponent {
   }
 
   addToCartFromDetail(item: MenuItem): void {
-    this.addToCart(item);
+    const flavor = this.selectedFlavor();
+    const name = flavor ? `${item.name} — ${flavor}` : item.name;
+    this.cart.addItem({
+      name,
+      price: item.price,
+      priceValue: item.priceValue,
+      image: item.image,
+    });
     this.closeDetail();
   }
 }

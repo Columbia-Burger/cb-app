@@ -115,23 +115,29 @@
       <div class="detail-modal__body">
         <h2 class="detail-modal__name">{{ selectedItem()!.name }}</h2>
         <p class="detail-modal__desc">{{ selectedItem()!.description }}</p>
+
+        @if (selectedItem()!.flavors?.length) {
+          <div class="detail-modal__flavors">
+            <p class="detail-modal__flavors-label">Elige el sabor:</p>
+            <div class="flavor-pills">
+              @for (flavor of selectedItem()!.flavors!; track flavor) {
+                <button
+                  class="flavor-pill"
+                  [class.flavor-pill--active]="selectedFlavor() === flavor"
+                  (click)="selectedFlavor.set(flavor)"
+                >
+                  {{ flavor }}
+                </button>
+              }
+            </div>
+          </div>
+        }
+
         <div class="detail-modal__footer">
           <span class="detail-modal__price">{{ selectedItem()!.price }}</span>
-          @if (cart.quantityOf(selectedItem()!.name) === 0) {
-            <button class="detail-modal__btn-add" (click)="addToCartFromDetail(selectedItem()!)">
-              <i class="fas fa-plus me-2"></i> Agregar al carrito
-            </button>
-          } @else {
-            <div class="detail-modal__qty">
-              <button class="qty-btn" (click)="cart.decrement(selectedItem()!.name)">
-                <i class="fas fa-minus"></i>
-              </button>
-              <span class="qty-value">{{ cart.quantityOf(selectedItem()!.name) }}</span>
-              <button class="qty-btn" (click)="cart.increment(selectedItem()!.name)">
-                <i class="fas fa-plus"></i>
-              </button>
-            </div>
-          }
+          <button class="detail-modal__btn-add" (click)="addToCartFromDetail(selectedItem()!)">
+            <i class="fas fa-plus me-2"></i> Agregar al carrito
+          </button>
         </div>
       </div>
 

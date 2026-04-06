@@ -19,13 +19,13 @@ export interface FavoriteProduct {
 
 // ── Especial del Mes ─────────────────────────────────────────────────────────
 export const SPECIAL_OF_MONTH: SpecialProduct = {
-  name: 'Nena Burger',
+  name: 'Pizza Pepperoni',
   tagline: 'Tu nuevo gusto culposo',
   description:
-    'Pan Bimbo Brio, 130 gr de carne de res, 130 gr de pollo, queso cheddar, tocineta, tomate, lechuga y salsa tártara.',
-  price: '$26.000',
-  priceValue: 26000,
-  image: 'assets/burger.jpg',
+    'Base salsa napolitana, queso mozzarella rayado, peperoni, albahaca seca.',
+  price: '$16.000',
+  priceValue: 16000,
+  image: 'https://res.cloudinary.com/diaymnuut/image/upload/v1775406339/IMG_4016_h0vjmi.jpg',
 };
 
 // ── Siempre Favoritos ────────────────────────────────────────────────────────

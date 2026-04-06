@@ -1,5 +1,5 @@
-import { Component, HostListener, signal } from '@angular/core';
-import { RouterLink, RouterLinkActive } from '@angular/router';
+import { Component, HostListener, inject } from '@angular/core';
+import { RouterLink, RouterLinkActive, Router } from '@angular/router';
 import { environment } from '../../../environments/environment';
 
 @Component({
@@ -10,6 +10,8 @@ import { environment } from '../../../environments/environment';
   styleUrl: './header.component.scss',
 })
 export class HeaderComponent {
+  private readonly router = inject(Router);
+
   readonly whatsappUrl = `https://wa.me/${environment.whatsappNumber}?text=${environment.whatsappText}`;
 
   scrolled = false;
@@ -18,5 +20,18 @@ export class HeaderComponent {
   @HostListener('window:scroll')
   onScroll(): void {
     this.scrolled = window.scrollY > 40;
+  }
+
+  goToContacto(): void {
+    this.menuOpen = false;
+    if (this.router.url.startsWith('/menu')) {
+      this.router.navigate(['/']).then(() => {
+        setTimeout(() => {
+          document.getElementById('contacto')?.scrollIntoView({ behavior: 'smooth' });
+        }, 100);
+      });
+    } else {
+      document.getElementById('contacto')?.scrollIntoView({ behavior: 'smooth' });
+    }
   }
 }
