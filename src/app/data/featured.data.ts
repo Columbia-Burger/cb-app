@@ -19,27 +19,27 @@ export interface FavoriteProduct {
 
 // ── Especial del Mes ─────────────────────────────────────────────────────────
 export const SPECIAL_OF_MONTH: SpecialProduct = {
-  name: 'Pizza Pepperoni',
+  name: 'Nena Burger',
   tagline: 'Tu nuevo gusto culposo',
   description:
-    'Base salsa napolitana, queso mozzarella rayado, peperoni, albahaca seca.',
-  price: '$16.000',
-  priceValue: 16000,
-  image: 'https://res.cloudinary.com/diaymnuut/image/upload/v1775406339/IMG_4016_h0vjmi.jpg',
+    'Pan Bimbo brillo, 130 gr de carne de res, 130 gr de pollo, queso cheddar, tocineta, tomate, lechuga y salsa tártara.',
+  price: '$26.000',
+  priceValue: 26000,
+  image: 'https://res.cloudinary.com/diaymnuut/image/upload/v1775443116/nena_ia_kpgltn.jpg',
 };
 
 // ── Siempre Favoritos ────────────────────────────────────────────────────────
 export const FAVORITES: FavoriteProduct[] = [
   {
     name: 'Patacon Columbia',
-    image: 'https://res.cloudinary.com/diaymnuut/image/upload/v1775422497/DSC03320_i98qpv.jpg',
+    image: 'https://res.cloudinary.com/diaymnuut/image/upload/v1775444375/DSC03320_eohrti.jpg',
   },
   {
     name: 'Potato Burger',
-    image: 'https://res.cloudinary.com/diaymnuut/image/upload/v1775406369/IMG_3920_at2llt.jpg',
+    image: 'https://res.cloudinary.com/diaymnuut/image/upload/v1775442791/IMG_3923_v1mvaj.jpg',
   },
   {
     name: 'Salchi Mixta',
-    image: 'https://res.cloudinary.com/diaymnuut/image/upload/v1775406365/IMG_3905_onyxt1.jpg',
+    image: 'https://res.cloudinary.com/diaymnuut/image/upload/v1775442791/IMG_3897_bgiy5o.jpg',
   },
 ];
