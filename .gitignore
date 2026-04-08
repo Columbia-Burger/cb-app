@@ -1,6 +1,9 @@
 # Angular cache
 .angular/
 
+# Claude Code
+.claude/
+
 # Compiled output
 /dist
 /tmp
