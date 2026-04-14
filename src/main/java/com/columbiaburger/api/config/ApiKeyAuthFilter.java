@@ -4,23 +4,23 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.util.List;
 
-@Component
 public class ApiKeyAuthFilter extends OncePerRequestFilter {
 
     private static final String API_KEY_HEADER = "X-API-Key";
 
-    @Value("${app.security.api-key}")
-    private String validApiKey;
+    private final String validApiKey;
+
+    public ApiKeyAuthFilter(String validApiKey) {
+        this.validApiKey = validApiKey;
+    }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
