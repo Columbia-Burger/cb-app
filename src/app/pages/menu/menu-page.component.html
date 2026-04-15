@@ -18,7 +18,7 @@
   <!-- Navegación de categorías -->
   <nav class="category-nav">
     <div class="category-nav__inner">
-      @for (cat of categories; track cat.id) {
+      @for (cat of categories(); track cat.id) {
         <button class="category-nav__link" (click)="scrollTo(cat.id)">
           <span class="category-nav__icon">{{ cat.icon }}</span>
           <span>{{ cat.title }}</span>
@@ -29,7 +29,10 @@
 
   <!-- Secciones por categoría -->
   <div class="menu-content">
-    @for (cat of categories; track cat.id) {
+    @if (loading()) {
+      <div class="menu-loading">Cargando menú...</div>
+    }
+    @for (cat of categories(); track cat.id) {
       <section [id]="cat.id" class="menu-section">
         <div class="menu-section__header">
           <span class="menu-section__icon">{{ cat.icon }}</span>
@@ -54,7 +57,7 @@
                   <p class="menu-card__desc">{{ item.description }}</p>
                 </div>
                 <div class="card-footer menu-card__footer">
-                  <span class="menu-card__price">{{ item.price }}</span>
+                  <span class="menu-card__price">{{ priceRange(item) }}</span>
                   @if (cart.quantityOf(item.name) === 0) {
                     <button class="btn btn-add" (click)="addToCart(item); $event.stopPropagation()">
                       <i class="fas fa-plus me-1"></i> Agregar
@@ -116,6 +119,26 @@
         <h2 class="detail-modal__name">{{ selectedItem()!.name }}</h2>
         <p class="detail-modal__desc">{{ selectedItem()!.description }}</p>
 
+        <!-- Opciones con precio (Leche / Agua) -->
+        @if (selectedItem()!.baseOptions?.length) {
+          <div class="detail-modal__flavors">
+            <p class="detail-modal__flavors-label">Elige la base:</p>
+            <div class="flavor-pills">
+              @for (opt of selectedItem()!.baseOptions!; track opt.name) {
+                <button
+                  class="flavor-pill flavor-pill--priced"
+                  [class.flavor-pill--active]="selectedBaseOption()?.name === opt.name"
+                  (click)="selectedBaseOption.set(opt)"
+                >
+                  {{ opt.name }}
+                  <span class="flavor-pill__price">$ {{ opt.priceValue.toLocaleString('es-CO') }}</span>
+                </button>
+              }
+            </div>
+          </div>
+        }
+
+        <!-- Sabores normales (de la BD) -->
         @if (selectedItem()!.flavors?.length) {
           <div class="detail-modal__flavors">
             <p class="detail-modal__flavors-label">Elige el sabor:</p>
@@ -134,11 +157,24 @@
         }
 
         <div class="detail-modal__footer">
-          <span class="detail-modal__price">{{ selectedItem()!.price }}</span>
-          <button class="detail-modal__btn-add" (click)="addToCartFromDetail(selectedItem()!)">
+          <span class="detail-modal__price">{{ modalPrice() }}</span>
+          <button
+            class="detail-modal__btn-add"
+            [disabled]="!canAddToCart()"
+            (click)="addToCartFromDetail(selectedItem()!)"
+          >
             <i class="fas fa-plus me-2"></i> Agregar al carrito
           </button>
         </div>
+        @if (!canAddToCart()) {
+          <p class="detail-modal__hint">
+            @if (selectedItem()!.baseOptions?.length && !selectedBaseOption()) {
+              Elige la base para continuar
+            } @else if (selectedItem()!.flavors?.length && !selectedFlavor()) {
+              Elige el sabor para continuar
+            }
+          </p>
+        }
       </div>
 
     </div>

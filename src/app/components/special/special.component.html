@@ -1,25 +1,27 @@
-<section class="section-especial">
+@if (special(); as s) {
+  <section class="section-especial">
 
-  <article class="article-especial">
-    <div class="badge-especial">
-      <span class="badge-especial__star">★</span>
-      Especial del Mes
-      <span class="badge-especial__star">★</span>
-    </div>
+    <article class="article-especial">
+      <div class="badge-especial">
+        <span class="badge-especial__star">★</span>
+        Especial del Mes
+        <span class="badge-especial__star">★</span>
+      </div>
 
-    <h2 class="especial-title">{{ special.name.split(' ')[0] }}<br>
-      <span class="especial-title--highlight">{{ special.name.split(' ').slice(1).join(' ') }}</span>
-    </h2>
+      <h2 class="especial-title">{{ s.name.split(' ')[0] }}<br>
+        <span class="especial-title--highlight">{{ s.name.split(' ').slice(1).join(' ') }}</span>
+      </h2>
 
-    <p class="especial-tagline">{{ special.tagline }}</p>
+      <p class="especial-tagline">{{ s.tagline }}</p>
 
-    <p class="especial-desc">{{ special.description }}</p>
+      <p class="especial-desc">{{ s.description }}</p>
 
-    <div class="especial-price">{{ special.price }}</div>
-  </article>
+      <div class="especial-price">{{ s.price }}</div>
+    </article>
 
-  <picture class="picture-especial">
-    <img [src]="special.image" [alt]="special.name" class="image" />
-  </picture>
+    <picture class="picture-especial">
+      <img [src]="s.image" [alt]="s.name" class="image" />
+    </picture>
 
-</section>
+  </section>
+}
