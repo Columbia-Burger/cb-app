@@ -1,6 +1,7 @@
 package com.columbiaburger.api.service;
 
 import com.columbiaburger.api.dto.request.ProductRequest;
+import com.columbiaburger.api.dto.response.FlavorResponse;
 import com.columbiaburger.api.dto.response.ProductAdditionResponse;
 import com.columbiaburger.api.dto.response.ProductResponse;
 import com.columbiaburger.api.entity.Category;
@@ -51,11 +52,7 @@ public class ProductService {
         Category category = categoryRepository.findById(request.getCategoryId())
                 .orElseThrow(() -> new EntityNotFoundException("Category not found: " + request.getCategoryId()));
 
-        Flavor flavor = null;
-        if (request.getFlavorId() != null) {
-            flavor = flavorRepository.findById(request.getFlavorId())
-                    .orElseThrow(() -> new EntityNotFoundException("Flavor not found: " + request.getFlavorId()));
-        }
+        List<Flavor> flavors = resolveFlavors(request.getFlavorIds());
 
         Product product = Product.builder()
                 .name(request.getName())
@@ -63,7 +60,7 @@ public class ProductService {
                 .price(request.getPrice())
                 .imageUrl(request.getImageUrl())
                 .category(category)
-                .flavor(flavor)
+                .flavors(flavors)
                 .build();
 
         return toResponse(productRepository.save(product));
@@ -76,20 +73,23 @@ public class ProductService {
         Category category = categoryRepository.findById(request.getCategoryId())
                 .orElseThrow(() -> new EntityNotFoundException("Category not found: " + request.getCategoryId()));
 
-        Flavor flavor = null;
-        if (request.getFlavorId() != null) {
-            flavor = flavorRepository.findById(request.getFlavorId())
-                    .orElseThrow(() -> new EntityNotFoundException("Flavor not found: " + request.getFlavorId()));
-        }
-
         product.setName(request.getName());
         product.setDescription(request.getDescription());
         product.setPrice(request.getPrice());
         product.setImageUrl(request.getImageUrl());
         product.setCategory(category);
-        product.setFlavor(flavor);
+        product.getFlavors().clear();
+        product.getFlavors().addAll(resolveFlavors(request.getFlavorIds()));
 
         return toResponse(productRepository.save(product));
+    }
+
+    private List<Flavor> resolveFlavors(List<Long> flavorIds) {
+        if (flavorIds == null || flavorIds.isEmpty()) return List.of();
+        return flavorIds.stream()
+                .map(fid -> flavorRepository.findById(fid)
+                        .orElseThrow(() -> new EntityNotFoundException("Flavor not found: " + fid)))
+                .toList();
     }
 
     @Transactional
@@ -119,6 +119,14 @@ public class ProductService {
                                 .build())
                         .toList();
 
+        List<FlavorResponse> flavorResponses = p.getFlavors() == null ? List.of() :
+                p.getFlavors().stream()
+                        .map(f -> FlavorResponse.builder()
+                                .id(f.getId())
+                                .name(f.getName())
+                                .build())
+                        .toList();
+
         return ProductResponse.builder()
                 .id(p.getId())
                 .name(p.getName())
@@ -128,8 +136,7 @@ public class ProductService {
                 .available(p.getAvailable())
                 .categoryId(p.getCategory().getId())
                 .categoryName(p.getCategory().getName())
-                .flavorId(p.getFlavor() != null ? p.getFlavor().getId() : null)
-                .flavorName(p.getFlavor() != null ? p.getFlavor().getName() : null)
+                .flavors(flavorResponses)
                 .additions(additions)
                 .build();
     }

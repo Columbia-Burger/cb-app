@@ -7,6 +7,7 @@ import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @Data
 public class ProductRequest {
@@ -28,5 +29,5 @@ public class ProductRequest {
     @NotNull
     private Long categoryId;
 
-    private Long flavorId;
+    private List<Long> flavorIds;
 }

@@ -24,6 +24,6 @@ public class Flavor {
     @Column(nullable = false)
     private Boolean active = true;
 
-    @OneToMany(mappedBy = "flavor", fetch = FetchType.LAZY)
+    @ManyToMany(mappedBy = "flavors", fetch = FetchType.LAZY)
     private List<Product> products;
 }

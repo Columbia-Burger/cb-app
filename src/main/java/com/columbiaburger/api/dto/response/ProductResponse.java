@@ -18,7 +18,6 @@ public class ProductResponse {
     private Boolean available;
     private Long categoryId;
     private String categoryName;
-    private Long flavorId;
-    private String flavorName;
+    private List<FlavorResponse> flavors;
     private List<ProductAdditionResponse> additions;
 }
