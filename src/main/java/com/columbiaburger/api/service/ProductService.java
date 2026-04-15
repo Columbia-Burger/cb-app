@@ -25,24 +25,28 @@ public class ProductService {
     private final CategoryRepository categoryRepository;
     private final FlavorRepository flavorRepository;
 
+    @Transactional(readOnly = true)
     public List<ProductResponse> findAll() {
         return productRepository.findAll().stream()
                 .map(this::toResponse)
                 .toList();
     }
 
+    @Transactional(readOnly = true)
     public List<ProductResponse> findAllAvailable() {
         return productRepository.findByAvailableTrue().stream()
                 .map(this::toResponse)
                 .toList();
     }
 
+    @Transactional(readOnly = true)
     public List<ProductResponse> findByCategory(Long categoryId) {
         return productRepository.findByCategoryId(categoryId).stream()
                 .map(this::toResponse)
                 .toList();
     }
 
+    @Transactional(readOnly = true)
     public ProductResponse findById(Long id) {
         return toResponse(getOrThrow(id));
     }
