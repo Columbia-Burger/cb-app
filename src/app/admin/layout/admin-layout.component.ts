@@ -51,37 +51,37 @@ import { AdminService } from '../services/admin.service';
       border-right: 1px solid #21262d;
       display: flex;
       flex-direction: column;
-      padding: 1.5rem 0;
+      padding: 1.5em 0;
       position: fixed;
       top: 0; left: 0; bottom: 0;
     }
     .sidebar-brand {
       display: flex;
       align-items: center;
-      gap: 0.6rem;
-      padding: 0 1.25rem 1.5rem;
-      font-size: 1.2rem;
+      gap: 0.6em;
+      padding: 0 1.25em 1.5em;
+      font-size: 1.2em;
       font-weight: 700;
       color: #e94560;
       border-bottom: 1px solid #21262d;
-      margin-bottom: 1rem;
+      margin-bottom: 1em;
     }
     .sidebar-nav {
       flex: 1;
       display: flex;
       flex-direction: column;
-      gap: 0.25rem;
-      padding: 0 0.75rem;
+      gap: 0.25em;
+      padding: 0 0.75em;
     }
     .sidebar-nav a {
       display: flex;
       align-items: center;
-      gap: 0.75rem;
-      padding: 0.7rem 0.75rem;
+      gap: 0.75em;
+      padding: 0.7em 0.75em;
       border-radius: 8px;
       color: #8b949e;
       text-decoration: none;
-      font-size: 0.9rem;
+      font-size: 0.9em;
       transition: all 0.2s;
     }
     .sidebar-nav a:hover {
@@ -92,15 +92,15 @@ import { AdminService } from '../services/admin.service';
       background: rgba(233,69,96,0.15);
       color: #e94560;
     }
-    .nav-icon { font-size: 1.1rem; }
+    .nav-icon { font-size: 1.1em; }
     .logout-btn {
-      margin: 0 0.75rem;
-      padding: 0.7rem 0.75rem;
+      margin: 0 0.75em;
+      padding: 0.7em 0.75em;
       background: none;
       border: 1px solid #21262d;
       border-radius: 8px;
       color: #8b949e;
-      font-size: 0.85rem;
+      font-size: 0.85em;
       cursor: pointer;
       text-align: left;
       transition: all 0.2s;
@@ -112,7 +112,7 @@ import { AdminService } from '../services/admin.service';
     .admin-content {
       margin-left: 220px;
       flex: 1;
-      padding: 2rem;
+      padding: 2em;
       overflow-y: auto;
     }
   `]

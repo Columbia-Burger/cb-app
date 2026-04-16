@@ -59,45 +59,45 @@ import { AdminService } from '../../services/admin.service';
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 1rem;
+      padding: 1em;
     }
     .login-card {
       background: #16213e;
       border: 1px solid #0f3460;
       border-radius: 16px;
-      padding: 2.5rem;
+      padding: 2.5em;
       width: 100%;
       max-width: 400px;
       box-shadow: 0 20px 60px rgba(0,0,0,0.4);
     }
     .login-logo {
       text-align: center;
-      margin-bottom: 2rem;
+      margin-bottom: 2em;
     }
-    .logo-icon { font-size: 2.5rem; }
+    .logo-icon { font-size: 2.5em; }
     h1 {
       color: #e94560;
-      font-size: 1.5rem;
-      margin: 0.5rem 0 0.25rem;
+      font-size: 1.5em;
+      margin: 0.5em 0 0.25em;
     }
-    p { color: #8892b0; font-size: 0.9rem; margin: 0; }
+    p { color: #8892b0; font-size: 0.9em; margin: 0; }
     .field {
-      margin-bottom: 1.25rem;
+      margin-bottom: 1.25em;
     }
     label {
       display: block;
       color: #ccd6f6;
-      font-size: 0.85rem;
-      margin-bottom: 0.4rem;
+      font-size: 0.85em;
+      margin-bottom: 0.4em;
     }
     input {
       width: 100%;
-      padding: 0.75rem 1rem;
+      padding: 0.75em 1em;
       background: #0f3460;
       border: 1px solid #1a4a7a;
       border-radius: 8px;
       color: #ccd6f6;
-      font-size: 0.95rem;
+      font-size: 0.95em;
       box-sizing: border-box;
       transition: border-color 0.2s;
     }
@@ -110,19 +110,19 @@ import { AdminService } from '../../services/admin.service';
       background: rgba(233,69,96,0.15);
       border: 1px solid #e94560;
       color: #e94560;
-      padding: 0.6rem 0.9rem;
+      padding: 0.6em 0.9em;
       border-radius: 8px;
-      font-size: 0.85rem;
-      margin-bottom: 1rem;
+      font-size: 0.85em;
+      margin-bottom: 1em;
     }
     button {
       width: 100%;
-      padding: 0.85rem;
+      padding: 0.85em;
       background: #e94560;
       color: white;
       border: none;
       border-radius: 8px;
-      font-size: 1rem;
+      font-size: 1em;
       font-weight: 600;
       cursor: pointer;
       transition: background 0.2s;

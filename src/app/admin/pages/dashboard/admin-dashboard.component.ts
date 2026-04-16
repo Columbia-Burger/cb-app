@@ -70,47 +70,47 @@ import { DashboardStats, TopProduct } from '../../models/admin.model';
   styles: [`
     .page { color: #c9d1d9; }
     .page-title {
-      font-size: 1.5rem;
+      font-size: 1.5em;
       font-weight: 700;
       color: #e6edf3;
-      margin: 0 0 1.5rem;
+      margin: 0 0 1.5em;
     }
     .loading { color: #8b949e; }
     .stats-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-      gap: 1rem;
-      margin-bottom: 2rem;
+      gap: 1em;
+      margin-bottom: 2em;
     }
     .stat-card {
       background: #161b22;
       border: 1px solid #21262d;
       border-radius: 12px;
-      padding: 1.25rem;
+      padding: 1.25em;
     }
     .stat-card.accent { border-color: #e94560; }
     .stat-card.green { border-color: #3fb950; }
     .stat-card.yellow { border-color: #d29922; }
     .stat-label {
-      font-size: 0.8rem;
+      font-size: 0.8em;
       color: #8b949e;
-      margin-bottom: 0.5rem;
+      margin-bottom: 0.5em;
       text-transform: uppercase;
       letter-spacing: 0.05em;
     }
     .stat-value {
-      font-size: 1.6rem;
+      font-size: 1.6em;
       font-weight: 700;
       color: #e6edf3;
     }
-    .section { margin-top: 2rem; }
+    .section { margin-top: 2em; }
     .section-title {
-      font-size: 1.1rem;
+      font-size: 1.1em;
       font-weight: 600;
       color: #e6edf3;
-      margin: 0 0 1rem;
+      margin: 0 0 1em;
     }
-    .empty { color: #8b949e; font-size: 0.9rem; }
+    .empty { color: #8b949e; font-size: 0.9em; }
     .top-products {
       background: #161b22;
       border: 1px solid #21262d;
@@ -120,28 +120,28 @@ import { DashboardStats, TopProduct } from '../../models/admin.model';
     .product-row {
       display: flex;
       align-items: center;
-      gap: 1rem;
-      padding: 0.85rem 1.25rem;
+      gap: 1em;
+      padding: 0.85em 1.25em;
       border-bottom: 1px solid #21262d;
     }
     .product-row:last-child { border-bottom: none; }
     .rank {
-      width: 2rem;
+      width: 2em;
       color: #e94560;
       font-weight: 700;
-      font-size: 0.85rem;
+      font-size: 0.85em;
     }
-    .product-name { flex: 1; font-size: 0.95rem; }
+    .product-name { flex: 1; font-size: 0.95em; }
     .qty {
       color: #8b949e;
-      font-size: 0.85rem;
+      font-size: 0.85em;
       min-width: 60px;
       text-align: right;
     }
     .revenue {
       color: #3fb950;
       font-weight: 600;
-      font-size: 0.9rem;
+      font-size: 0.9em;
       min-width: 100px;
       text-align: right;
     }

@@ -69,29 +69,29 @@ import { CustomerResponse } from '../../models/admin.model';
     .page-header {
       display: flex;
       align-items: center;
-      gap: 1rem;
-      margin-bottom: 1.25rem;
+      gap: 1em;
+      margin-bottom: 1.25em;
     }
-    .page-title { font-size: 1.5rem; font-weight: 700; color: #e6edf3; margin: 0; }
+    .page-title { font-size: 1.5em; font-weight: 700; color: #e6edf3; margin: 0; }
     .total-badge {
       background: #21262d;
       color: #8b949e;
-      font-size: 0.8rem;
-      padding: 0.25rem 0.6rem;
+      font-size: 0.8em;
+      padding: 0.25em 0.6em;
       border-radius: 20px;
     }
     .search-bar {
-      margin-bottom: 1.25rem;
+      margin-bottom: 1.25em;
     }
     .search-bar input {
       width: 100%;
       max-width: 400px;
-      padding: 0.65rem 1rem;
+      padding: 0.65em 1em;
       background: #161b22;
       border: 1px solid #30363d;
       border-radius: 8px;
       color: #c9d1d9;
-      font-size: 0.9rem;
+      font-size: 0.9em;
       box-sizing: border-box;
     }
     .search-bar input:focus {
@@ -108,24 +108,24 @@ import { CustomerResponse } from '../../models/admin.model';
     table { width: 100%; border-collapse: collapse; }
     thead tr { background: #0d1117; }
     th {
-      padding: 0.75rem 1rem;
+      padding: 0.75em 1em;
       text-align: left;
-      font-size: 0.78rem;
+      font-size: 0.78em;
       text-transform: uppercase;
       letter-spacing: 0.05em;
       color: #8b949e;
       border-bottom: 1px solid #21262d;
     }
     td {
-      padding: 0.75rem 1rem;
-      font-size: 0.9rem;
+      padding: 0.75em 1em;
+      font-size: 0.9em;
       border-bottom: 1px solid #21262d;
     }
     tr:last-child td { border-bottom: none; }
     tr:hover td { background: rgba(255,255,255,0.02); }
     .id-cell { color: #8b949e; }
     .name-cell { font-weight: 500; color: #e6edf3; }
-    .date-cell { color: #8b949e; font-size: 0.82rem; }
+    .date-cell { color: #8b949e; font-size: 0.82em; }
     .whatsapp-link {
       color: #3fb950;
       text-decoration: none;
@@ -134,7 +134,7 @@ import { CustomerResponse } from '../../models/admin.model';
     .empty {
       text-align: center;
       color: #8b949e;
-      padding: 2rem !important;
+      padding: 2em !important;
     }
   `]
 })

@@ -120,24 +120,24 @@ interface KanbanColumn {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin-bottom: 1.5rem;
+      margin-bottom: 1.5em;
     }
-    .page-title { font-size: 1.5rem; font-weight: 700; color: #e6edf3; margin: 0; }
+    .page-title { font-size: 1.5em; font-weight: 700; color: #e6edf3; margin: 0; }
     .refresh-btn {
-      padding: 0.5rem 1rem;
+      padding: 0.5em 1em;
       background: #21262d;
       border: 1px solid #30363d;
       border-radius: 8px;
       color: #c9d1d9;
       cursor: pointer;
-      font-size: 0.85rem;
+      font-size: 0.85em;
     }
     .refresh-btn:hover { background: #30363d; }
     .loading { color: #8b949e; }
     .kanban {
       display: grid;
       grid-template-columns: repeat(5, 1fr);
-      gap: 1rem;
+      gap: 1em;
       align-items: start;
     }
     .column {
@@ -150,50 +150,50 @@ interface KanbanColumn {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 0.75rem 1rem;
+      padding: 0.75em 1em;
       border-bottom: 2px solid;
     }
-    .col-label { font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: #e6edf3; }
+    .col-label { font-size: 0.8em; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: #e6edf3; }
     .col-count {
-      font-size: 0.75rem;
+      font-size: 0.75em;
       font-weight: 700;
       color: #0d1117;
       border-radius: 50%;
-      width: 1.4rem;
-      height: 1.4rem;
+      width: 1.4em;
+      height: 1.4em;
       display: flex;
       align-items: center;
       justify-content: center;
     }
-    .cards { padding: 0.5rem; display: flex; flex-direction: column; gap: 0.5rem; min-height: 60px; }
+    .cards { padding: 0.5em; display: flex; flex-direction: column; gap: 0.5em; min-height: 60px; }
     .order-card {
       background: #0d1117;
       border: 1px solid #21262d;
       border-radius: 8px;
-      padding: 0.75rem;
+      padding: 0.75em;
       cursor: pointer;
       transition: border-color 0.2s;
     }
     .order-card:hover { border-color: #e94560; }
-    .order-top { display: flex; justify-content: space-between; margin-bottom: 0.25rem; }
-    .order-id { color: #8b949e; font-size: 0.8rem; }
-    .order-total { color: #3fb950; font-weight: 600; font-size: 0.85rem; }
-    .order-customer { font-size: 0.9rem; font-weight: 500; margin-bottom: 0.35rem; }
-    .order-meta { display: flex; justify-content: space-between; margin-bottom: 0.5rem; }
-    .tag { font-size: 0.75rem; color: #8b949e; }
-    .time { font-size: 0.75rem; color: #8b949e; }
-    .order-actions { display: flex; flex-direction: column; gap: 0.25rem; }
+    .order-top { display: flex; justify-content: space-between; margin-bottom: 0.25em; }
+    .order-id { color: #8b949e; font-size: 0.8em; }
+    .order-total { color: #3fb950; font-weight: 600; font-size: 0.85em; }
+    .order-customer { font-size: 0.9em; font-weight: 500; margin-bottom: 0.35em; }
+    .order-meta { display: flex; justify-content: space-between; margin-bottom: 0.5em; }
+    .tag { font-size: 0.75em; color: #8b949e; }
+    .time { font-size: 0.75em; color: #8b949e; }
+    .order-actions { display: flex; flex-direction: column; gap: 0.25em; }
     .action-btn {
-      padding: 0.3rem 0.5rem;
+      padding: 0.3em 0.5em;
       background: transparent;
       border: 1px solid;
       border-radius: 6px;
-      font-size: 0.75rem;
+      font-size: 0.75em;
       cursor: pointer;
       transition: opacity 0.2s;
     }
     .action-btn:hover { opacity: 0.8; }
-    .empty-col { padding: 1rem; color: #8b949e; font-size: 0.8rem; text-align: center; }
+    .empty-col { padding: 1em; color: #8b949e; font-size: 0.8em; text-align: center; }
 
     /* Modal */
     .modal-backdrop {
@@ -215,26 +215,26 @@ interface KanbanColumn {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 1.25rem 1.5rem;
+      padding: 1.25em 1.5em;
       border-bottom: 1px solid #21262d;
     }
     .modal-header h3 { margin: 0; color: #e6edf3; }
     .close-btn {
       background: none; border: none;
-      color: #8b949e; font-size: 1.1rem; cursor: pointer;
+      color: #8b949e; font-size: 1.1em; cursor: pointer;
     }
-    .modal-body { padding: 1.25rem 1.5rem; }
-    .modal-body p { margin: 0.4rem 0; font-size: 0.9rem; }
+    .modal-body { padding: 1.25em 1.5em; }
+    .modal-body p { margin: 0.4em 0; font-size: 0.9em; }
     .items-list {
-      margin: 1rem 0;
+      margin: 1em 0;
       border-top: 1px solid #21262d;
-      padding-top: 0.75rem;
+      padding-top: 0.75em;
     }
     .item-row {
       display: flex;
-      gap: 0.5rem;
-      padding: 0.4rem 0;
-      font-size: 0.9rem;
+      gap: 0.5em;
+      padding: 0.4em 0;
+      font-size: 0.9em;
       border-bottom: 1px solid #21262d;
     }
     .item-row:last-child { border-bottom: none; }
@@ -244,17 +244,17 @@ interface KanbanColumn {
     .total-row {
       display: flex;
       justify-content: space-between;
-      padding: 0.4rem 0;
-      font-size: 0.9rem;
+      padding: 0.4em 0;
+      font-size: 0.9em;
       color: #8b949e;
     }
     .total-final {
       font-weight: 700;
-      font-size: 1rem;
+      font-size: 1em;
       color: #e6edf3;
       border-top: 1px solid #21262d;
-      margin-top: 0.25rem;
-      padding-top: 0.5rem;
+      margin-top: 0.25em;
+      padding-top: 0.5em;
     }
   `]
 })
