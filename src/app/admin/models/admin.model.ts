@@ -1,0 +1,61 @@
+export interface LoginRequest {
+  email: string;
+  password: string;
+}
+
+export interface LoginResponse {
+  token: string;
+  email: string;
+}
+
+export type OrderStatus = 'RECEIVED' | 'PREPARING' | 'ON_THE_WAY' | 'DELIVERED' | 'CANCELLED';
+
+export interface OrderItemResponse {
+  id: number;
+  productId: number;
+  productName: string;
+  flavor: string;
+  quantity: number;
+  unitPrice: number;
+  subtotal: number;
+  note: string;
+}
+
+export interface OrderResponse {
+  id: number;
+  customerId: number;
+  customerName: string;
+  customerWhatsapp: string;
+  status: OrderStatus;
+  total: number;
+  deliveryFee: number;
+  deliveryZone: string;
+  notes: string;
+  createdAt: string;
+  items: OrderItemResponse[];
+}
+
+export interface CustomerResponse {
+  id: number;
+  name: string;
+  whatsapp: string;
+  neighborhood: string;
+  createdAt: string;
+}
+
+export interface DashboardStats {
+  ordersToday: number;
+  ordersThisWeek: number;
+  ordersThisMonth: number;
+  revenueToday: number;
+  revenueThisMonth: number;
+  pendingOrders: number;
+  onTheWayOrders: number;
+  totalCustomers: number;
+}
+
+export interface TopProduct {
+  productName: string;
+  totalQuantity: number;
+  totalRevenue: number;
+}

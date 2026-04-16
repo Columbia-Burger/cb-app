@@ -1,0 +1,315 @@
+import { Component, inject, signal, OnInit } from '@angular/core';
+import { CurrencyPipe, DatePipe } from '@angular/common';
+import { AdminService } from '../../services/admin.service';
+import { OrderResponse, OrderStatus } from '../../models/admin.model';
+
+interface KanbanColumn {
+  status: OrderStatus;
+  label: string;
+  color: string;
+  orders: OrderResponse[];
+}
+
+@Component({
+  selector: 'app-admin-pedidos',
+  standalone: true,
+  imports: [CurrencyPipe, DatePipe],
+  template: `
+    <div class="page">
+      <div class="page-header">
+        <h2 class="page-title">Pedidos</h2>
+        <button class="refresh-btn" (click)="load()" [disabled]="loading()">
+          🔄 Actualizar
+        </button>
+      </div>
+
+      @if (loading()) {
+        <div class="loading">Cargando pedidos...</div>
+      } @else {
+        <div class="kanban">
+          @for (col of columns(); track col.status) {
+            <div class="column">
+              <div class="column-header" [style.border-color]="col.color">
+                <span class="col-label">{{ col.label }}</span>
+                <span class="col-count" [style.background]="col.color">{{ col.orders.length }}</span>
+              </div>
+
+              <div class="cards">
+                @for (order of col.orders; track order.id) {
+                  <div class="order-card" (click)="selectOrder(order)">
+                    <div class="order-top">
+                      <span class="order-id">#{{ order.id }}</span>
+                      <span class="order-total">{{ order.total | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
+                    </div>
+                    <div class="order-customer">{{ order.customerName }}</div>
+                    <div class="order-meta">
+                      @if (order.deliveryZone) {
+                        <span class="tag">📍 {{ order.deliveryZone }}</span>
+                      }
+                      <span class="time">{{ order.createdAt | date:'HH:mm' }}</span>
+                    </div>
+                    <div class="order-actions">
+                      @for (next of getNextStatuses(order.status); track next.status) {
+                        <button
+                          class="action-btn"
+                          [style.border-color]="next.color"
+                          [style.color]="next.color"
+                          (click)="changeStatus($event, order, next.status)">
+                          {{ next.label }}
+                        </button>
+                      }
+                    </div>
+                  </div>
+                } @empty {
+                  <div class="empty-col">Sin pedidos</div>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      }
+
+      <!-- Modal detalle -->
+      @if (selectedOrder()) {
+        <div class="modal-backdrop" (click)="selectedOrder.set(null)">
+          <div class="modal" (click)="$event.stopPropagation()">
+            <div class="modal-header">
+              <h3>Pedido #{{ selectedOrder()!.id }}</h3>
+              <button class="close-btn" (click)="selectedOrder.set(null)">✕</button>
+            </div>
+            <div class="modal-body">
+              <p><strong>Cliente:</strong> {{ selectedOrder()!.customerName }}</p>
+              <p><strong>WhatsApp:</strong> {{ selectedOrder()!.customerWhatsapp }}</p>
+              @if (selectedOrder()!.deliveryZone) {
+                <p><strong>Zona:</strong> {{ selectedOrder()!.deliveryZone }}</p>
+              }
+              @if (selectedOrder()!.notes) {
+                <p><strong>Notas:</strong> {{ selectedOrder()!.notes }}</p>
+              }
+              <div class="items-list">
+                @for (item of selectedOrder()!.items; track item.id) {
+                  <div class="item-row">
+                    <span class="item-qty">{{ item.quantity }}x</span>
+                    <span class="item-name">
+                      {{ item.productName }}
+                      @if (item.flavor) { — {{ item.flavor }} }
+                    </span>
+                    <span class="item-price">{{ item.subtotal | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
+                  </div>
+                }
+              </div>
+              @if (selectedOrder()!.deliveryFee > 0) {
+                <div class="total-row">
+                  <span>Domicilio</span>
+                  <span>{{ selectedOrder()!.deliveryFee | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
+                </div>
+              }
+              <div class="total-row total-final">
+                <span>Total</span>
+                <span>{{ selectedOrder()!.total | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  `,
+  styles: [`
+    .page { color: #c9d1d9; }
+    .page-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.5rem;
+    }
+    .page-title { font-size: 1.5rem; font-weight: 700; color: #e6edf3; margin: 0; }
+    .refresh-btn {
+      padding: 0.5rem 1rem;
+      background: #21262d;
+      border: 1px solid #30363d;
+      border-radius: 8px;
+      color: #c9d1d9;
+      cursor: pointer;
+      font-size: 0.85rem;
+    }
+    .refresh-btn:hover { background: #30363d; }
+    .loading { color: #8b949e; }
+    .kanban {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 1rem;
+      align-items: start;
+    }
+    .column {
+      background: #161b22;
+      border-radius: 12px;
+      border: 1px solid #21262d;
+      overflow: hidden;
+    }
+    .column-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.75rem 1rem;
+      border-bottom: 2px solid;
+    }
+    .col-label { font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: #e6edf3; }
+    .col-count {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: #0d1117;
+      border-radius: 50%;
+      width: 1.4rem;
+      height: 1.4rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .cards { padding: 0.5rem; display: flex; flex-direction: column; gap: 0.5rem; min-height: 60px; }
+    .order-card {
+      background: #0d1117;
+      border: 1px solid #21262d;
+      border-radius: 8px;
+      padding: 0.75rem;
+      cursor: pointer;
+      transition: border-color 0.2s;
+    }
+    .order-card:hover { border-color: #e94560; }
+    .order-top { display: flex; justify-content: space-between; margin-bottom: 0.25rem; }
+    .order-id { color: #8b949e; font-size: 0.8rem; }
+    .order-total { color: #3fb950; font-weight: 600; font-size: 0.85rem; }
+    .order-customer { font-size: 0.9rem; font-weight: 500; margin-bottom: 0.35rem; }
+    .order-meta { display: flex; justify-content: space-between; margin-bottom: 0.5rem; }
+    .tag { font-size: 0.75rem; color: #8b949e; }
+    .time { font-size: 0.75rem; color: #8b949e; }
+    .order-actions { display: flex; flex-direction: column; gap: 0.25rem; }
+    .action-btn {
+      padding: 0.3rem 0.5rem;
+      background: transparent;
+      border: 1px solid;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+    .action-btn:hover { opacity: 0.8; }
+    .empty-col { padding: 1rem; color: #8b949e; font-size: 0.8rem; text-align: center; }
+
+    /* Modal */
+    .modal-backdrop {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.7);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 100;
+    }
+    .modal {
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 16px;
+      width: 90%;
+      max-width: 480px;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1.25rem 1.5rem;
+      border-bottom: 1px solid #21262d;
+    }
+    .modal-header h3 { margin: 0; color: #e6edf3; }
+    .close-btn {
+      background: none; border: none;
+      color: #8b949e; font-size: 1.1rem; cursor: pointer;
+    }
+    .modal-body { padding: 1.25rem 1.5rem; }
+    .modal-body p { margin: 0.4rem 0; font-size: 0.9rem; }
+    .items-list {
+      margin: 1rem 0;
+      border-top: 1px solid #21262d;
+      padding-top: 0.75rem;
+    }
+    .item-row {
+      display: flex;
+      gap: 0.5rem;
+      padding: 0.4rem 0;
+      font-size: 0.9rem;
+      border-bottom: 1px solid #21262d;
+    }
+    .item-row:last-child { border-bottom: none; }
+    .item-qty { color: #8b949e; min-width: 24px; }
+    .item-name { flex: 1; }
+    .item-price { color: #3fb950; }
+    .total-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.4rem 0;
+      font-size: 0.9rem;
+      color: #8b949e;
+    }
+    .total-final {
+      font-weight: 700;
+      font-size: 1rem;
+      color: #e6edf3;
+      border-top: 1px solid #21262d;
+      margin-top: 0.25rem;
+      padding-top: 0.5rem;
+    }
+  `]
+})
+export class AdminPedidosComponent implements OnInit {
+  private adminService = inject(AdminService);
+
+  loading = signal(true);
+  selectedOrder = signal<OrderResponse | null>(null);
+
+  columns = signal<KanbanColumn[]>([
+    { status: 'RECEIVED',   label: 'Recibido',    color: '#d29922', orders: [] },
+    { status: 'PREPARING',  label: 'Preparando',  color: '#388bfd', orders: [] },
+    { status: 'ON_THE_WAY', label: 'En camino',   color: '#bc8cff', orders: [] },
+    { status: 'DELIVERED',  label: 'Entregado',   color: '#3fb950', orders: [] },
+    { status: 'CANCELLED',  label: 'Cancelado',   color: '#f85149', orders: [] },
+  ]);
+
+  private nextMap: Record<OrderStatus, { status: OrderStatus; label: string; color: string }[]> = {
+    RECEIVED:   [{ status: 'PREPARING',  label: '→ Preparando', color: '#388bfd' }, { status: 'CANCELLED', label: '✕ Cancelar', color: '#f85149' }],
+    PREPARING:  [{ status: 'ON_THE_WAY', label: '→ En camino', color: '#bc8cff' }, { status: 'CANCELLED', label: '✕ Cancelar', color: '#f85149' }],
+    ON_THE_WAY: [{ status: 'DELIVERED',  label: '→ Entregado', color: '#3fb950' }],
+    DELIVERED:  [],
+    CANCELLED:  [],
+  };
+
+  ngOnInit(): void { this.load(); }
+
+  load(): void {
+    this.loading.set(true);
+    this.adminService.getOrders().subscribe({
+      next: orders => {
+        this.columns.update(cols =>
+          cols.map(col => ({
+            ...col,
+            orders: orders.filter(o => o.status === col.status)
+          }))
+        );
+        this.loading.set(false);
+      },
+      error: () => this.loading.set(false)
+    });
+  }
+
+  getNextStatuses(status: OrderStatus) {
+    return this.nextMap[status] ?? [];
+  }
+
+  selectOrder(order: OrderResponse): void {
+    this.selectedOrder.set(order);
+  }
+
+  changeStatus(event: Event, order: OrderResponse, status: OrderStatus): void {
+    event.stopPropagation();
+    this.adminService.updateOrderStatus(order.id, status).subscribe({
+      next: () => this.load()
+    });
+  }
+}
