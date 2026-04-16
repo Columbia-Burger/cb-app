@@ -1,0 +1,24 @@
+package com.columbiaburger.business.dto.response;
+
+import com.columbiaburger.business.entity.OrderStatus;
+import lombok.Builder;
+import lombok.Getter;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.List;
+
+@Getter @Builder
+public class OrderResponse {
+    private Long id;
+    private Long customerId;
+    private String customerName;
+    private String customerWhatsapp;
+    private OrderStatus status;
+    private BigDecimal total;
+    private BigDecimal deliveryFee;
+    private String deliveryZone;
+    private String notes;
+    private LocalDateTime createdAt;
+    private List<OrderItemResponse> items;
+}
