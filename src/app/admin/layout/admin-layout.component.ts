@@ -49,6 +49,10 @@ import { AdminService } from '../services/admin.service';
             <span class="nav-icon">🧾</span>
             <span>Tomar Pedido</span>
           </a>
+          <a routerLink="/admin/menu" routerLinkActive="active" (click)="sidebarOpen.set(false)">
+            <span class="nav-icon">🍔</span>
+            <span>Menú</span>
+          </a>
         </nav>
 
         <button class="logout-btn" (click)="logout()">

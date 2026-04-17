@@ -33,6 +33,11 @@ export const adminRoutes: Routes = [
         path: 'mesero',
         loadComponent: () =>
           import('./pages/mesero/admin-mesero.component').then(m => m.AdminMeseroComponent)
+      },
+      {
+        path: 'menu',
+        loadComponent: () =>
+          import('./pages/menu/admin-menu.component').then(m => m.AdminMenuComponent)
       }
     ]
   }

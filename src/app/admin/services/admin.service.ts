@@ -104,6 +104,18 @@ export class AdminService {
     return this.http.get<CatalogProduct[]>(`${environment.apiUrl}/api/products?availableOnly=true`);
   }
 
+  getAdminProducts(): Observable<CatalogProduct[]> {
+    return this.http.get<CatalogProduct[]>(`${this.base}/api/admin/catalog/products`, {
+      headers: this.authHeaders()
+    });
+  }
+
+  toggleProduct(id: number): Observable<void> {
+    return this.http.patch<void>(`${this.base}/api/admin/catalog/products/${id}/toggle`, null, {
+      headers: this.authHeaders()
+    });
+  }
+
   // ── Crear pedido ─────────────────────────────────────────────
   createOrder(request: CreateOrderRequest): Observable<OrderResponse> {
     return this.http.post<OrderResponse>(`${this.base}/api/orders`, request, {
