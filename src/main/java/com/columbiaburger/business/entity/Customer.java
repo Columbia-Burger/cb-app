@@ -24,6 +24,9 @@ public class Customer {
     @Column(length = 100)
     private String neighborhood;
 
+    @Column(length = 200)
+    private String address;
+
     @Builder.Default
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();

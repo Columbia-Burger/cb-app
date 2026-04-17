@@ -21,6 +21,8 @@ public class CreateOrderRequest {
 
     private String customerNeighborhood;
 
+    private String customerAddress;
+
     @NotEmpty
     @Valid
     private List<OrderItemRequest> items;

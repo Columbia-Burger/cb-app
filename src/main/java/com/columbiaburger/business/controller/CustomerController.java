@@ -33,6 +33,14 @@ public class CustomerController {
         return ResponseEntity.ok(customerService.findById(id));
     }
 
+    /** Usado por n8n para inyectar datos del cliente en el system prompt del agente */
+    @GetMapping("/whatsapp/{number}")
+    public ResponseEntity<CustomerResponse> findByWhatsapp(@PathVariable String number) {
+        return customerRepository.findByWhatsapp(number)
+                .map(c -> ResponseEntity.ok(customerService.findById(c.getId())))
+                .orElse(ResponseEntity.notFound().build());
+    }
+
     @GetMapping("/me")
     public ResponseEntity<CustomerResponse> getMe(Authentication auth) {
         String whatsapp = auth.getName();

@@ -18,23 +18,28 @@ public class CustomerService {
     private final CustomerRepository customerRepository;
 
     @Transactional
-    public CustomerResponse findOrCreate(String name, String whatsapp, String neighborhood) {
+    public CustomerResponse findOrCreate(String name, String whatsapp, String neighborhood, String address) {
         Customer customer = customerRepository.findByWhatsapp(whatsapp)
                 .orElseGet(() -> customerRepository.save(
                         Customer.builder()
                                 .name(name)
                                 .whatsapp(whatsapp)
                                 .neighborhood(neighborhood)
+                                .address(address)
                                 .build()
                 ));
-        // Update name/neighborhood if changed
+        // Update name/neighborhood/address if provided and changed
         boolean changed = false;
-        if (name != null && !name.equals(customer.getName())) {
+        if (name != null && !name.isBlank() && !name.equals(customer.getName())) {
             customer.setName(name);
             changed = true;
         }
-        if (neighborhood != null && !neighborhood.equals(customer.getNeighborhood())) {
+        if (neighborhood != null && !neighborhood.isBlank() && !neighborhood.equals(customer.getNeighborhood())) {
             customer.setNeighborhood(neighborhood);
+            changed = true;
+        }
+        if (address != null && !address.isBlank() && !address.equals(customer.getAddress())) {
+            customer.setAddress(address);
             changed = true;
         }
         if (changed) {
@@ -61,6 +66,7 @@ public class CustomerService {
                 .name(c.getName())
                 .whatsapp(c.getWhatsapp())
                 .neighborhood(c.getNeighborhood())
+                .address(c.getAddress())
                 .createdAt(c.getCreatedAt())
                 .build();
     }

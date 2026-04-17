@@ -11,5 +11,6 @@ public class CustomerResponse {
     private String name;
     private String whatsapp;
     private String neighborhood;
+    private String address;
     private LocalDateTime createdAt;
 }

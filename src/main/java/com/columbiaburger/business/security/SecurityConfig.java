@@ -37,6 +37,7 @@ public class SecurityConfig {
                 .requestMatchers("/api/auth/otp/**").permitAll()  // OTP login cliente
                 .requestMatchers("/api/orders").permitAll()       // WhatsApp bot crea pedidos
                 .requestMatchers("/api/customers").permitAll()    // WhatsApp bot crea clientes
+                .requestMatchers("/api/customers/whatsapp/**").permitAll() // n8n consulta perfil
                 .requestMatchers("/api/shifts/open", "/api/shifts/close").permitAll() // n8n cron
                 .requestMatchers("/api/customers/me", "/api/customers/me/orders").hasRole("CUSTOMER")
                 .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()

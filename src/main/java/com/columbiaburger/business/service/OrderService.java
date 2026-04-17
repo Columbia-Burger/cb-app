@@ -32,8 +32,24 @@ public class OrderService {
                                 .name(request.getCustomerName())
                                 .whatsapp(request.getCustomerWhatsapp())
                                 .neighborhood(request.getCustomerNeighborhood())
+                                .address(request.getCustomerAddress())
                                 .build()
                 ));
+        // Update name/neighborhood/address if provided and changed
+        boolean changed = false;
+        if (request.getCustomerName() != null && !request.getCustomerName().isBlank()
+                && !request.getCustomerName().equals(customer.getName())) {
+            customer.setName(request.getCustomerName()); changed = true;
+        }
+        if (request.getCustomerNeighborhood() != null && !request.getCustomerNeighborhood().isBlank()
+                && !request.getCustomerNeighborhood().equals(customer.getNeighborhood())) {
+            customer.setNeighborhood(request.getCustomerNeighborhood()); changed = true;
+        }
+        if (request.getCustomerAddress() != null && !request.getCustomerAddress().isBlank()
+                && !request.getCustomerAddress().equals(customer.getAddress())) {
+            customer.setAddress(request.getCustomerAddress()); changed = true;
+        }
+        if (changed) customerRepository.save(customer);
 
         List<OrderItem> items = request.getItems().stream()
                 .map(this::toOrderItem)
