@@ -30,7 +30,10 @@ const STATUS_CLASS: Record<string, string> = {
     <div class="shell">
       <!-- Header -->
       <header class="topbar">
-        <div class="brand">🍔 Columbia Burger</div>
+        <div class="brand">
+          <img src="assets/logo.png" alt="CB" class="topbar-logo" />
+          <span>Columbia Burger</span>
+        </div>
         <div class="nav-links">
           <a (click)="goTo('dashboard')" class="nav-link active">Mis pedidos</a>
           <a (click)="goTo('perfil')" class="nav-link">Mi perfil</a>
@@ -127,7 +130,8 @@ const STATUS_CLASS: Record<string, string> = {
       top: 0;
       z-index: 10;
     }
-    .brand { color: #e94560; font-weight: 700; font-size: 1.1em; }
+    .topbar-logo { width: 30px; height: 30px; object-fit: contain; border-radius: 8px; }
+    .brand { color: #e94560; font-weight: 700; font-size: 1.05em; display: flex; align-items: center; gap: 0.5em; }
     .nav-links { display: flex; align-items: center; gap: 1em; }
     .nav-link { color: #8b949e; font-size: 0.9em; cursor: pointer; text-decoration: none; padding: 0.25em 0; border-bottom: 2px solid transparent; transition: color 0.2s; }
     .nav-link:hover, .nav-link.active { color: #e6edf3; border-bottom-color: #e94560; }

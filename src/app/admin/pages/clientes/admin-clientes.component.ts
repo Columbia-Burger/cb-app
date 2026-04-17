@@ -34,6 +34,7 @@ import { CustomerResponse } from '../../models/admin.model';
                 <th>Nombre</th>
                 <th>WhatsApp</th>
                 <th>Barrio</th>
+                <th>Dirección</th>
                 <th>Registrado</th>
               </tr>
             </thead>
@@ -51,11 +52,12 @@ import { CustomerResponse } from '../../models/admin.model';
                     </a>
                   </td>
                   <td>{{ c.neighborhood || '—' }}</td>
+                  <td>{{ c.address || '—' }}</td>
                   <td class="date-cell">{{ c.createdAt | date:'dd/MM/yyyy' }}</td>
                 </tr>
               } @empty {
                 <tr>
-                  <td colspan="5" class="empty">No se encontraron clientes.</td>
+                  <td colspan="6" class="empty">No se encontraron clientes.</td>
                 </tr>
               }
             </tbody>
@@ -150,7 +152,8 @@ export class AdminClientesComponent implements OnInit {
     return this.customers().filter(c =>
       c.name.toLowerCase().includes(q) ||
       c.whatsapp.includes(q) ||
-      (c.neighborhood ?? '').toLowerCase().includes(q)
+      (c.neighborhood ?? '').toLowerCase().includes(q) ||
+      (c.address ?? '').toLowerCase().includes(q)
     );
   });
 

@@ -40,6 +40,7 @@ export interface CustomerResponse {
   name: string;
   whatsapp: string;
   neighborhood: string;
+  address: string;
   createdAt: string;
 }
 

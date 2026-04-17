@@ -1,9 +1,9 @@
 import { Component, inject, signal, OnInit, OnDestroy } from '@angular/core';
 import { CurrencyPipe, DatePipe } from '@angular/common';
 import { AdminService } from '../../services/admin.service';
-import { OrderResponse, OrderStatus, ShiftResponse } from '../../models/admin.model';
+import { OrderResponse, OrderStatus } from '../../models/admin.model';
 import { Subscription, interval } from 'rxjs';
-import { switchMap, finalize } from 'rxjs/operators';
+import { switchMap } from 'rxjs/operators';
 
 interface KanbanColumn {
   status: OrderStatus;
@@ -312,19 +312,8 @@ export class AdminPedidosComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    this.shiftFrom = this.getTodayStartUtc(); // mínimo: inicio del día actual
-    this.adminService.getCurrentShift().pipe(
-      finalize(() => this.startPolling())
-    ).subscribe({
-      next: res => {
-        if ('active' in res && res.active) {
-          const shiftOpened = (res as ShiftResponse).openedAt;
-          // usar el más reciente entre inicio del día y apertura del turno
-          this.shiftFrom = shiftOpened > this.shiftFrom! ? shiftOpened : this.shiftFrom;
-        }
-      },
-      error: () => {}
-    });
+    this.shiftFrom = this.getTodayStartUtc();
+    this.startPolling();
   }
 
   private startPolling(): void {

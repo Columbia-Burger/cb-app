@@ -1,7 +1,6 @@
-import { Component, inject, signal, OnInit } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { Router, RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
 import { AdminService } from '../services/admin.service';
-import { ShiftResponse } from '../models/admin.model';
 
 @Component({
   selector: 'app-admin-layout',
@@ -13,7 +12,10 @@ import { ShiftResponse } from '../models/admin.model';
       <!-- Topbar móvil -->
       <header class="topbar">
         <button class="hamburger" (click)="sidebarOpen.set(!sidebarOpen())">☰</button>
-        <span class="topbar-brand">🍔 CB Admin</span>
+        <div class="topbar-brand">
+          <img src="assets/logo.png" alt="CB" class="topbar-logo" />
+          <span>CB Admin</span>
+        </div>
       </header>
 
       <!-- Overlay -->
@@ -23,8 +25,11 @@ import { ShiftResponse } from '../models/admin.model';
 
       <aside class="sidebar" [class.open]="sidebarOpen()">
         <div class="sidebar-brand">
-          <span>🍔</span>
-          <span class="brand-name">CB Admin</span>
+          <img src="assets/logo.png" alt="Columbia Burger" class="sidebar-logo" />
+          <div class="sidebar-brand-text">
+            <span class="brand-name">Columbia</span>
+            <span class="brand-sub">Burger Admin</span>
+          </div>
         </div>
 
         <nav class="sidebar-nav">
@@ -46,20 +51,8 @@ import { ShiftResponse } from '../models/admin.model';
           </a>
         </nav>
 
-        <div class="shift-section">
-          <div class="shift-status" [class.open]="shiftActive()">
-            <span class="shift-dot"></span>
-            {{ shiftActive() ? 'Turno abierto' : 'Turno cerrado' }}
-          </div>
-          @if (shiftActive()) {
-            <button class="shift-btn close" (click)="closeShift()">Cerrar turno</button>
-          } @else {
-            <button class="shift-btn open" (click)="openShift()">Abrir turno</button>
-          }
-        </div>
-
         <button class="logout-btn" (click)="logout()">
-          <span>⬅️</span> Cerrar sesión
+          <span class="logout-icon">↩</span> Cerrar sesión
         </button>
       </aside>
 
@@ -96,7 +89,15 @@ import { ShiftResponse } from '../models/admin.model';
       cursor: pointer;
       padding: 0.2em 0.4em;
     }
+    .topbar-logo {
+      width: 28px; height: 28px;
+      object-fit: contain;
+      border-radius: 6px;
+    }
     .topbar-brand {
+      display: flex;
+      align-items: center;
+      gap: 0.5em;
       font-size: 1em;
       font-weight: 700;
       color: #e94560;
@@ -126,13 +127,31 @@ import { ShiftResponse } from '../models/admin.model';
     .sidebar-brand {
       display: flex;
       align-items: center;
-      gap: 0.6em;
-      padding: 0 1.25em 1.5em;
-      font-size: 1.2em;
-      font-weight: 700;
-      color: #e94560;
+      gap: 0.75em;
+      padding: 1em 1.25em 1.25em;
       border-bottom: 1px solid #21262d;
-      margin-bottom: 1em;
+      margin-bottom: 0.75em;
+    }
+    .sidebar-logo {
+      width: 40px; height: 40px;
+      object-fit: contain;
+      border-radius: 10px;
+      box-shadow: 0 2px 12px rgba(233,69,96,0.25);
+      flex-shrink: 0;
+    }
+    .sidebar-brand-text {
+      display: flex;
+      flex-direction: column;
+      line-height: 1.2;
+    }
+    .brand-name {
+      color: #e6edf3;
+      font-size: 0.95em;
+      font-weight: 700;
+    }
+    .brand-sub {
+      color: #8b949e;
+      font-size: 0.72em;
     }
     .sidebar-nav {
       flex: 1;
@@ -145,65 +164,39 @@ import { ShiftResponse } from '../models/admin.model';
       display: flex;
       align-items: center;
       gap: 0.75em;
-      padding: 0.7em 0.75em;
-      border-radius: 8px;
+      padding: 0.7em 0.9em;
+      border-radius: 10px;
       color: #8b949e;
       text-decoration: none;
-      font-size: 0.9em;
-      transition: all 0.2s;
+      font-size: 0.88em;
+      font-weight: 500;
+      transition: all 0.18s;
     }
     .sidebar-nav a:hover { background: #21262d; color: #c9d1d9; }
-    .sidebar-nav a.active { background: rgba(233,69,96,0.15); color: #e94560; }
-    .nav-icon { font-size: 1.1em; }
+    .sidebar-nav a.active {
+      background: rgba(233,69,96,0.12);
+      color: #e94560;
+      box-shadow: inset 3px 0 0 #e94560;
+    }
+    .nav-icon { font-size: 1.05em; width: 1.4em; text-align: center; }
     .logout-btn {
-      margin: 0 0.75em;
-      padding: 0.7em 0.75em;
+      margin: 0 0.75em 0.5em;
+      padding: 0.7em 0.9em;
       background: none;
       border: 1px solid #21262d;
-      border-radius: 8px;
-      color: #8b949e;
+      border-radius: 10px;
+      color: #6e7681;
       font-size: 0.85em;
       cursor: pointer;
       text-align: left;
-      transition: all 0.2s;
-    }
-    .logout-btn:hover { background: #21262d; color: #c9d1d9; }
-    .shift-section {
-      margin: 0 0.75em 1em;
-      padding: 0.75em;
-      background: #0d1117;
-      border: 1px solid #21262d;
-      border-radius: 8px;
-    }
-    .shift-status {
+      transition: all 0.18s;
       display: flex;
       align-items: center;
       gap: 0.5em;
-      font-size: 0.78em;
-      color: #8b949e;
-      margin-bottom: 0.5em;
     }
-    .shift-dot {
-      width: 8px; height: 8px;
-      border-radius: 50%;
-      background: #f85149;
-      flex-shrink: 0;
-    }
-    .shift-status.open .shift-dot { background: #3fb950; }
-    .shift-status.open { color: #3fb950; }
-    .shift-btn {
-      width: 100%;
-      padding: 0.5em;
-      border-radius: 6px;
-      font-size: 0.8em;
-      font-weight: 600;
-      cursor: pointer;
-      border: none;
-      transition: opacity 0.2s;
-    }
-    .shift-btn:hover { opacity: 0.85; }
-    .shift-btn.open { background: #3fb950; color: #0d1117; }
-    .shift-btn.close { background: #f85149; color: #fff; }
+    .logout-btn:hover { background: rgba(248,81,73,0.08); color: #f85149; border-color: rgba(248,81,73,0.3); }
+    .logout-icon { font-size: 1em; }
+
 
     .admin-content {
       margin-left: 220px;
@@ -230,36 +223,11 @@ import { ShiftResponse } from '../models/admin.model';
     }
   `]
 })
-export class AdminLayoutComponent implements OnInit {
+export class AdminLayoutComponent {
   private adminService = inject(AdminService);
   private router = inject(Router);
 
   sidebarOpen = signal(false);
-  shiftActive = signal(false);
-  shift = signal<ShiftResponse | null>(null);
-
-  ngOnInit(): void {
-    this.adminService.getCurrentShift().subscribe(res => {
-      if ('active' in res && res.active) {
-        this.shift.set(res as ShiftResponse);
-        this.shiftActive.set(true);
-      }
-    });
-  }
-
-  openShift(): void {
-    this.adminService.openShift().subscribe(s => {
-      this.shift.set(s);
-      this.shiftActive.set(true);
-    });
-  }
-
-  closeShift(): void {
-    this.adminService.closeShift().subscribe(s => {
-      this.shift.set(s);
-      this.shiftActive.set(false);
-    });
-  }
 
   logout(): void {
     this.adminService.logout();
