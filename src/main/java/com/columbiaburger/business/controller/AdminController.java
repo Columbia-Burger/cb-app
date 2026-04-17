@@ -4,6 +4,7 @@ import com.columbiaburger.business.dto.response.DailyStatResponse;
 import com.columbiaburger.business.dto.response.DashboardStatsResponse;
 import com.columbiaburger.business.dto.response.TopProductResponse;
 import com.columbiaburger.business.service.AdminService;
+import com.columbiaburger.business.service.CatalogProxyService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,6 +17,7 @@ import java.util.List;
 public class AdminController {
 
     private final AdminService adminService;
+    private final CatalogProxyService catalogProxyService;
 
     @GetMapping("/stats")
     public ResponseEntity<DashboardStatsResponse> getStats() {
@@ -32,5 +34,16 @@ public class AdminController {
     public ResponseEntity<List<DailyStatResponse>> getDailyStats(
             @RequestParam(defaultValue = "7") int days) {
         return ResponseEntity.ok(adminService.getDailyStats(days));
+    }
+
+    @GetMapping("/catalog/products")
+    public ResponseEntity<String> getProducts() {
+        return ResponseEntity.ok(catalogProxyService.getProducts());
+    }
+
+    @PatchMapping("/catalog/products/{id}/toggle")
+    public ResponseEntity<Void> toggleProduct(@PathVariable Long id) {
+        catalogProxyService.toggleAvailable(id);
+        return ResponseEntity.noContent().build();
     }
 }
