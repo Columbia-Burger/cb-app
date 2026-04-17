@@ -101,6 +101,26 @@ $header-h: 7rem;
   }
 }
 
+.header__account {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 0.4rem;
+  padding: 0.6rem 1.4rem;
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 1.4rem;
+  font-weight: 600;
+  text-decoration: none;
+  border-radius: 2rem;
+  border: 2px solid rgba(243, 165, 31, 0.5);
+  transition: color 0.2s, border-color 0.2s, background-color 0.2s;
+
+  &:hover {
+    color: $brand-orange;
+    border-color: $brand-orange;
+    background-color: rgba(243, 165, 31, 0.08);
+  }
+}
+
 .header__cta {
   display: inline-flex;
   align-items: center;
