@@ -1,5 +1,6 @@
 package com.columbiaburger.business.service;
 
+import com.columbiaburger.business.dto.response.DailyStatResponse;
 import com.columbiaburger.business.dto.response.DashboardStatsResponse;
 import com.columbiaburger.business.dto.response.TopProductResponse;
 import com.columbiaburger.business.entity.OrderStatus;
@@ -13,9 +14,11 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.temporal.WeekFields;
 import java.util.List;
 import java.util.Locale;
+import java.util.stream.IntStream;
 
 @Service
 @RequiredArgsConstructor
@@ -25,16 +28,19 @@ public class AdminService {
     private final OrderItemRepository orderItemRepository;
     private final CustomerRepository customerRepository;
 
+    private static final ZoneId BOGOTA = ZoneId.of("America/Bogota");
+
     @Transactional(readOnly = true)
     public DashboardStatsResponse getStats() {
-        LocalDateTime startOfDay = LocalDate.now().atStartOfDay();
+        LocalDate today = LocalDate.now(BOGOTA);
+        LocalDateTime startOfDay = today.atStartOfDay();
         LocalDateTime endOfDay = startOfDay.plusDays(1);
 
-        LocalDateTime startOfWeek = LocalDate.now()
+        LocalDateTime startOfWeek = today
                 .with(WeekFields.of(Locale.getDefault()).dayOfWeek(), 1)
                 .atStartOfDay();
 
-        LocalDateTime startOfMonth = LocalDate.now().withDayOfMonth(1).atStartOfDay();
+        LocalDateTime startOfMonth = today.withDayOfMonth(1).atStartOfDay();
         LocalDateTime endOfMonth = startOfMonth.plusMonths(1);
 
         BigDecimal revenueToday = orderRepository.sumTotalBetween(startOfDay, endOfDay);
@@ -58,5 +64,21 @@ public class AdminService {
     @Transactional(readOnly = true)
     public List<TopProductResponse> getTopProducts(int limit) {
         return orderItemRepository.findTopProducts(limit);
+    }
+
+    @Transactional(readOnly = true)
+    public List<DailyStatResponse> getDailyStats(int days) {
+        return IntStream.range(0, days)
+                .mapToObj(i -> LocalDate.now(BOGOTA).minusDays(days - 1 - i))
+                .map(date -> {
+                    LocalDateTime from = date.atStartOfDay();
+                    LocalDateTime to = from.plusDays(1);
+                    return DailyStatResponse.builder()
+                            .date(date.toString())
+                            .orders(orderRepository.countByCreatedAtBetweenExcludingCancelled(from, to))
+                            .revenue(orderRepository.sumTotalBetween(from, to))
+                            .build();
+                })
+                .toList();
     }
 }

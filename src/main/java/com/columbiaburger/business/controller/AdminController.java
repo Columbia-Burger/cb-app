@@ -1,5 +1,6 @@
 package com.columbiaburger.business.controller;
 
+import com.columbiaburger.business.dto.response.DailyStatResponse;
 import com.columbiaburger.business.dto.response.DashboardStatsResponse;
 import com.columbiaburger.business.dto.response.TopProductResponse;
 import com.columbiaburger.business.service.AdminService;
@@ -25,5 +26,11 @@ public class AdminController {
     public ResponseEntity<List<TopProductResponse>> getTopProducts(
             @RequestParam(defaultValue = "10") int limit) {
         return ResponseEntity.ok(adminService.getTopProducts(limit));
+    }
+
+    @GetMapping("/stats/daily")
+    public ResponseEntity<List<DailyStatResponse>> getDailyStats(
+            @RequestParam(defaultValue = "7") int days) {
+        return ResponseEntity.ok(adminService.getDailyStats(days));
     }
 }
