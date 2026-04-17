@@ -6,7 +6,7 @@ import { environment } from '../../../environments/environment';
 import {
   LoginRequest, LoginResponse, OrderResponse, OrderStatus,
   CustomerResponse, DashboardStats, TopProduct,
-  CreateOrderRequest, CatalogProduct
+  CreateOrderRequest, CatalogProduct, ShiftResponse
 } from '../models/admin.model';
 
 @Injectable({ providedIn: 'root' })
@@ -53,11 +53,29 @@ export class AdminService {
   }
 
   // ── Pedidos ──────────────────────────────────────────────────
-  getOrders(status?: OrderStatus): Observable<OrderResponse[]> {
-    const url = status
-      ? `${this.base}/api/orders?status=${status}`
-      : `${this.base}/api/orders`;
+  getOrders(status?: OrderStatus, from?: string): Observable<OrderResponse[]> {
+    let url = `${this.base}/api/orders`;
+    const params: string[] = [];
+    if (status) params.push(`status=${status}`);
+    if (from) params.push(`from=${encodeURIComponent(from)}`);
+    if (params.length) url += '?' + params.join('&');
     return this.http.get<OrderResponse[]>(url, { headers: this.authHeaders() });
+  }
+
+  // ── Turnos ───────────────────────────────────────────────────
+  getCurrentShift(): Observable<ShiftResponse | { active: false }> {
+    return this.http.get<ShiftResponse | { active: false }>(
+      `${this.base}/api/admin/shifts/current`,
+      { headers: this.authHeaders() }
+    );
+  }
+
+  openShift(): Observable<ShiftResponse> {
+    return this.http.post<ShiftResponse>(`${this.base}/api/shifts/open`, {});
+  }
+
+  closeShift(): Observable<ShiftResponse> {
+    return this.http.post<ShiftResponse>(`${this.base}/api/shifts/close`, {});
   }
 
   updateOrderStatus(id: number, status: OrderStatus): Observable<OrderResponse> {

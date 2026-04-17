@@ -93,6 +93,13 @@ export interface CatalogProduct {
   categoryName: string;
 }
 
+export interface ShiftResponse {
+  id: number;
+  openedAt: string;
+  closedAt: string | null;
+  active: boolean;
+}
+
 export interface CatalogCategory {
   id: number;
   name: string;

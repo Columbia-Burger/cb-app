@@ -1,7 +1,9 @@
-import { Component, inject, signal, OnInit } from '@angular/core';
+import { Component, inject, signal, OnInit, OnDestroy } from '@angular/core';
 import { CurrencyPipe, DatePipe } from '@angular/common';
 import { AdminService } from '../../services/admin.service';
-import { OrderResponse, OrderStatus } from '../../models/admin.model';
+import { OrderResponse, OrderStatus, ShiftResponse } from '../../models/admin.model';
+import { Subscription, interval } from 'rxjs';
+import { switchMap, finalize } from 'rxjs/operators';
 
 interface KanbanColumn {
   status: OrderStatus;
@@ -22,6 +24,10 @@ interface KanbanColumn {
           🔄 Actualizar
         </button>
       </div>
+
+      @if (newOrderAlert()) {
+        <div class="new-order-toast">🔔 ¡Nuevo pedido recibido!</div>
+      }
 
       @if (loading()) {
         <div class="loading">Cargando pedidos...</div>
@@ -194,6 +200,17 @@ interface KanbanColumn {
     }
     .action-btn:hover { opacity: 0.8; }
     .empty-col { padding: 1em; color: #8b949e; font-size: 0.8em; text-align: center; }
+    .new-order-toast {
+      background: #d29922;
+      color: #0d1117;
+      font-weight: 700;
+      padding: 0.75em 1.25em;
+      border-radius: 10px;
+      margin-bottom: 1em;
+      font-size: 0.95em;
+      animation: fadeIn 0.3s ease;
+    }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
 
     /* Modal */
     .modal-backdrop {
@@ -258,11 +275,12 @@ interface KanbanColumn {
     }
   `]
 })
-export class AdminPedidosComponent implements OnInit {
+export class AdminPedidosComponent implements OnInit, OnDestroy {
   private adminService = inject(AdminService);
 
   loading = signal(true);
   selectedOrder = signal<OrderResponse | null>(null);
+  newOrderAlert = signal(false);
 
   columns = signal<KanbanColumn[]>([
     { status: 'RECEIVED',   label: 'Recibido',    color: '#d29922', orders: [] },
@@ -280,22 +298,72 @@ export class AdminPedidosComponent implements OnInit {
     CANCELLED:  [],
   };
 
-  ngOnInit(): void { this.load(); }
+  private knownIds = new Set<number>();
+  private pollSub?: Subscription;
+  private shiftFrom: string | undefined;
+
+  ngOnInit(): void {
+    this.adminService.getCurrentShift().pipe(
+      finalize(() => this.startPolling())
+    ).subscribe({
+      next: res => {
+        if ('active' in res && res.active) {
+          this.shiftFrom = (res as ShiftResponse).openedAt;
+        }
+      },
+      error: () => {}
+    });
+  }
+
+  private startPolling(): void {
+    this.load();
+    this.pollSub = interval(5000).pipe(
+      switchMap(() => this.adminService.getOrders(undefined, this.shiftFrom))
+    ).subscribe(orders => this.applyOrders(orders));
+  }
+
+  ngOnDestroy(): void {
+    this.pollSub?.unsubscribe();
+  }
 
   load(): void {
     this.loading.set(true);
-    this.adminService.getOrders().subscribe({
+    this.adminService.getOrders(undefined, this.shiftFrom).subscribe({
       next: orders => {
-        this.columns.update(cols =>
-          cols.map(col => ({
-            ...col,
-            orders: orders.filter(o => o.status === col.status)
-          }))
-        );
+        this.applyOrders(orders);
         this.loading.set(false);
       },
       error: () => this.loading.set(false)
     });
+  }
+
+  private applyOrders(orders: OrderResponse[]): void {
+    const newOnes = orders.filter(o => o.status === 'RECEIVED' && !this.knownIds.has(o.id));
+    if (newOnes.length > 0) {
+      this.playAlert();
+      this.newOrderAlert.set(true);
+      setTimeout(() => this.newOrderAlert.set(false), 4000);
+    }
+    orders.forEach(o => this.knownIds.add(o.id));
+    this.columns.update(cols =>
+      cols.map(col => ({ ...col, orders: orders.filter(o => o.status === col.status) }))
+    );
+  }
+
+  private playAlert(): void {
+    try {
+      const ctx = new AudioContext();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.frequency.setValueAtTime(880, ctx.currentTime);
+      osc.frequency.setValueAtTime(660, ctx.currentTime + 0.15);
+      gain.gain.setValueAtTime(0.3, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
+      osc.start(ctx.currentTime);
+      osc.stop(ctx.currentTime + 0.4);
+    } catch { /* navegador sin audio */ }
   }
 
   getNextStatuses(status: OrderStatus) {
