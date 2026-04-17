@@ -25,6 +25,11 @@ public class Order {
     @Column(nullable = false, length = 20)
     private OrderStatus status = OrderStatus.RECEIVED;
 
+    @Builder.Default
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private OrderSource source = OrderSource.WEB;
+
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal total;
 

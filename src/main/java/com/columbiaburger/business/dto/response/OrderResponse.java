@@ -1,5 +1,6 @@
 package com.columbiaburger.business.dto.response;
 
+import com.columbiaburger.business.entity.OrderSource;
 import com.columbiaburger.business.entity.OrderStatus;
 import lombok.Builder;
 import lombok.Getter;
@@ -15,6 +16,7 @@ public class OrderResponse {
     private String customerName;
     private String customerWhatsapp;
     private OrderStatus status;
+    private OrderSource source;
     private BigDecimal total;
     private BigDecimal deliveryFee;
     private String deliveryZone;

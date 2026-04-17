@@ -5,6 +5,7 @@ import com.columbiaburger.business.dto.request.OrderItemRequest;
 import com.columbiaburger.business.dto.response.OrderItemResponse;
 import com.columbiaburger.business.dto.response.OrderResponse;
 import com.columbiaburger.business.entity.*;
+import com.columbiaburger.business.entity.OrderSource;
 import com.columbiaburger.business.repository.CustomerRepository;
 import com.columbiaburger.business.repository.OrderRepository;
 import lombok.RequiredArgsConstructor;
@@ -51,6 +52,7 @@ public class OrderService {
                 .deliveryFee(deliveryFee)
                 .deliveryZone(request.getDeliveryZone())
                 .notes(request.getNotes())
+                .source(request.getSource() != null ? request.getSource() : OrderSource.WEB)
                 .build();
 
         items.forEach(item -> item.setOrder(order));
@@ -112,6 +114,7 @@ public class OrderService {
                 .deliveryFee(o.getDeliveryFee())
                 .deliveryZone(o.getDeliveryZone())
                 .notes(o.getNotes())
+                .source(o.getSource())
                 .createdAt(o.getCreatedAt())
                 .items(items)
                 .build();

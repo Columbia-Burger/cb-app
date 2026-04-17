@@ -1,5 +1,6 @@
 package com.columbiaburger.business.dto.request;
 
+import com.columbiaburger.business.entity.OrderSource;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
@@ -29,4 +30,6 @@ public class CreateOrderRequest {
     private String deliveryZone;
 
     private String notes;
+
+    private OrderSource source;
 }
