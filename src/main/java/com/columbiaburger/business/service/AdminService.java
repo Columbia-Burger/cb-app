@@ -29,18 +29,20 @@ public class AdminService {
     private final CustomerRepository customerRepository;
 
     private static final ZoneId BOGOTA = ZoneId.of("America/Bogota");
+    private static final ZoneId UTC   = ZoneId.of("UTC");
+
+    private LocalDateTime toUtc(LocalDate date) {
+        return date.atStartOfDay(BOGOTA).withZoneSameInstant(UTC).toLocalDateTime();
+    }
 
     @Transactional(readOnly = true)
     public DashboardStatsResponse getStats() {
         LocalDate today = LocalDate.now(BOGOTA);
-        LocalDateTime startOfDay = today.atStartOfDay();
-        LocalDateTime endOfDay = startOfDay.plusDays(1);
+        LocalDateTime startOfDay = toUtc(today);
+        LocalDateTime endOfDay   = toUtc(today.plusDays(1));
 
-        LocalDateTime startOfWeek = today
-                .with(WeekFields.of(Locale.getDefault()).dayOfWeek(), 1)
-                .atStartOfDay();
-
-        LocalDateTime startOfMonth = today.withDayOfMonth(1).atStartOfDay();
+        LocalDateTime startOfWeek = toUtc(today.with(WeekFields.of(Locale.getDefault()).dayOfWeek(), 1));
+        LocalDateTime startOfMonth = toUtc(today.withDayOfMonth(1));
         LocalDateTime endOfMonth = startOfMonth.plusMonths(1);
 
         BigDecimal revenueToday = orderRepository.sumTotalBetween(startOfDay, endOfDay);
@@ -71,8 +73,8 @@ public class AdminService {
         return IntStream.range(0, days)
                 .mapToObj(i -> LocalDate.now(BOGOTA).minusDays(days - 1 - i))
                 .map(date -> {
-                    LocalDateTime from = date.atStartOfDay();
-                    LocalDateTime to = from.plusDays(1);
+                    LocalDateTime from = toUtc(date);
+                    LocalDateTime to   = toUtc(date.plusDays(1));
                     return DailyStatResponse.builder()
                             .date(date.toString())
                             .orders(orderRepository.countByCreatedAtBetweenExcludingCancelled(from, to))
