@@ -5,7 +5,8 @@ import { tap } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import {
   LoginRequest, LoginResponse, OrderResponse, OrderStatus,
-  CustomerResponse, DashboardStats, TopProduct
+  CustomerResponse, DashboardStats, TopProduct,
+  CreateOrderRequest, CatalogProduct
 } from '../models/admin.model';
 
 @Injectable({ providedIn: 'root' })
@@ -70,6 +71,18 @@ export class AdminService {
   // ── Clientes ─────────────────────────────────────────────────
   getCustomers(): Observable<CustomerResponse[]> {
     return this.http.get<CustomerResponse[]>(`${this.base}/api/customers`, {
+      headers: this.authHeaders()
+    });
+  }
+
+  // ── Menú (catálogo) ──────────────────────────────────────────
+  getMenu(): Observable<CatalogProduct[]> {
+    return this.http.get<CatalogProduct[]>(`${environment.apiUrl}/api/products?availableOnly=true`);
+  }
+
+  // ── Crear pedido ─────────────────────────────────────────────
+  createOrder(request: CreateOrderRequest): Observable<OrderResponse> {
+    return this.http.post<OrderResponse>(`${this.base}/api/orders`, request, {
       headers: this.authHeaders()
     });
   }

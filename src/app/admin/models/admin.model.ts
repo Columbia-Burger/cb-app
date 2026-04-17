@@ -59,3 +59,42 @@ export interface TopProduct {
   totalQuantity: number;
   totalRevenue: number;
 }
+
+export type OrderSource = 'WEB' | 'WHATSAPP' | 'WAITER';
+
+export interface OrderItemRequest {
+  productId: number;
+  productName: string;
+  flavor?: string;
+  quantity: number;
+  unitPrice: number;
+  note?: string;
+}
+
+export interface CreateOrderRequest {
+  customerName: string;
+  customerWhatsapp: string;
+  customerNeighborhood?: string;
+  items: OrderItemRequest[];
+  deliveryFee?: number;
+  deliveryZone?: string;
+  notes?: string;
+  source: OrderSource;
+}
+
+export interface CatalogProduct {
+  id: number;
+  name: string;
+  description: string;
+  price: number;
+  imageUrl: string;
+  available: boolean;
+  categoryId: number;
+  categoryName: string;
+}
+
+export interface CatalogCategory {
+  id: number;
+  name: string;
+  products: CatalogProduct[];
+}

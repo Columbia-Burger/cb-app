@@ -27,6 +27,10 @@ import { AdminService } from '../services/admin.service';
             <span class="nav-icon">👥</span>
             <span>Clientes</span>
           </a>
+          <a routerLink="/admin/mesero" routerLinkActive="active">
+            <span class="nav-icon">🧾</span>
+            <span>Tomar Pedido</span>
+          </a>
         </nav>
 
         <button class="logout-btn" (click)="logout()">
