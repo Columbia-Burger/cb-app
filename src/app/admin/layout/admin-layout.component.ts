@@ -90,9 +90,11 @@ import { AdminService } from '../services/admin.service';
       padding: 0.2em 0.4em;
     }
     .topbar-logo {
-      width: 28px; height: 28px;
+      width: 34px; height: 34px;
       object-fit: contain;
-      border-radius: 6px;
+      border-radius: 8px;
+      background: #fff;
+      padding: 3px;
     }
     .topbar-brand {
       display: flex;
@@ -133,9 +135,11 @@ import { AdminService } from '../services/admin.service';
       margin-bottom: 0.75em;
     }
     .sidebar-logo {
-      width: 40px; height: 40px;
+      width: 48px; height: 48px;
       object-fit: contain;
-      border-radius: 10px;
+      border-radius: 12px;
+      background: #fff;
+      padding: 5px;
       box-shadow: 0 2px 12px rgba(233,69,96,0.25);
       flex-shrink: 0;
     }

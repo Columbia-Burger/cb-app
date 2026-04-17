@@ -108,10 +108,12 @@ import { AdminService } from '../../services/admin.service';
       transform: translate(-50%, -50%);
     }
     .brand-logo {
-      width: 130px;
-      height: 130px;
+      width: 150px;
+      height: 150px;
       object-fit: contain;
-      border-radius: 24px;
+      border-radius: 28px;
+      background: #fff;
+      padding: 12px;
       box-shadow: 0 8px 40px rgba(233,69,96,0.3);
       margin-bottom: 1.5em;
       position: relative;
@@ -171,9 +173,11 @@ import { AdminService } from '../../services/admin.service';
     /* Mobile logo */
     .mobile-logo {
       display: block;
-      width: 72px; height: 72px;
+      width: 88px; height: 88px;
       object-fit: contain;
-      border-radius: 16px;
+      border-radius: 20px;
+      background: #fff;
+      padding: 10px;
       margin: 0 auto 1.5em;
       box-shadow: 0 4px 20px rgba(233,69,96,0.25);
     }

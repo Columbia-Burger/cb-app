@@ -130,7 +130,7 @@ const STATUS_CLASS: Record<string, string> = {
       top: 0;
       z-index: 10;
     }
-    .topbar-logo { width: 30px; height: 30px; object-fit: contain; border-radius: 8px; }
+    .topbar-logo { width: 34px; height: 34px; object-fit: contain; border-radius: 8px; background: #fff; padding: 3px; }
     .brand { color: #e94560; font-weight: 700; font-size: 1.05em; display: flex; align-items: center; gap: 0.5em; }
     .nav-links { display: flex; align-items: center; gap: 1em; }
     .nav-link { color: #8b949e; font-size: 0.9em; cursor: pointer; text-decoration: none; padding: 0.25em 0; border-bottom: 2px solid transparent; transition: color 0.2s; }

@@ -101,9 +101,11 @@ type Step = 'phone' | 'code';
     }
     .card-header { text-align: center; margin-bottom: 2em; }
     .logo {
-      width: 72px; height: 72px;
+      width: 90px; height: 90px;
       object-fit: contain;
-      border-radius: 18px;
+      border-radius: 20px;
+      background: #fff;
+      padding: 10px;
       box-shadow: 0 4px 20px rgba(233,69,96,0.3);
       margin-bottom: 0.75em;
     }
