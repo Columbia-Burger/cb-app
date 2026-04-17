@@ -112,3 +112,20 @@ export interface CatalogCategory {
   name: string;
   products: CatalogProduct[];
 }
+
+export interface TrackingItem {
+  productName: string;
+  flavor: string;
+  quantity: number;
+}
+
+export interface OrderTrackingResponse {
+  id: number;
+  customerFirstName: string;
+  status: OrderStatus;
+  total: number;
+  deliveryFee: number;
+  deliveryZone: string;
+  createdAt: string;
+  items: TrackingItem[];
+}

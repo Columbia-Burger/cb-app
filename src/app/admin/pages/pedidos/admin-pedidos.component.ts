@@ -20,9 +20,14 @@ interface KanbanColumn {
     <div class="page">
       <div class="page-header">
         <h2 class="page-title">Pedidos</h2>
-        <button class="refresh-btn" (click)="load()" [disabled]="loading()">
-          🔄 Actualizar
-        </button>
+        <div class="header-actions">
+          <button class="refresh-btn" (click)="load()" [disabled]="loading()">
+            🔄 Actualizar
+          </button>
+          <button class="export-btn" (click)="exportCsv()" [disabled]="loading()">
+            ⬇ Exportar CSV
+          </button>
+        </div>
       </div>
 
       @if (newOrderAlert()) {
@@ -127,9 +132,12 @@ interface KanbanColumn {
       align-items: center;
       justify-content: space-between;
       margin-bottom: 1.5em;
+      flex-wrap: wrap;
+      gap: 0.75em;
     }
     .page-title { font-size: 1.5em; font-weight: 700; color: #e6edf3; margin: 0; }
-    .refresh-btn {
+    .header-actions { display: flex; gap: 0.5em; flex-wrap: wrap; }
+    .refresh-btn, .export-btn {
       padding: 0.5em 1em;
       background: #21262d;
       border: 1px solid #30363d;
@@ -137,8 +145,11 @@ interface KanbanColumn {
       color: #c9d1d9;
       cursor: pointer;
       font-size: 0.85em;
+      transition: background 0.2s;
     }
-    .refresh-btn:hover { background: #30363d; }
+    .refresh-btn:hover, .export-btn:hover { background: #30363d; }
+    .export-btn { border-color: #388bfd; color: #58a6ff; }
+    .export-btn:hover { background: rgba(56,139,253,0.1); }
     .loading { color: #8b949e; }
     .kanban {
       display: grid;
@@ -380,5 +391,51 @@ export class AdminPedidosComponent implements OnInit, OnDestroy {
     this.adminService.updateOrderStatus(order.id, status).subscribe({
       next: () => this.load()
     });
+  }
+
+  exportCsv(): void {
+    const allOrders = this.columns().flatMap(col => col.orders)
+      .sort((a, b) => a.id - b.id);
+
+    if (allOrders.length === 0) return;
+
+    const statusLabel: Record<OrderStatus, string> = {
+      RECEIVED: 'Recibido', PREPARING: 'Preparando',
+      ON_THE_WAY: 'En camino', DELIVERED: 'Entregado', CANCELLED: 'Cancelado'
+    };
+
+    const escape = (v: unknown) => {
+      const s = String(v ?? '').replace(/"/g, '""');
+      return `"${s}"`;
+    };
+
+    const headers = ['ID', 'Fecha', 'Cliente', 'WhatsApp', 'Estado', 'Zona', 'Domicilio', 'Total', 'Productos'];
+
+    const rows = allOrders.map(o => {
+      const productos = o.items
+        .map(i => `${i.quantity}x ${i.productName}${i.flavor ? ' (' + i.flavor + ')' : ''}`)
+        .join(' | ');
+      return [
+        o.id,
+        escape(o.createdAt?.replace('T', ' ').substring(0, 16)),
+        escape(o.customerName),
+        escape(o.customerWhatsapp),
+        escape(statusLabel[o.status]),
+        escape(o.deliveryZone ?? ''),
+        o.deliveryFee ?? 0,
+        o.total,
+        escape(productos)
+      ].join(',');
+    });
+
+    const csv = '\uFEFF' + [headers.join(','), ...rows].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    const today = new Date().toISOString().substring(0, 10);
+    a.href = url;
+    a.download = `pedidos-${today}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
   }
 }

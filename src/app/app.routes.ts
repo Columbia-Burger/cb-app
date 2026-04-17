@@ -18,5 +18,10 @@ export const routes: Routes = [
     loadChildren: () =>
       import('./cuenta/cuenta.routes').then(m => m.cuentaRoutes)
   },
+  {
+    path: 'seguimiento/:id',
+    loadComponent: () =>
+      import('./pages/seguimiento/seguimiento.component').then(m => m.SeguimientoComponent)
+  },
   { path: '**', redirectTo: '' },
 ];
