@@ -13,5 +13,10 @@ export const routes: Routes = [
     loadChildren: () =>
       import('./admin/admin.routes').then(m => m.adminRoutes)
   },
+  {
+    path: 'cuenta',
+    loadChildren: () =>
+      import('./cuenta/cuenta.routes').then(m => m.cuentaRoutes)
+  },
   { path: '**', redirectTo: '' },
 ];
