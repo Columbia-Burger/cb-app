@@ -8,15 +8,43 @@
   --color-subtitulo: #ededed;
 }
 
+// ── Tipografía global ─────────────────────────────────────────────────────────
+// Playfair Display: títulos, precios, badges, botones, labels
+// Lora: texto corrido, descripciones
+$font-display: 'Playfair Display', Georgia, serif;
+$font-body:    'Lora', Georgia, serif;
+
 * {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: $font-body;
+}
+
+h1, h2, h3, h4, h5, h6,
+.badge-contact,
+.contact-title,
+.menu-card__name,
+.detail-modal__name,
+.cart-drawer__title,
+.menu-hero__title,
+.menu-section__title,
+button,
+.btn,
+.cart-total__value,
+.menu-card__price,
+.detail-modal__price {
+  font-family: $font-display;
 }
 
 html {
   font-size: 62.5%;
+}
+
+// Admin panel usa 16px como base (no depende del 62.5% del sitio)
+.admin-shell,
+.login-wrapper {
+  font-size: 16px;
 }
 
 body {

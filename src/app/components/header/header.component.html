@@ -8,7 +8,7 @@
     <!-- Desktop nav -->
     <nav class="header__nav">
       <a class="header__link" routerLink="/menu" routerLinkActive="header__link--active">Menú</a>
-      <a class="header__link" href="#contacto">Contacto</a>
+      <button class="header__link header__link--btn" (click)="goToContacto()">Contacto</button>
       <a class="header__cta" [href]="whatsappUrl" target="_blank" rel="noopener">
         <i class="fab fa-whatsapp me-2"></i>Pedir Ahora
       </a>
@@ -26,7 +26,7 @@
   <!-- Mobile drawer -->
   <div class="header__mobile-nav" [class.header__mobile-nav--open]="menuOpen">
     <a class="header__mobile-link" routerLink="/menu" (click)="menuOpen = false">Menú</a>
-    <a class="header__mobile-link" href="#contacto" (click)="menuOpen = false">Contacto</a>
+    <button class="header__mobile-link header__mobile-link--btn" (click)="goToContacto()">Contacto</button>
     <a class="header__mobile-cta" [href]="whatsappUrl" target="_blank" rel="noopener" (click)="menuOpen = false">
       <i class="fab fa-whatsapp me-2"></i>Pedir Ahora
     </a>

@@ -7,6 +7,7 @@ export interface CartItem {
   priceValue: number;
   image: string;
   quantity: number;
+  note: string;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -27,7 +28,7 @@ export class CartService {
     `$${this.total().toLocaleString('es-CO')}`
   );
 
-  addItem(item: Omit<CartItem, 'quantity'>): void {
+  addItem(item: Omit<CartItem, 'quantity' | 'note'>): void {
     const current = this._items();
     const existing = current.find((i) => i.name === item.name);
     if (existing) {
@@ -37,8 +38,14 @@ export class CartService {
         )
       );
     } else {
-      this._items.set([...current, { ...item, quantity: 1 }]);
+      this._items.set([...current, { ...item, quantity: 1, note: '' }]);
     }
+  }
+
+  updateNote(name: string, note: string): void {
+    this._items.set(
+      this._items().map((i) => (i.name === name ? { ...i, note } : i))
+    );
   }
 
   increment(name: string): void {
@@ -81,7 +88,10 @@ export class CartService {
     if (items.length === 0) return '';
 
     const lines = items
-      .map((i) => `• ${i.quantity}x ${i.name} - ${i.price}`)
+      .map((i) => {
+        const noteLine = i.note?.trim() ? `%0A  _(${i.note.trim()})_` : '';
+        return `• ${i.quantity}x ${i.name} - ${i.price}${noteLine}`;
+      })
       .join('%0A');
 
     const subtotal = `Subtotal: ${this.formattedTotal()}`;

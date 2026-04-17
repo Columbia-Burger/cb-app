@@ -69,6 +69,18 @@ $brand-dark: #1a1a1a;
   gap: 2rem;
 }
 
+.info-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2rem;
+
+  .info-block {
+    flex: 1;
+    min-width: 18rem;
+  }
+}
+
 .info-block {
   display: flex;
   align-items: flex-start;
@@ -139,4 +151,57 @@ $brand-dark: #1a1a1a;
 // ── Columna formulario ───────────────────────────────────────────────────────
 .contact-form-wrapper {
   flex: 1;
+}
+
+// ── Pantallas grandes (≥ 1920px, monitores de 24" en adelante) ───────────────
+@media (min-width: 1920px) {
+  .section-contact {
+    padding: 4.8rem 4rem;
+    gap: 4rem;
+  }
+
+  .badge-contact {
+    font-size: 1.6rem;
+    padding: 0.7rem 2rem;
+  }
+
+  .contact-title {
+    font-size: 6.4rem;
+  }
+
+  .contact-body {
+    gap: 4rem;
+  }
+
+  .contact-info {
+    gap: 2.8rem;
+  }
+
+  .info-block {
+    gap: 1.8rem;
+
+    &__icon {
+      width: 5.2rem;
+      height: 5.2rem;
+      font-size: 2.2rem;
+    }
+
+    &__label {
+      font-size: 1.4rem;
+      margin-bottom: 0.6rem;
+    }
+
+    &__value {
+      font-size: 1.8rem;
+    }
+  }
+
+  .btn-whatsapp-info {
+    font-size: 1.9rem;
+    padding: 1.2rem 3rem;
+  }
+
+  .map-wrapper iframe {
+    height: 40rem;
+  }
 }

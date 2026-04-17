@@ -1,9 +1,16 @@
+export interface BaseOption {
+  name: string;
+  priceValue: number;
+}
+
 export interface MenuItem {
   name: string;
   description: string;
   price: string;
   priceValue: number;
-  image: string; // Cloudinary URL — dejar '' hasta tener el link
+  image: string;
+  flavors?: string[];
+  baseOptions?: BaseOption[];
 }
 
 export interface MenuCategory {
