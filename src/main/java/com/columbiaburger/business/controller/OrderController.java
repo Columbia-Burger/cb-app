@@ -27,7 +27,12 @@ public class OrderController {
 
     @GetMapping
     public ResponseEntity<List<OrderResponse>> findAll(
-            @RequestParam(required = false) OrderStatus status) {
+            @RequestParam(required = false) OrderStatus status,
+            @RequestParam(required = false) String from) {
+        if (from != null) {
+            java.time.LocalDateTime fromDate = java.time.LocalDateTime.parse(from);
+            return ResponseEntity.ok(orderService.findFromDate(status, fromDate));
+        }
         if (status != null) {
             return ResponseEntity.ok(orderService.findByStatus(status));
         }

@@ -36,6 +36,7 @@ public class SecurityConfig {
                 .requestMatchers("/api/auth/login").permitAll()
                 .requestMatchers("/api/orders").permitAll()       // WhatsApp bot crea pedidos
                 .requestMatchers("/api/customers").permitAll()    // WhatsApp bot crea clientes
+                .requestMatchers("/api/shifts/open", "/api/shifts/close").permitAll() // n8n cron
                 .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
                 .anyRequest().authenticated()
             )

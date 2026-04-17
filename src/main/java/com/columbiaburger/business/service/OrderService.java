@@ -75,6 +75,16 @@ public class OrderService {
     }
 
     @Transactional(readOnly = true)
+    public List<OrderResponse> findFromDate(OrderStatus status, java.time.LocalDateTime from) {
+        if (status != null) {
+            return orderRepository.findByStatusAndCreatedAtAfterOrderByCreatedAtDesc(status, from).stream()
+                    .map(this::toResponse).toList();
+        }
+        return orderRepository.findByCreatedAtAfterOrderByCreatedAtDesc(from).stream()
+                .map(this::toResponse).toList();
+    }
+
+    @Transactional(readOnly = true)
     public OrderResponse findById(Long id) {
         return orderRepository.findById(id)
                 .map(this::toResponse)
