@@ -63,6 +63,12 @@ public class OrderService {
     }
 
     @Transactional(readOnly = true)
+    public List<OrderResponse> findByCustomerId(Long customerId) {
+        return orderRepository.findByCustomerIdOrderByCreatedAtDesc(customerId).stream()
+                .map(this::toResponse).toList();
+    }
+
+    @Transactional(readOnly = true)
     public List<OrderResponse> findAll() {
         return orderRepository.findAllByOrderByCreatedAtDesc().stream()
                 .map(this::toResponse).toList();

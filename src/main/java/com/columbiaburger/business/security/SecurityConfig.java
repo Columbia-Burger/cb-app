@@ -34,9 +34,11 @@ public class SecurityConfig {
             .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/auth/login").permitAll()
+                .requestMatchers("/api/auth/otp/**").permitAll()  // OTP login cliente
                 .requestMatchers("/api/orders").permitAll()       // WhatsApp bot crea pedidos
                 .requestMatchers("/api/customers").permitAll()    // WhatsApp bot crea clientes
                 .requestMatchers("/api/shifts/open", "/api/shifts/close").permitAll() // n8n cron
+                .requestMatchers("/api/customers/me", "/api/customers/me/orders").hasRole("CUSTOMER")
                 .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
                 .anyRequest().authenticated()
             )

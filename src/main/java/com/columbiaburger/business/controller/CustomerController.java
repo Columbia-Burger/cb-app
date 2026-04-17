@@ -1,10 +1,16 @@
 package com.columbiaburger.business.controller;
 
 import com.columbiaburger.business.dto.response.CustomerResponse;
+import com.columbiaburger.business.dto.response.OrderResponse;
+import com.columbiaburger.business.repository.CustomerRepository;
 import com.columbiaburger.business.service.CustomerService;
+import com.columbiaburger.business.service.OrderService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -14,6 +20,8 @@ import java.util.List;
 public class CustomerController {
 
     private final CustomerService customerService;
+    private final OrderService orderService;
+    private final CustomerRepository customerRepository;
 
     @GetMapping
     public ResponseEntity<List<CustomerResponse>> findAll() {
@@ -23,5 +31,24 @@ public class CustomerController {
     @GetMapping("/{id}")
     public ResponseEntity<CustomerResponse> findById(@PathVariable Long id) {
         return ResponseEntity.ok(customerService.findById(id));
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<CustomerResponse> getMe(Authentication auth) {
+        String whatsapp = auth.getName();
+        return ResponseEntity.ok(
+            customerRepository.findByWhatsapp(whatsapp)
+                .map(c -> customerService.findById(c.getId()))
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Cliente no encontrado"))
+        );
+    }
+
+    @GetMapping("/me/orders")
+    public ResponseEntity<List<OrderResponse>> getMyOrders(Authentication auth) {
+        String whatsapp = auth.getName();
+        Long customerId = customerRepository.findByWhatsapp(whatsapp)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Cliente no encontrado"))
+                .getId();
+        return ResponseEntity.ok(orderService.findByCustomerId(customerId));
     }
 }
