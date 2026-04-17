@@ -6,7 +6,7 @@ import { environment } from '../../../environments/environment';
 import {
   LoginRequest, LoginResponse, OrderResponse, OrderStatus,
   CustomerResponse, DashboardStats, TopProduct,
-  CreateOrderRequest, CatalogProduct, ShiftResponse
+  CreateOrderRequest, CatalogProduct, ShiftResponse, DailyStatResponse
 } from '../models/admin.model';
 
 @Injectable({ providedIn: 'root' })
@@ -48,6 +48,12 @@ export class AdminService {
 
   getTopProducts(limit = 10): Observable<TopProduct[]> {
     return this.http.get<TopProduct[]>(`${this.base}/api/admin/products/top?limit=${limit}`, {
+      headers: this.authHeaders()
+    });
+  }
+
+  getDailyStats(days = 7): Observable<DailyStatResponse[]> {
+    return this.http.get<DailyStatResponse[]>(`${this.base}/api/admin/stats/daily?days=${days}`, {
       headers: this.authHeaders()
     });
   }

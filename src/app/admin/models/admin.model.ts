@@ -93,6 +93,12 @@ export interface CatalogProduct {
   categoryName: string;
 }
 
+export interface DailyStatResponse {
+  date: string;
+  orders: number;
+  revenue: number;
+}
+
 export interface ShiftResponse {
   id: number;
   openedAt: string;
