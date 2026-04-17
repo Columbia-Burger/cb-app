@@ -3,6 +3,7 @@ package com.columbiaburger.business.controller;
 import com.columbiaburger.business.dto.request.CreateOrderRequest;
 import com.columbiaburger.business.dto.request.UpdateOrderStatusRequest;
 import com.columbiaburger.business.dto.response.OrderResponse;
+import com.columbiaburger.business.dto.response.OrderTrackingResponse;
 import com.columbiaburger.business.entity.OrderStatus;
 import com.columbiaburger.business.service.OrderService;
 import jakarta.validation.Valid;
@@ -42,6 +43,11 @@ public class OrderController {
     @GetMapping("/{id}")
     public ResponseEntity<OrderResponse> findById(@PathVariable Long id) {
         return ResponseEntity.ok(orderService.findById(id));
+    }
+
+    @GetMapping("/{id}/tracking")
+    public ResponseEntity<OrderTrackingResponse> getTracking(@PathVariable Long id) {
+        return ResponseEntity.ok(orderService.getTracking(id));
     }
 
     @PatchMapping("/{id}/status")

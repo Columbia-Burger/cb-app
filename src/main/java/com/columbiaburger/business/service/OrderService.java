@@ -4,6 +4,7 @@ import com.columbiaburger.business.dto.request.CreateOrderRequest;
 import com.columbiaburger.business.dto.request.OrderItemRequest;
 import com.columbiaburger.business.dto.response.OrderItemResponse;
 import com.columbiaburger.business.dto.response.OrderResponse;
+import com.columbiaburger.business.dto.response.OrderTrackingResponse;
 import com.columbiaburger.business.entity.*;
 import com.columbiaburger.business.entity.OrderSource;
 import com.columbiaburger.business.repository.CustomerRepository;
@@ -111,6 +112,37 @@ public class OrderService {
         return orderRepository.findById(id)
                 .map(this::toResponse)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Pedido no encontrado"));
+    }
+
+    @Transactional(readOnly = true)
+    public OrderTrackingResponse getTracking(Long id) {
+        Order order = orderRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Pedido no encontrado"));
+
+        String firstName = order.getCustomer().getName();
+        if (firstName != null && firstName.contains(" ")) {
+            firstName = firstName.substring(0, firstName.indexOf(" "));
+        }
+
+        List<OrderTrackingResponse.TrackingItem> items = order.getItems() == null ? List.of() :
+                order.getItems().stream()
+                        .map(i -> OrderTrackingResponse.TrackingItem.builder()
+                                .productName(i.getProductName())
+                                .flavor(i.getFlavor())
+                                .quantity(i.getQuantity())
+                                .build())
+                        .toList();
+
+        return OrderTrackingResponse.builder()
+                .id(order.getId())
+                .customerFirstName(firstName)
+                .status(order.getStatus())
+                .total(order.getTotal())
+                .deliveryFee(order.getDeliveryFee())
+                .deliveryZone(order.getDeliveryZone())
+                .createdAt(order.getCreatedAt())
+                .items(items)
+                .build();
     }
 
     @Transactional
