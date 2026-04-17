@@ -302,13 +302,25 @@ export class AdminPedidosComponent implements OnInit, OnDestroy {
   private pollSub?: Subscription;
   private shiftFrom: string | undefined;
 
+  // Medianoche de Bogotá expresada en UTC (Colombia = UTC-5, sin DST)
+  private getTodayStartUtc(): string {
+    const bogota = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Bogota' }));
+    const y = bogota.getFullYear();
+    const m = String(bogota.getMonth() + 1).padStart(2, '0');
+    const d = String(bogota.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}T05:00:00`; // medianoche Bogotá = 05:00 UTC
+  }
+
   ngOnInit(): void {
+    this.shiftFrom = this.getTodayStartUtc(); // mínimo: inicio del día actual
     this.adminService.getCurrentShift().pipe(
       finalize(() => this.startPolling())
     ).subscribe({
       next: res => {
         if ('active' in res && res.active) {
-          this.shiftFrom = (res as ShiftResponse).openedAt;
+          const shiftOpened = (res as ShiftResponse).openedAt;
+          // usar el más reciente entre inicio del día y apertura del turno
+          this.shiftFrom = shiftOpened > this.shiftFrom! ? shiftOpened : this.shiftFrom;
         }
       },
       error: () => {}
