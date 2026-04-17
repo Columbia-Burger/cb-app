@@ -129,6 +129,10 @@ interface CartItem {
       gap: 1.5em;
       align-items: start;
     }
+    @media (max-width: 768px) {
+      .layout { grid-template-columns: 1fr; }
+      .cart-panel { position: static; }
+    }
 
     /* Menú */
     .menu-panel { display: flex; flex-direction: column; gap: 1em; }
