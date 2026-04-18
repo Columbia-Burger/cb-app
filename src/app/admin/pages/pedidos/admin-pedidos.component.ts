@@ -1,4 +1,4 @@
-import { Component, inject, signal, OnInit, OnDestroy } from '@angular/core';
+import { Component, inject, signal, OnInit, OnDestroy, ViewChild, ElementRef, effect } from '@angular/core';
 import { CurrencyPipe, DatePipe } from '@angular/common';
 import { AdminService } from '../../services/admin.service';
 import { OrderResponse, OrderStatus } from '../../models/admin.model';
@@ -82,56 +82,56 @@ interface KanbanColumn {
 
     </div>
 
-    <!-- Modal detalle (fuera del .page para evitar conflicto con overflow) -->
-    @if (selectedOrder()) {
-      <div class="modal-backdrop" (click)="selectedOrder.set(null)">
-          <div class="modal" (click)="$event.stopPropagation()">
-            <div class="modal-header">
-              <h3>Pedido #{{ selectedOrder()!.id }}</h3>
-              <button class="close-btn" (click)="selectedOrder.set(null)">✕</button>
-            </div>
-            <div class="modal-body">
-              <p><strong>Cliente:</strong> {{ selectedOrder()!.customerName }}</p>
-              <p><strong>WhatsApp:</strong> {{ selectedOrder()!.customerWhatsapp }}</p>
-              @if (selectedOrder()!.deliveryZone) {
-                <p><strong>Zona:</strong> {{ selectedOrder()!.deliveryZone }}</p>
-              }
-              @if (selectedOrder()!.notes) {
-                <p><strong>Notas:</strong> {{ selectedOrder()!.notes }}</p>
-              }
-              @if (selectedOrder()!.customerLatitude && selectedOrder()!.customerLongitude) {
-                <a class="maps-link"
-                   [href]="'https://www.google.com/maps?q=' + selectedOrder()!.customerLatitude + ',' + selectedOrder()!.customerLongitude"
-                   target="_blank" rel="noopener">
-                  📍 Ver ubicación en Maps
-                </a>
-              }
-              <div class="items-list">
-                @for (item of (selectedOrder()!.items ?? []); track item.id) {
-                  <div class="item-row">
-                    <span class="item-qty">{{ item.quantity }}x</span>
-                    <span class="item-name">
-                      {{ item.productName }}
-                      @if (item.flavor) { — {{ item.flavor }} }
-                    </span>
-                    <span class="item-price">{{ item.subtotal | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
-                  </div>
-                }
-              </div>
-              @if (selectedOrder()!.deliveryFee > 0) {
-                <div class="total-row">
-                  <span>Domicilio</span>
-                  <span>{{ selectedOrder()!.deliveryFee | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
+    <!-- Modal detalle -->
+    <dialog #orderDialog (click)="onDialogClick($event)">
+      @if (selectedOrder()) {
+        <div class="modal" (click)="$event.stopPropagation()">
+          <div class="modal-header">
+            <h3>Pedido #{{ selectedOrder()!.id }}</h3>
+            <button class="close-btn" (click)="closeDialog()">✕</button>
+          </div>
+          <div class="modal-body">
+            <p><strong>Cliente:</strong> {{ selectedOrder()!.customerName }}</p>
+            <p><strong>WhatsApp:</strong> {{ selectedOrder()!.customerWhatsapp }}</p>
+            @if (selectedOrder()!.deliveryZone) {
+              <p><strong>Zona:</strong> {{ selectedOrder()!.deliveryZone }}</p>
+            }
+            @if (selectedOrder()!.notes) {
+              <p><strong>Notas:</strong> {{ selectedOrder()!.notes }}</p>
+            }
+            @if (selectedOrder()!.customerLatitude && selectedOrder()!.customerLongitude) {
+              <a class="maps-link"
+                 [href]="'https://www.google.com/maps?q=' + selectedOrder()!.customerLatitude + ',' + selectedOrder()!.customerLongitude"
+                 target="_blank" rel="noopener">
+                📍 Ver ubicación en Maps
+              </a>
+            }
+            <div class="items-list">
+              @for (item of (selectedOrder()!.items ?? []); track item.id) {
+                <div class="item-row">
+                  <span class="item-qty">{{ item.quantity }}x</span>
+                  <span class="item-name">
+                    {{ item.productName }}
+                    @if (item.flavor) { — {{ item.flavor }} }
+                  </span>
+                  <span class="item-price">{{ item.subtotal | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
                 </div>
               }
-              <div class="total-row total-final">
-                <span>Total</span>
-                <span>{{ selectedOrder()!.total | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
+            </div>
+            @if (selectedOrder()!.deliveryFee > 0) {
+              <div class="total-row">
+                <span>Domicilio</span>
+                <span>{{ selectedOrder()!.deliveryFee | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
               </div>
+            }
+            <div class="total-row total-final">
+              <span>Total</span>
+              <span>{{ selectedOrder()!.total | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
             </div>
           </div>
         </div>
       }
+    </dialog>
   `,
   styles: [`
     .page { color: #c9d1d9; }
@@ -232,18 +232,24 @@ interface KanbanColumn {
     @keyframes fadeIn { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
 
     /* Modal */
-    .modal-backdrop {
-      position: fixed; inset: 0;
+    dialog {
+      padding: 0;
+      border: none;
+      border-radius: 16px;
+      background: transparent;
+      max-width: 90vw;
+      width: 480px;
+      max-height: 80vh;
+      overflow: hidden;
+    }
+    dialog::backdrop {
       background: rgba(0,0,0,0.7);
-      display: flex; align-items: center; justify-content: center;
-      z-index: 300;
     }
     .modal {
       background: #161b22;
       border: 1px solid #30363d;
       border-radius: 16px;
-      width: 90%;
-      max-width: 480px;
+      width: 100%;
       max-height: 80vh;
       overflow-y: auto;
     }
@@ -310,6 +316,21 @@ export class AdminPedidosComponent implements OnInit, OnDestroy {
   loading = signal(true);
   selectedOrder = signal<OrderResponse | null>(null);
   newOrderAlert = signal(false);
+
+  @ViewChild('orderDialog') dialogRef!: ElementRef<HTMLDialogElement>;
+
+  constructor() {
+    effect(() => {
+      const order = this.selectedOrder();
+      const dialog = this.dialogRef?.nativeElement;
+      if (!dialog) return;
+      if (order) {
+        if (!dialog.open) dialog.showModal();
+      } else {
+        if (dialog.open) dialog.close();
+      }
+    });
+  }
 
   columns = signal<KanbanColumn[]>([
     { status: 'RECEIVED',   label: 'Recibido',    color: '#d29922', orders: [] },
@@ -402,6 +423,19 @@ export class AdminPedidosComponent implements OnInit, OnDestroy {
 
   selectOrder(order: OrderResponse): void {
     this.selectedOrder.set(order);
+  }
+
+  closeDialog(): void {
+    this.selectedOrder.set(null);
+  }
+
+  onDialogClick(event: MouseEvent): void {
+    const dialog = this.dialogRef.nativeElement;
+    const rect = dialog.getBoundingClientRect();
+    const inDialog =
+      event.clientX >= rect.left && event.clientX <= rect.right &&
+      event.clientY >= rect.top  && event.clientY <= rect.bottom;
+    if (!inDialog) this.selectedOrder.set(null);
   }
 
   changeStatus(event: Event, order: OrderResponse, status: OrderStatus): void {
