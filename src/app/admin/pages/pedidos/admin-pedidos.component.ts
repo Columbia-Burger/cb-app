@@ -1,4 +1,4 @@
-import { Component, inject, signal, OnInit, OnDestroy, ViewChild, ElementRef, effect } from '@angular/core';
+import { Component, inject, signal, OnInit, OnDestroy, AfterViewInit, ViewChild, ElementRef, effect } from '@angular/core';
 import { CurrencyPipe, DatePipe } from '@angular/common';
 import { AdminService } from '../../services/admin.service';
 import { OrderResponse, OrderStatus } from '../../models/admin.model';
@@ -84,53 +84,51 @@ interface KanbanColumn {
 
     <!-- Modal detalle -->
     <dialog #orderDialog (click)="onDialogClick($event)">
-      @if (selectedOrder()) {
-        <div class="modal" (click)="$event.stopPropagation()">
-          <div class="modal-header">
-            <h3>Pedido #{{ selectedOrder()!.id }}</h3>
-            <button class="close-btn" (click)="closeDialog()">✕</button>
-          </div>
-          <div class="modal-body">
-            <p><strong>Cliente:</strong> {{ selectedOrder()!.customerName }}</p>
-            <p><strong>WhatsApp:</strong> {{ selectedOrder()!.customerWhatsapp }}</p>
-            @if (selectedOrder()!.deliveryZone) {
-              <p><strong>Zona:</strong> {{ selectedOrder()!.deliveryZone }}</p>
-            }
-            @if (selectedOrder()!.notes) {
-              <p><strong>Notas:</strong> {{ selectedOrder()!.notes }}</p>
-            }
-            @if (selectedOrder()!.customerLatitude && selectedOrder()!.customerLongitude) {
-              <a class="maps-link"
-                 [href]="'https://www.google.com/maps?q=' + selectedOrder()!.customerLatitude + ',' + selectedOrder()!.customerLongitude"
-                 target="_blank" rel="noopener">
-                📍 Ver ubicación en Maps
-              </a>
-            }
-            <div class="items-list">
-              @for (item of (selectedOrder()!.items ?? []); track item.id) {
-                <div class="item-row">
-                  <span class="item-qty">{{ item.quantity }}x</span>
-                  <span class="item-name">
-                    {{ item.productName }}
-                    @if (item.flavor) { — {{ item.flavor }} }
-                  </span>
-                  <span class="item-price">{{ item.subtotal | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
-                </div>
-              }
-            </div>
-            @if (selectedOrder()!.deliveryFee > 0) {
-              <div class="total-row">
-                <span>Domicilio</span>
-                <span>{{ selectedOrder()!.deliveryFee | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
+      <div class="modal" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h3>Pedido #{{ selectedOrder()?.id }}</h3>
+          <button class="close-btn" (click)="closeDialog()">✕</button>
+        </div>
+        <div class="modal-body">
+          <p><strong>Cliente:</strong> {{ selectedOrder()?.customerName }}</p>
+          <p><strong>WhatsApp:</strong> {{ selectedOrder()?.customerWhatsapp }}</p>
+          @if (selectedOrder()?.deliveryZone) {
+            <p><strong>Zona:</strong> {{ selectedOrder()!.deliveryZone }}</p>
+          }
+          @if (selectedOrder()?.notes) {
+            <p><strong>Notas:</strong> {{ selectedOrder()!.notes }}</p>
+          }
+          @if (selectedOrder()?.customerLatitude && selectedOrder()?.customerLongitude) {
+            <a class="maps-link"
+               [href]="'https://www.google.com/maps?q=' + selectedOrder()!.customerLatitude + ',' + selectedOrder()!.customerLongitude"
+               target="_blank" rel="noopener">
+              📍 Ver ubicación en Maps
+            </a>
+          }
+          <div class="items-list">
+            @for (item of (selectedOrder()?.items ?? []); track item.id) {
+              <div class="item-row">
+                <span class="item-qty">{{ item.quantity }}x</span>
+                <span class="item-name">
+                  {{ item.productName }}
+                  @if (item.flavor) { — {{ item.flavor }} }
+                </span>
+                <span class="item-price">{{ item.subtotal | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
               </div>
             }
-            <div class="total-row total-final">
-              <span>Total</span>
-              <span>{{ selectedOrder()!.total | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
+          </div>
+          @if ((selectedOrder()?.deliveryFee ?? 0) > 0) {
+            <div class="total-row">
+              <span>Domicilio</span>
+              <span>{{ selectedOrder()!.deliveryFee | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
             </div>
+          }
+          <div class="total-row total-final">
+            <span>Total</span>
+            <span>{{ selectedOrder()?.total | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
           </div>
         </div>
-      }
+      </div>
     </dialog>
   `,
   styles: [`
@@ -234,24 +232,20 @@ interface KanbanColumn {
     /* Modal */
     dialog {
       padding: 0;
-      border: none;
+      border: 1px solid #30363d;
       border-radius: 16px;
-      background: transparent;
+      background: #161b22;
+      color: #c9d1d9;
       max-width: 90vw;
       width: 480px;
       max-height: 80vh;
-      overflow: hidden;
+      overflow-y: auto;
     }
     dialog::backdrop {
       background: rgba(0,0,0,0.7);
     }
     .modal {
-      background: #161b22;
-      border: 1px solid #30363d;
-      border-radius: 16px;
       width: 100%;
-      max-height: 80vh;
-      overflow-y: auto;
     }
     .modal-header {
       display: flex;
@@ -310,7 +304,7 @@ interface KanbanColumn {
     }
   `]
 })
-export class AdminPedidosComponent implements OnInit, OnDestroy {
+export class AdminPedidosComponent implements OnInit, AfterViewInit, OnDestroy {
   private adminService = inject(AdminService);
 
   loading = signal(true);
@@ -366,6 +360,11 @@ export class AdminPedidosComponent implements OnInit, OnDestroy {
     this.startPolling();
   }
 
+  ngAfterViewInit(): void {
+    // Move dialog to document.body to escape any ancestor stacking context
+    document.body.appendChild(this.dialogRef.nativeElement);
+  }
+
   private startPolling(): void {
     this.load();
     this.pollSub = interval(5000).pipe(
@@ -375,6 +374,10 @@ export class AdminPedidosComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.pollSub?.unsubscribe();
+    const dialog = this.dialogRef?.nativeElement;
+    if (dialog?.parentNode === document.body) {
+      document.body.removeChild(dialog);
+    }
   }
 
   load(): void {
