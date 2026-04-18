@@ -80,9 +80,11 @@ interface KanbanColumn {
         </div>
       }
 
-      <!-- Modal detalle -->
-      @if (selectedOrder()) {
-        <div class="modal-backdrop" (click)="selectedOrder.set(null)">
+    </div>
+
+    <!-- Modal detalle (fuera del .page para evitar conflicto con overflow) -->
+    @if (selectedOrder()) {
+      <div class="modal-backdrop" (click)="selectedOrder.set(null)">
           <div class="modal" (click)="$event.stopPropagation()">
             <div class="modal-header">
               <h3>Pedido #{{ selectedOrder()!.id }}</h3>
@@ -130,7 +132,6 @@ interface KanbanColumn {
           </div>
         </div>
       }
-    </div>
   `,
   styles: [`
     .page { color: #c9d1d9; }
