@@ -3,8 +3,8 @@
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
-    "start": "serve -s dist/columbia-burger/browser -l $PORT -c serve.json",
-    "build": "node node_modules/@angular/cli/bin/ng.js build --configuration production",
+    "start": "serve -s dist/columbia-burger/browser -l $PORT",
+    "build": "node node_modules/@angular/cli/bin/ng.js build --configuration production && cp serve.json dist/columbia-burger/browser/serve.json",
     "watch": "ng build --watch --configuration development",
     "test": "ng test"
   },
