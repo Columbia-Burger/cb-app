@@ -43,6 +43,8 @@ public class SecurityConfig {
                 .requestMatchers("/api/orders/*/tracking").permitAll()   // Tracking público
                 .requestMatchers("/api/shifts/open", "/api/shifts/close").permitAll() // n8n cron
                 .requestMatchers("/api/customers/me", "/api/customers/me/orders").hasRole("CUSTOMER")
+                .requestMatchers("/api/orders/kitchen").hasAnyRole("ADMIN", "KITCHEN")
+                .requestMatchers(HttpMethod.PATCH, "/api/orders/*/status").hasAnyRole("ADMIN", "KITCHEN")
                 .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
                 .anyRequest().authenticated()
             )

@@ -45,6 +45,11 @@ public class OrderController {
         return ResponseEntity.ok(orderService.findById(id));
     }
 
+    @GetMapping("/kitchen")
+    public ResponseEntity<List<OrderResponse>> getKitchenOrders() {
+        return ResponseEntity.ok(orderService.getKitchenOrders());
+    }
+
     @GetMapping("/{id}/tracking")
     public ResponseEntity<OrderTrackingResponse> getTracking(@PathVariable Long id) {
         return ResponseEntity.ok(orderService.getTracking(id));
