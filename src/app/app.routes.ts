@@ -24,6 +24,11 @@ export const routes: Routes = [
       import('./cocina/cocina.routes').then(m => m.cocinaRoutes)
   },
   {
+    path: 'domicilio',
+    loadChildren: () =>
+      import('./domicilio/domicilio.routes').then(m => m.domicilioRoutes)
+  },
+  {
     path: 'seguimiento/:id',
     loadComponent: () =>
       import('./pages/seguimiento/seguimiento.component').then(m => m.SeguimientoComponent)
