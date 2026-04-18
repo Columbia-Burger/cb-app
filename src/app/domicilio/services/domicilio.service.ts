@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { OrderResponse, OrderStatus, LoginRequest, LoginResponse } from '../../admin/models/admin.model';
+import { OrderResponse, OrderStatus, LoginRequest, LoginResponse, CatalogProduct, CreateOrderRequest } from '../../admin/models/admin.model';
 
 @Injectable({ providedIn: 'root' })
 export class DomicilioService {
@@ -53,5 +53,15 @@ export class DomicilioService {
       { status },
       { headers: this.authHeaders() }
     );
+  }
+
+  getMenu(): Observable<CatalogProduct[]> {
+    return this.http.get<CatalogProduct[]>(`${environment.apiUrl}/api/products?availableOnly=true`);
+  }
+
+  createOrder(request: CreateOrderRequest): Observable<OrderResponse> {
+    return this.http.post<OrderResponse>(`${this.base}/api/orders`, request, {
+      headers: this.authHeaders()
+    });
   }
 }
