@@ -105,7 +105,7 @@ interface KanbanColumn {
                 </a>
               }
               <div class="items-list">
-                @for (item of selectedOrder()!.items; track item.id) {
+                @for (item of (selectedOrder()!.items ?? []); track item.id) {
                   <div class="item-row">
                     <span class="item-qty">{{ item.quantity }}x</span>
                     <span class="item-name">
