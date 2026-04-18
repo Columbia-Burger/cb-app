@@ -128,6 +128,13 @@ public class OrderService {
     }
 
     @Transactional(readOnly = true)
+    public List<OrderResponse> getDeliveryOrders() {
+        return orderRepository.findByStatusInOrderByCreatedAtAsc(
+                List.of(OrderStatus.ON_THE_WAY)
+        ).stream().map(this::toResponse).toList();
+    }
+
+    @Transactional(readOnly = true)
     public OrderTrackingResponse getTracking(Long id) {
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Pedido no encontrado"));

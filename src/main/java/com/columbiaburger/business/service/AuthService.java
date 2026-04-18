@@ -27,12 +27,21 @@ public class AuthService {
     @Value("${app.kitchen.password}")
     private String kitchenPassword;
 
+    @Value("${app.delivery.email}")
+    private String deliveryEmail;
+
+    @Value("${app.delivery.password}")
+    private String deliveryPassword;
+
     public LoginResponse login(LoginRequest request) {
         if (adminEmail.equals(request.getEmail()) && adminPassword.equals(request.getPassword())) {
             return new LoginResponse(jwtUtil.generateToken(adminEmail, "ADMIN"), adminEmail);
         }
         if (kitchenEmail.equals(request.getEmail()) && kitchenPassword.equals(request.getPassword())) {
             return new LoginResponse(jwtUtil.generateToken(kitchenEmail, "KITCHEN"), kitchenEmail);
+        }
+        if (deliveryEmail.equals(request.getEmail()) && deliveryPassword.equals(request.getPassword())) {
+            return new LoginResponse(jwtUtil.generateToken(deliveryEmail, "DELIVERY"), deliveryEmail);
         }
         throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Credenciales inválidas");
     }
