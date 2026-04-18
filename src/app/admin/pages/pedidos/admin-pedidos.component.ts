@@ -84,10 +84,10 @@ interface KanbanColumn {
 
     <!-- Modal detalle — se mueve a document.body en AfterViewInit -->
     <div #modalOverlay
-         class="modal-overlay"
+         style="position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.72);align-items:center;justify-content:center;"
          [style.display]="selectedOrder() ? 'flex' : 'none'"
          (click)="closeDialog()">
-      <div class="modal" (click)="$event.stopPropagation()">
+      <div style="background:#161b22;border:1px solid #30363d;border-radius:16px;color:#c9d1d9;width:480px;max-width:90vw;max-height:80vh;overflow-y:auto;" (click)="$event.stopPropagation()">
         <div class="modal-header">
           <h3>Pedido #{{ selectedOrder()?.id }}</h3>
           <button class="close-btn" (click)="closeDialog()">✕</button>
