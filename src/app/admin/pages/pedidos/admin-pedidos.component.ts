@@ -1,4 +1,4 @@
-import { Component, inject, signal, OnInit, OnDestroy, AfterViewInit, ViewChild, ElementRef, effect } from '@angular/core';
+import { Component, inject, signal, OnInit, OnDestroy, AfterViewInit, ViewChild, ElementRef } from '@angular/core';
 import { CurrencyPipe, DatePipe } from '@angular/common';
 import { AdminService } from '../../services/admin.service';
 import { OrderResponse, OrderStatus } from '../../models/admin.model';
@@ -82,8 +82,11 @@ interface KanbanColumn {
 
     </div>
 
-    <!-- Modal detalle -->
-    <dialog #orderDialog (click)="onDialogClick($event)">
+    <!-- Modal detalle — se mueve a document.body en AfterViewInit -->
+    <div #modalOverlay
+         class="modal-overlay"
+         [style.display]="selectedOrder() ? 'flex' : 'none'"
+         (click)="closeDialog()">
       <div class="modal" (click)="$event.stopPropagation()">
         <div class="modal-header">
           <h3>Pedido #{{ selectedOrder()?.id }}</h3>
@@ -129,7 +132,7 @@ interface KanbanColumn {
           </div>
         </div>
       </div>
-    </dialog>
+    </div>
   `,
   styles: [`
     .page { color: #c9d1d9; }
@@ -230,22 +233,24 @@ interface KanbanColumn {
     @keyframes fadeIn { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
 
     /* Modal */
-    dialog {
-      padding: 0;
-      border: 1px solid #30363d;
-      border-radius: 16px;
-      background: #161b22;
-      color: #c9d1d9;
-      max-width: 90vw;
-      width: 480px;
-      max-height: 80vh;
-      overflow-y: auto;
-    }
-    dialog::backdrop {
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
       background: rgba(0,0,0,0.7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
     .modal {
-      width: 100%;
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 16px;
+      color: #c9d1d9;
+      width: 480px;
+      max-width: 90vw;
+      max-height: 80vh;
+      overflow-y: auto;
     }
     .modal-header {
       display: flex;
@@ -311,20 +316,7 @@ export class AdminPedidosComponent implements OnInit, AfterViewInit, OnDestroy {
   selectedOrder = signal<OrderResponse | null>(null);
   newOrderAlert = signal(false);
 
-  @ViewChild('orderDialog') dialogRef!: ElementRef<HTMLDialogElement>;
-
-  constructor() {
-    effect(() => {
-      const order = this.selectedOrder();
-      const dialog = this.dialogRef?.nativeElement;
-      if (!dialog) return;
-      if (order) {
-        if (!dialog.open) dialog.showModal();
-      } else {
-        if (dialog.open) dialog.close();
-      }
-    });
-  }
+  @ViewChild('modalOverlay') overlayRef!: ElementRef<HTMLDivElement>;
 
   columns = signal<KanbanColumn[]>([
     { status: 'RECEIVED',   label: 'Recibido',    color: '#d29922', orders: [] },
@@ -361,8 +353,8 @@ export class AdminPedidosComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngAfterViewInit(): void {
-    // Move dialog to document.body to escape any ancestor stacking context
-    document.body.appendChild(this.dialogRef.nativeElement);
+    // Move overlay to document.body to escape any ancestor stacking context
+    document.body.appendChild(this.overlayRef.nativeElement);
   }
 
   private startPolling(): void {
@@ -374,9 +366,9 @@ export class AdminPedidosComponent implements OnInit, AfterViewInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.pollSub?.unsubscribe();
-    const dialog = this.dialogRef?.nativeElement;
-    if (dialog?.parentNode === document.body) {
-      document.body.removeChild(dialog);
+    const overlay = this.overlayRef?.nativeElement;
+    if (overlay?.parentNode === document.body) {
+      document.body.removeChild(overlay);
     }
   }
 
@@ -430,15 +422,6 @@ export class AdminPedidosComponent implements OnInit, AfterViewInit, OnDestroy {
 
   closeDialog(): void {
     this.selectedOrder.set(null);
-  }
-
-  onDialogClick(event: MouseEvent): void {
-    const dialog = this.dialogRef.nativeElement;
-    const rect = dialog.getBoundingClientRect();
-    const inDialog =
-      event.clientX >= rect.left && event.clientX <= rect.right &&
-      event.clientY >= rect.top  && event.clientY <= rect.bottom;
-    if (!inDialog) this.selectedOrder.set(null);
   }
 
   changeStatus(event: Event, order: OrderResponse, status: OrderStatus): void {
