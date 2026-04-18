@@ -39,7 +39,7 @@ interface KanbanColumn {
       } @else {
         <div class="kanban">
           @for (col of columns(); track col.status) {
-            <div class="column">
+            <div class="column" [class.col-empty]="col.orders.length === 0">
               <div class="column-header" [style.border-color]="col.color">
                 <span class="col-label">{{ col.label }}</span>
                 <span class="col-count" [style.background]="col.color">{{ col.orders.length }}</span>
@@ -231,6 +231,30 @@ interface KanbanColumn {
       animation: fadeIn 0.3s ease;
     }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
+
+    @media (max-width: 900px) {
+      .kanban {
+        grid-template-columns: repeat(3, 1fr);
+      }
+      .col-empty { display: none; }
+    }
+
+    @media (max-width: 600px) {
+      .kanban {
+        grid-template-columns: 1fr;
+        gap: 0.75em;
+      }
+      .col-empty { display: none; }
+      .page-title { font-size: 1.2em; }
+      .column-header { padding: 0.65em 0.9em; }
+      .cards { padding: 0.5em; gap: 0.5em; min-height: unset; }
+      .order-card { padding: 0.9em; }
+      .order-customer { font-size: 1em; }
+      .action-btn {
+        padding: 0.55em 0.75em;
+        font-size: 0.82em;
+      }
+    }
 
     /* Modal */
     .modal-overlay {
