@@ -235,7 +235,7 @@ interface KanbanColumn {
       position: fixed; inset: 0;
       background: rgba(0,0,0,0.7);
       display: flex; align-items: center; justify-content: center;
-      z-index: 100;
+      z-index: 300;
     }
     .modal {
       background: #161b22;
