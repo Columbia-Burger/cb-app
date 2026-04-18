@@ -31,6 +31,8 @@ export interface OrderResponse {
   deliveryFee: number;
   deliveryZone: string;
   notes: string;
+  customerLatitude: number | null;
+  customerLongitude: number | null;
   createdAt: string;
   items: OrderItemResponse[];
 }
@@ -41,6 +43,8 @@ export interface CustomerResponse {
   whatsapp: string;
   neighborhood: string;
   address: string;
+  latitude: number | null;
+  longitude: number | null;
   createdAt: string;
 }
 

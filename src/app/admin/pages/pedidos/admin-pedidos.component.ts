@@ -97,6 +97,13 @@ interface KanbanColumn {
               @if (selectedOrder()!.notes) {
                 <p><strong>Notas:</strong> {{ selectedOrder()!.notes }}</p>
               }
+              @if (selectedOrder()!.customerLatitude && selectedOrder()!.customerLongitude) {
+                <a class="maps-link"
+                   [href]="'https://www.google.com/maps?q=' + selectedOrder()!.customerLatitude + ',' + selectedOrder()!.customerLongitude"
+                   target="_blank" rel="noopener">
+                  📍 Ver ubicación en Maps
+                </a>
+              }
               <div class="items-list">
                 @for (item of selectedOrder()!.items; track item.id) {
                   <div class="item-row">
@@ -276,6 +283,16 @@ interface KanbanColumn {
       font-size: 0.9em;
       color: #8b949e;
     }
+    .maps-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3em;
+      font-size: 0.85em;
+      color: #58a6ff;
+      text-decoration: none;
+      padding: 0.4em 0;
+    }
+    .maps-link:hover { text-decoration: underline; }
     .total-final {
       font-weight: 700;
       font-size: 1em;
