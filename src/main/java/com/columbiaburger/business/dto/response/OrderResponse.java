@@ -21,6 +21,8 @@ public class OrderResponse {
     private BigDecimal deliveryFee;
     private String deliveryZone;
     private String notes;
+    private Double customerLatitude;
+    private Double customerLongitude;
     private LocalDateTime createdAt;
     private List<OrderItemResponse> items;
 }

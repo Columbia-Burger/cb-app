@@ -27,6 +27,10 @@ public class Customer {
     @Column(length = 200)
     private String address;
 
+    private Double latitude;
+
+    private Double longitude;
+
     @Builder.Default
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();

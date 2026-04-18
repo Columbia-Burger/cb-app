@@ -12,5 +12,7 @@ public class CustomerResponse {
     private String whatsapp;
     private String neighborhood;
     private String address;
+    private Double latitude;
+    private Double longitude;
     private LocalDateTime createdAt;
 }

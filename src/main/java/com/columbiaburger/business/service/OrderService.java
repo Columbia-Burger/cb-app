@@ -50,6 +50,12 @@ public class OrderService {
                 && !request.getCustomerAddress().equals(customer.getAddress())) {
             customer.setAddress(request.getCustomerAddress()); changed = true;
         }
+        if (request.getCustomerLatitude() != null) {
+            customer.setLatitude(request.getCustomerLatitude()); changed = true;
+        }
+        if (request.getCustomerLongitude() != null) {
+            customer.setLongitude(request.getCustomerLongitude()); changed = true;
+        }
         if (changed) customerRepository.save(customer);
 
         List<OrderItem> items = request.getItems().stream()
@@ -185,6 +191,8 @@ public class OrderService {
                 .deliveryFee(o.getDeliveryFee())
                 .deliveryZone(o.getDeliveryZone())
                 .notes(o.getNotes())
+                .customerLatitude(o.getCustomer().getLatitude())
+                .customerLongitude(o.getCustomer().getLongitude())
                 .source(o.getSource())
                 .createdAt(o.getCreatedAt())
                 .items(items)

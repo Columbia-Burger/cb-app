@@ -23,6 +23,10 @@ public class CreateOrderRequest {
 
     private String customerAddress;
 
+    private Double customerLatitude;
+
+    private Double customerLongitude;
+
     @NotEmpty
     @Valid
     private List<OrderItemRequest> items;

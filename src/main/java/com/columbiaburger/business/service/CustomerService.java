@@ -67,6 +67,8 @@ public class CustomerService {
                 .whatsapp(c.getWhatsapp())
                 .neighborhood(c.getNeighborhood())
                 .address(c.getAddress())
+                .latitude(c.getLatitude())
+                .longitude(c.getLongitude())
                 .createdAt(c.getCreatedAt())
                 .build();
     }
