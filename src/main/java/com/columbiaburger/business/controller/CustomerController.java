@@ -41,6 +41,21 @@ public class CustomerController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    /** Usado por n8n para guardar ubicación del cliente */
+    @PatchMapping("/whatsapp/{number}/location")
+    public ResponseEntity<Void> updateLocation(
+            @PathVariable String number,
+            @RequestBody LocationRequest body) {
+        customerRepository.findByWhatsapp(number).ifPresent(c -> {
+            c.setLatitude(body.latitude());
+            c.setLongitude(body.longitude());
+            customerRepository.save(c);
+        });
+        return ResponseEntity.noContent().build();
+    }
+
+    record LocationRequest(Double latitude, Double longitude) {}
+
     @GetMapping("/me")
     public ResponseEntity<CustomerResponse> getMe(Authentication auth) {
         String whatsapp = auth.getName();
