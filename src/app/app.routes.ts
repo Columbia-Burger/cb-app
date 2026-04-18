@@ -19,6 +19,11 @@ export const routes: Routes = [
       import('./cuenta/cuenta.routes').then(m => m.cuentaRoutes)
   },
   {
+    path: 'cocina',
+    loadChildren: () =>
+      import('./cocina/cocina.routes').then(m => m.cocinaRoutes)
+  },
+  {
     path: 'seguimiento/:id',
     loadComponent: () =>
       import('./pages/seguimiento/seguimiento.component').then(m => m.SeguimientoComponent)
