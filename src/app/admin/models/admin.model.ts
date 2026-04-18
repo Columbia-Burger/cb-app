@@ -80,6 +80,7 @@ export interface CreateOrderRequest {
   customerName: string;
   customerWhatsapp: string;
   customerNeighborhood?: string;
+  customerAddress?: string;
   items: OrderItemRequest[];
   deliveryFee?: number;
   deliveryZone?: string;
