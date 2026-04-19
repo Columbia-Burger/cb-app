@@ -37,8 +37,9 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 .requestMatchers("/api/auth/login").permitAll()
                 .requestMatchers("/api/auth/otp/**").permitAll()
-                .requestMatchers("/api/orders").permitAll()        // WhatsApp bot y domiciliario crean pedidos
-                .requestMatchers("/api/customers").permitAll()     // WhatsApp bot crea clientes
+                // Lambda matcher: bypasses PathPattern/MVC machinery entirely
+                .requestMatchers(req -> "POST".equals(req.getMethod()) && "/api/orders".equals(req.getRequestURI())).permitAll()
+                .requestMatchers(req -> "POST".equals(req.getMethod()) && "/api/customers".equals(req.getRequestURI())).permitAll()
                 .requestMatchers("/api/customers/whatsapp/**").permitAll()
                 .requestMatchers("/api/orders/*/tracking").permitAll()
                 .requestMatchers("/api/shifts/open", "/api/shifts/close").permitAll()
