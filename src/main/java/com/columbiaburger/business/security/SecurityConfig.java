@@ -37,8 +37,10 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 .requestMatchers("/api/auth/login").permitAll()
                 .requestMatchers("/api/auth/otp/**").permitAll()  // OTP login cliente
-                .requestMatchers("/api/orders").permitAll()       // WhatsApp bot crea pedidos
-                .requestMatchers("/api/customers").permitAll()    // WhatsApp bot crea clientes
+                .requestMatchers(HttpMethod.POST, "/api/orders").permitAll()  // WhatsApp bot / frontend crea pedidos
+                .requestMatchers(HttpMethod.GET, "/api/orders").authenticated()   // solo admin
+                .requestMatchers(HttpMethod.POST, "/api/customers").permitAll()   // WhatsApp bot crea clientes
+                .requestMatchers(HttpMethod.GET, "/api/customers").authenticated()
                 .requestMatchers("/api/customers/whatsapp/**").permitAll() // n8n consulta perfil y ubicación
                 .requestMatchers("/api/orders/*/tracking").permitAll()   // Tracking público
                 .requestMatchers("/api/shifts/open", "/api/shifts/close").permitAll() // n8n cron
