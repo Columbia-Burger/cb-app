@@ -140,12 +140,8 @@ interface CartItem { product: CatalogProduct; quantity: number; note: string; }
                 <h3 class="cart-title">Pedido</h3>
 
                 <div class="fields">
-                  <input type="text" placeholder="Nombre del cliente"
+                  <input type="text" placeholder="Mesa o referencia (ej: Mesa 3, Para llevar...)"
                          [(ngModel)]="customerName" />
-                  <input type="text" placeholder="Dirección y barrio"
-                         [(ngModel)]="customerAddress" />
-                  <input type="text" placeholder="Método de pago"
-                         [(ngModel)]="paymentMethod" />
                 </div>
 
                 @if (cart().length === 0) {
@@ -176,7 +172,7 @@ interface CartItem { product: CatalogProduct; quantity: number; note: string; }
                   </div>
 
                   <button class="submit-btn"
-                          [disabled]="submitting() || !customerName || !customerAddress"
+                          [disabled]="submitting() || !customerName"
                           (click)="submitOrder()">
                     {{ submitting() ? 'Enviando...' : 'Confirmar Pedido' }}
                   </button>
@@ -453,8 +449,6 @@ export class DomicilioBoardComponent implements OnInit, OnDestroy {
   successMsg = signal('');
   errorMsg = signal('');
   customerName = '';
-  customerAddress = '';
-  paymentMethod = '';
 
   currentProducts = computed(() =>
     this.categories().find(c => c.id === this.selectedCat())?.products ?? []
@@ -546,18 +540,14 @@ export class DomicilioBoardComponent implements OnInit, OnDestroy {
     this.svc.createOrder({
       customerName: this.customerName,
       customerWhatsapp: `DOMICILIO-${Date.now()}`,
-      customerAddress: this.customerAddress,
-      deliveryZone: this.customerAddress,
       items: orderItems,
-      notes: this.paymentMethod || 'Efectivo',
+      notes: this.customerName,
       source: 'WAITER'
     }).subscribe({
       next: order => {
         this.successMsg.set(`Pedido #${order.id} creado`);
         this.cart.set([]);
         this.customerName = '';
-        this.customerAddress = '';
-        this.paymentMethod = '';
         this.submitting.set(false);
       },
       error: () => {
