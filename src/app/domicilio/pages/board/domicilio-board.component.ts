@@ -4,7 +4,7 @@ import { CurrencyPipe, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Subscription, interval } from 'rxjs';
 import { filter, switchMap } from 'rxjs/operators';
-import { isBusinessHours } from '../../../shared/business-hours';
+import { isCurrentBusinessDayOrder } from '../../../shared/business-hours';
 import { DomicilioService } from '../../services/domicilio.service';
 import { OrderResponse, CatalogProduct, OrderItemRequest } from '../../../admin/models/admin.model';
 
@@ -464,20 +464,23 @@ export class DomicilioBoardComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.loadDeliveries();
-    // Poll cada 30s, pero solo cuando la tab está visible
-    this.pollSub = interval(30000).pipe(
-      filter(() => document.visibilityState === 'visible' && isBusinessHours()),
+    this.pollSub = interval(5000).pipe(
+      filter(() => document.visibilityState === 'visible'),
       switchMap(() => this.svc.getDeliveryOrders())
-    ).subscribe(data => this.orders.set(data));
+    ).subscribe(data => this.setOrders(data));
   }
 
   ngOnDestroy(): void { this.pollSub?.unsubscribe(); }
 
   loadDeliveries(): void {
     this.svc.getDeliveryOrders().subscribe({
-      next: data => { this.orders.set(data); this.loadingDeliveries.set(false); },
+      next: data => { this.setOrders(data); this.loadingDeliveries.set(false); },
       error: () => this.loadingDeliveries.set(false)
     });
+  }
+
+  private setOrders(data: OrderResponse[]): void {
+    this.orders.set(data.filter(order => isCurrentBusinessDayOrder(order.createdAt)));
   }
 
   switchToOrder(): void {

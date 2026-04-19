@@ -5,7 +5,7 @@ import { AdminService } from '../../services/admin.service';
 import { OrderResponse, OrderStatus } from '../../models/admin.model';
 import { Subscription, interval } from 'rxjs';
 import { filter, switchMap } from 'rxjs/operators';
-import { isBusinessHours } from '../../../shared/business-hours';
+import { getCurrentBusinessDayStartParam, isCurrentBusinessDayOrder } from '../../../shared/business-hours';
 
 interface KanbanColumn {
   status: OrderStatus;
@@ -375,9 +375,9 @@ export class AdminPedidosComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private startPolling(): void {
     this.load();
-    this.pollSub = interval(15000).pipe(
-      filter(() => document.visibilityState === 'visible' && isBusinessHours()),
-      switchMap(() => this.adminService.getOrders())
+    this.pollSub = interval(5000).pipe(
+      filter(() => document.visibilityState === 'visible'),
+      switchMap(() => this.adminService.getOrders(undefined, this.getBusinessDayStart()))
     ).subscribe({
       next: orders => this.applyOrders(orders),
       error: err => this.handleLoadError(err),
@@ -394,7 +394,7 @@ export class AdminPedidosComponent implements OnInit, AfterViewInit, OnDestroy {
 
   load(): void {
     this.loading.set(true);
-    this.adminService.getOrders().subscribe({
+    this.adminService.getOrders(undefined, this.getBusinessDayStart()).subscribe({
       next: orders => {
         this.applyOrders(orders);
         this.loading.set(false);
@@ -411,16 +411,21 @@ export class AdminPedidosComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
+  private getBusinessDayStart(): string {
+    return getCurrentBusinessDayStartParam();
+  }
+
   private applyOrders(orders: OrderResponse[]): void {
-    const newOnes = orders.filter(o => o.status === 'RECEIVED' && !this.knownIds.has(o.id));
+    const currentOrders = orders.filter(order => isCurrentBusinessDayOrder(order.createdAt));
+    const newOnes = currentOrders.filter(o => o.status === 'RECEIVED' && !this.knownIds.has(o.id));
     if (newOnes.length > 0) {
       this.playAlert();
       this.newOrderAlert.set(true);
       setTimeout(() => this.newOrderAlert.set(false), 4000);
     }
-    orders.forEach(o => this.knownIds.add(o.id));
+    currentOrders.forEach(o => this.knownIds.add(o.id));
     this.columns.update(cols =>
-      cols.map(col => ({ ...col, orders: orders.filter(o => o.status === col.status) }))
+      cols.map(col => ({ ...col, orders: currentOrders.filter(o => o.status === col.status) }))
     );
   }
 

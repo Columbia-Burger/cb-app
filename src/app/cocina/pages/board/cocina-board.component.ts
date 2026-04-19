@@ -3,7 +3,7 @@ import { Router } from '@angular/router';
 import { DatePipe, CurrencyPipe } from '@angular/common';
 import { Subscription, interval } from 'rxjs';
 import { filter, switchMap } from 'rxjs/operators';
-import { isBusinessHours } from '../../../shared/business-hours';
+import { isCurrentBusinessDayOrder } from '../../../shared/business-hours';
 import { CocinaService } from '../../services/cocina.service';
 import { OrderResponse, OrderStatus } from '../../../admin/models/admin.model';
 
@@ -278,10 +278,10 @@ export class CocinaBoardComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.load();
-    this.pollSub = interval(15000).pipe(
-      filter(() => document.visibilityState === 'visible' && isBusinessHours()),
+    this.pollSub = interval(5000).pipe(
+      filter(() => document.visibilityState === 'visible'),
       switchMap(() => this.svc.getKitchenOrders())
-    ).subscribe(data => this.orders.set(data));
+    ).subscribe(data => this.setOrders(data));
   }
 
   ngOnDestroy(): void {
@@ -290,9 +290,13 @@ export class CocinaBoardComponent implements OnInit, OnDestroy {
 
   load(): void {
     this.svc.getKitchenOrders().subscribe({
-      next: data => { this.orders.set(data); this.loading.set(false); },
+      next: data => { this.setOrders(data); this.loading.set(false); },
       error: () => this.loading.set(false)
     });
+  }
+
+  private setOrders(data: OrderResponse[]): void {
+    this.orders.set(data.filter(order => isCurrentBusinessDayOrder(order.createdAt)));
   }
 
   changeStatus(order: OrderResponse, status: OrderStatus): void {
