@@ -4,6 +4,7 @@ import { AdminService } from '../../services/admin.service';
 import { OrderResponse, OrderStatus } from '../../models/admin.model';
 import { Subscription, interval } from 'rxjs';
 import { filter, switchMap } from 'rxjs/operators';
+import { isBusinessHours } from '../../../shared/business-hours';
 
 interface KanbanColumn {
   status: OrderStatus;
@@ -384,7 +385,7 @@ export class AdminPedidosComponent implements OnInit, AfterViewInit, OnDestroy {
   private startPolling(): void {
     this.load();
     this.pollSub = interval(15000).pipe(
-      filter(() => document.visibilityState === 'visible'),
+      filter(() => document.visibilityState === 'visible' && isBusinessHours()),
       switchMap(() => this.adminService.getOrders(undefined, this.shiftFrom))
     ).subscribe(orders => this.applyOrders(orders));
   }

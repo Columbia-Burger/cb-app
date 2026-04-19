@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { DatePipe, CurrencyPipe } from '@angular/common';
 import { Subscription, interval } from 'rxjs';
 import { filter, switchMap } from 'rxjs/operators';
+import { isBusinessHours } from '../../../shared/business-hours';
 import { CocinaService } from '../../services/cocina.service';
 import { OrderResponse, OrderStatus } from '../../../admin/models/admin.model';
 
@@ -278,7 +279,7 @@ export class CocinaBoardComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.load();
     this.pollSub = interval(15000).pipe(
-      filter(() => document.visibilityState === 'visible'),
+      filter(() => document.visibilityState === 'visible' && isBusinessHours()),
       switchMap(() => this.svc.getKitchenOrders())
     ).subscribe(data => this.orders.set(data));
   }
