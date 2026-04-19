@@ -15,10 +15,11 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import org.springframework.http.HttpMethod;
+
 import java.util.List;
 
 @Configuration
-@EnableWebSecurity
+@EnableWebSecurity(debug = true)
 @RequiredArgsConstructor
 public class SecurityConfig {
 
@@ -36,7 +37,7 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 .requestMatchers("/api/auth/login").permitAll()
-                .requestMatchers("/api/auth/otp/**").permitAll()  // OTP login cliente
+                .requestMatchers("/api/auth/otp/**").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/orders").permitAll()  // WhatsApp bot / frontend crea pedidos
                 .requestMatchers(HttpMethod.GET, "/api/orders").authenticated()   // solo admin
                 .requestMatchers(HttpMethod.POST, "/api/customers").permitAll()   // WhatsApp bot crea clientes
