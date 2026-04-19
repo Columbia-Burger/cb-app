@@ -32,20 +32,35 @@ export class AdminService {
   }
 
   isLoggedIn(): boolean {
-    return this.getRole() === 'ADMIN';
+    const payload = this.getPayload();
+    return payload?.role === 'ADMIN' && !this.isTokenExpired(payload);
   }
 
   getRole(): string | null {
-    const token = this.getToken();
-    if (!token) return null;
+    return this.getPayload()?.role ?? null;
+  }
+
+  private getPayload(): { role?: string; exp?: number } | null {
     try {
-      const payload = JSON.parse(atob(token.split('.')[1]));
-      return payload.role ?? null;
-    } catch { return null; }
+      const token = this.getToken();
+      if (!token) return null;
+      return JSON.parse(atob(token.split('.')[1]));
+    } catch {
+      return null;
+    }
+  }
+
+  private isTokenExpired(payload: { exp?: number }): boolean {
+    if (!payload.exp) return true;
+    return payload.exp * 1000 <= Date.now();
   }
 
   private authHeaders(): HttpHeaders {
-    return new HttpHeaders({ Authorization: `Bearer ${this.getToken()}` });
+    const token = this.getToken();
+    if (!token) {
+      return new HttpHeaders();
+    }
+    return new HttpHeaders({ Authorization: `Bearer ${token}` });
   }
 
   // ── Dashboard ────────────────────────────────────────────────
