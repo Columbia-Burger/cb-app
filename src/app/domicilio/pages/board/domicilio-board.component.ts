@@ -524,7 +524,7 @@ export class DomicilioBoardComponent implements OnInit, OnDestroy {
   }
 
   submitOrder(): void {
-    if (!this.customerName || !this.customerAddress || this.cart().length === 0) return;
+    if (!this.customerName || this.cart().length === 0) return;
     this.submitting.set(true);
     this.successMsg.set('');
     this.errorMsg.set('');
