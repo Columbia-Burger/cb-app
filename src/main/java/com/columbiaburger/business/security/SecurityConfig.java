@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.annotation.Order;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -16,7 +15,6 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import org.springframework.http.HttpMethod;
-
 import java.util.List;
 
 @Configuration
@@ -29,24 +27,7 @@ public class SecurityConfig {
     @Value("${app.cors.allowed-origins:http://localhost:4200}")
     private String allowedOrigins;
 
-    /** Chain de alta prioridad: POST /api/orders y POST /api/customers son siempre públicos */
     @Bean
-    @Order(1)
-    public SecurityFilterChain publicPostChain(HttpSecurity http) throws Exception {
-        http
-            .securityMatcher(request ->
-                "POST".equals(request.getMethod()) &&
-                (request.getRequestURI().equals("/api/orders") ||
-                 request.getRequestURI().equals("/api/customers")))
-            .csrf(AbstractHttpConfigurer::disable)
-            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-            .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
-        return http.build();
-    }
-
-    @Bean
-    @Order(2)
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
             .csrf(AbstractHttpConfigurer::disable)
@@ -56,13 +37,11 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 .requestMatchers("/api/auth/login").permitAll()
                 .requestMatchers("/api/auth/otp/**").permitAll()
-                .requestMatchers(HttpMethod.POST, "/api/orders").permitAll()  // WhatsApp bot / frontend crea pedidos
-                .requestMatchers(HttpMethod.GET, "/api/orders").authenticated()   // solo admin
-                .requestMatchers(HttpMethod.POST, "/api/customers").permitAll()   // WhatsApp bot crea clientes
-                .requestMatchers(HttpMethod.GET, "/api/customers").authenticated()
-                .requestMatchers("/api/customers/whatsapp/**").permitAll() // n8n consulta perfil y ubicación
-                .requestMatchers("/api/orders/*/tracking").permitAll()   // Tracking público
-                .requestMatchers("/api/shifts/open", "/api/shifts/close").permitAll() // n8n cron
+                .requestMatchers("/api/orders").permitAll()        // WhatsApp bot y domiciliario crean pedidos
+                .requestMatchers("/api/customers").permitAll()     // WhatsApp bot crea clientes
+                .requestMatchers("/api/customers/whatsapp/**").permitAll()
+                .requestMatchers("/api/orders/*/tracking").permitAll()
+                .requestMatchers("/api/shifts/open", "/api/shifts/close").permitAll()
                 .requestMatchers("/api/customers/me", "/api/customers/me/orders").hasRole("CUSTOMER")
                 .requestMatchers("/api/orders/kitchen").hasAnyRole("ADMIN", "KITCHEN")
                 .requestMatchers("/api/orders/delivery").hasAnyRole("ADMIN", "DELIVERY")
