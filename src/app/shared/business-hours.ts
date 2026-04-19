@@ -36,10 +36,10 @@ function toApiDateTime(date: Date): string {
   return date.toISOString().substring(0, 19);
 }
 
-function getCurrentBusinessDayBounds(): { start: string; end: string } {
+function getCurrentBogotaDayBounds(): { start: string; end: string } {
   const now = getBogotaParts();
-  const startUtc = new Date(Date.UTC(now.year, now.month - 1, now.day, OPEN_HOUR + 5, 0, 0));
-  const endUtc = new Date(Date.UTC(now.year, now.month - 1, now.day, CLOSE_HOUR + 5, 0, 0));
+  const startUtc = new Date(Date.UTC(now.year, now.month - 1, now.day, 5, 0, 0));
+  const endUtc = new Date(Date.UTC(now.year, now.month - 1, now.day + 1, 5, 0, 0));
   return {
     start: toApiDateTime(startUtc),
     end: toApiDateTime(endUtc),
@@ -55,11 +55,11 @@ export function isBusinessHours(): boolean {
 }
 
 export function getCurrentBusinessDayStartParam(): string {
-  return getCurrentBusinessDayBounds().start;
+  return getCurrentBogotaDayBounds().start;
 }
 
 export function isCurrentBusinessDayOrder(createdAt: string): boolean {
   const value = createdAt.substring(0, 19);
-  const { start, end } = getCurrentBusinessDayBounds();
+  const { start, end } = getCurrentBogotaDayBounds();
   return value >= start && value < end;
 }
