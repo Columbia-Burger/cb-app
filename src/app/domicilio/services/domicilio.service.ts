@@ -60,6 +60,8 @@ export class DomicilioService {
   }
 
   createOrder(request: CreateOrderRequest): Observable<OrderResponse> {
-    return this.http.post<OrderResponse>(`${this.base}/api/orders`, request);
+    return this.http.post<OrderResponse>(`${this.base}/api/orders`, request, {
+      headers: this.authHeaders()
+    });
   }
 }
