@@ -302,6 +302,10 @@ export class AdminMeseroComponent implements OnInit {
     this.cart().reduce((sum, item) => sum + item.product.price * item.quantity, 0)
   );
 
+  private buildOrderReference(): string {
+    return `MES${Date.now().toString().slice(-13)}`;
+  }
+
   ngOnInit(): void {
     this.adminService.getMenu().subscribe({
       next: products => {
@@ -364,7 +368,7 @@ export class AdminMeseroComponent implements OnInit {
 
     this.adminService.createOrder({
       customerName: this.tableRef,
-      customerWhatsapp: `MESERO-${Date.now()}`,
+      customerWhatsapp: this.buildOrderReference(),
       items,
       notes: this.tableRef,
       source: 'WAITER'

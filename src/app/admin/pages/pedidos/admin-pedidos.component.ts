@@ -361,19 +361,8 @@ export class AdminPedidosComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private knownIds = new Set<number>();
   private pollSub?: Subscription;
-  private shiftFrom: string | undefined;
-
-  // Medianoche de Bogotá expresada en UTC (Colombia = UTC-5, sin DST)
-  private getTodayStartUtc(): string {
-    const bogota = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Bogota' }));
-    const y = bogota.getFullYear();
-    const m = String(bogota.getMonth() + 1).padStart(2, '0');
-    const d = String(bogota.getDate()).padStart(2, '0');
-    return `${y}-${m}-${d}T05:00:00`; // medianoche Bogotá = 05:00 UTC
-  }
 
   ngOnInit(): void {
-    this.shiftFrom = this.getTodayStartUtc();
     this.startPolling();
   }
 
@@ -386,7 +375,7 @@ export class AdminPedidosComponent implements OnInit, AfterViewInit, OnDestroy {
     this.load();
     this.pollSub = interval(15000).pipe(
       filter(() => document.visibilityState === 'visible' && isBusinessHours()),
-      switchMap(() => this.adminService.getOrders(undefined, this.shiftFrom))
+      switchMap(() => this.adminService.getOrders())
     ).subscribe(orders => this.applyOrders(orders));
   }
 
@@ -400,7 +389,7 @@ export class AdminPedidosComponent implements OnInit, AfterViewInit, OnDestroy {
 
   load(): void {
     this.loading.set(true);
-    this.adminService.getOrders(undefined, this.shiftFrom).subscribe({
+    this.adminService.getOrders().subscribe({
       next: orders => {
         this.applyOrders(orders);
         this.loading.set(false);

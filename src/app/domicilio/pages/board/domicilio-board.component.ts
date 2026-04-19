@@ -458,6 +458,10 @@ export class DomicilioBoardComponent implements OnInit, OnDestroy {
     this.cart().reduce((sum, item) => sum + item.product.price * item.quantity, 0)
   );
 
+  private buildOrderReference(): string {
+    return `DOM${Date.now().toString().slice(-13)}`;
+  }
+
   ngOnInit(): void {
     this.loadDeliveries();
     // Poll cada 30s, pero solo cuando la tab está visible
@@ -542,7 +546,7 @@ export class DomicilioBoardComponent implements OnInit, OnDestroy {
 
     this.svc.createOrder({
       customerName: this.customerName,
-      customerWhatsapp: `DOMICILIO-${Date.now()}`,
+      customerWhatsapp: this.buildOrderReference(),
       items: orderItems,
       notes: this.customerName,
       source: 'WAITER'

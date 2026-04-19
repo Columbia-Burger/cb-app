@@ -4,7 +4,7 @@
   "scripts": {
     "ng": "ng",
     "start": "serve -s dist/columbia-burger/browser -l $PORT",
-    "build": "node node_modules/@angular/cli/bin/ng.js build --configuration production && cp serve.json dist/columbia-burger/browser/serve.json",
+    "build": "node node_modules/@angular/cli/bin/ng.js build --configuration production && node -e \"require('fs').copyFileSync('serve.json','dist/columbia-burger/browser/serve.json')\"",
     "watch": "ng build --watch --configuration development",
     "test": "ng test"
   },
