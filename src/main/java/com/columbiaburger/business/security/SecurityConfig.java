@@ -42,6 +42,7 @@ public class SecurityConfig {
                 .requestMatchers(req -> "POST".equals(req.getMethod()) && "/api/customers".equals(req.getRequestURI())).permitAll()
                 .requestMatchers("/api/customers/whatsapp/**").permitAll()
                 .requestMatchers("/api/orders/*/tracking").permitAll()
+                .requestMatchers("/api/orders/events").permitAll()
                 .requestMatchers("/api/shifts/open", "/api/shifts/close").permitAll()
                 .requestMatchers("/api/customers/me", "/api/customers/me/orders").hasRole("CUSTOMER")
                 .requestMatchers("/api/orders/kitchen").hasAnyRole("ADMIN", "KITCHEN")

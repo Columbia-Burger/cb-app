@@ -24,6 +24,7 @@ public class OrderService {
 
     private final OrderRepository orderRepository;
     private final CustomerRepository customerRepository;
+    private final OrderEventService orderEventService;
 
     @Transactional
     public OrderResponse create(CreateOrderRequest request) {
@@ -82,7 +83,9 @@ public class OrderService {
         order.setItems(items);
 
         Order saved = orderRepository.save(order);
-        return toResponse(saved);
+        OrderResponse response = toResponse(saved);
+        orderEventService.publishCreated(response);
+        return response;
     }
 
     @Transactional(readOnly = true)
@@ -170,7 +173,9 @@ public class OrderService {
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Pedido no encontrado"));
         order.setStatus(status);
-        return toResponse(orderRepository.save(order));
+        OrderResponse response = toResponse(orderRepository.save(order));
+        orderEventService.publishUpdated(response);
+        return response;
     }
 
     private OrderItem toOrderItem(OrderItemRequest req) {

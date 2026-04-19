@@ -5,12 +5,16 @@ import com.columbiaburger.business.dto.request.UpdateOrderStatusRequest;
 import com.columbiaburger.business.dto.response.OrderResponse;
 import com.columbiaburger.business.dto.response.OrderTrackingResponse;
 import com.columbiaburger.business.entity.OrderStatus;
+import com.columbiaburger.business.security.JwtUtil;
+import com.columbiaburger.business.service.OrderEventService;
 import com.columbiaburger.business.service.OrderService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.util.List;
 
@@ -20,6 +24,8 @@ import java.util.List;
 public class OrderController {
 
     private final OrderService orderService;
+    private final OrderEventService orderEventService;
+    private final JwtUtil jwtUtil;
 
     @PostMapping
     public ResponseEntity<OrderResponse> create(@Valid @RequestBody CreateOrderRequest request) {
@@ -53,6 +59,20 @@ public class OrderController {
     @GetMapping("/delivery")
     public ResponseEntity<List<OrderResponse>> getDeliveryOrders() {
         return ResponseEntity.ok(orderService.getDeliveryOrders());
+    }
+
+    @GetMapping("/events")
+    public SseEmitter events(@RequestParam String token) {
+        if (!jwtUtil.isTokenValid(token)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Token inválido");
+        }
+
+        String role = jwtUtil.extractRole(token);
+        if (!List.of("ADMIN", "KITCHEN", "DELIVERY").contains(role)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Rol no autorizado");
+        }
+
+        return orderEventService.subscribe();
     }
 
     @GetMapping("/{id}/tracking")
