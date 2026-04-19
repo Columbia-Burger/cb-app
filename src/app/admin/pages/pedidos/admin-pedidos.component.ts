@@ -3,7 +3,7 @@ import { CurrencyPipe, DatePipe } from '@angular/common';
 import { AdminService } from '../../services/admin.service';
 import { OrderResponse, OrderStatus } from '../../models/admin.model';
 import { Subscription, interval } from 'rxjs';
-import { switchMap } from 'rxjs/operators';
+import { filter, switchMap } from 'rxjs/operators';
 
 interface KanbanColumn {
   status: OrderStatus;
@@ -383,7 +383,8 @@ export class AdminPedidosComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private startPolling(): void {
     this.load();
-    this.pollSub = interval(5000).pipe(
+    this.pollSub = interval(15000).pipe(
+      filter(() => document.visibilityState === 'visible'),
       switchMap(() => this.adminService.getOrders(undefined, this.shiftFrom))
     ).subscribe(orders => this.applyOrders(orders));
   }

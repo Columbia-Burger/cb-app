@@ -2,7 +2,7 @@ import { Component, inject, signal, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { DatePipe, CurrencyPipe } from '@angular/common';
 import { Subscription, interval } from 'rxjs';
-import { switchMap } from 'rxjs/operators';
+import { filter, switchMap } from 'rxjs/operators';
 import { CocinaService } from '../../services/cocina.service';
 import { OrderResponse, OrderStatus } from '../../../admin/models/admin.model';
 
@@ -277,7 +277,8 @@ export class CocinaBoardComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.load();
-    this.pollSub = interval(8000).pipe(
+    this.pollSub = interval(15000).pipe(
+      filter(() => document.visibilityState === 'visible'),
       switchMap(() => this.svc.getKitchenOrders())
     ).subscribe(data => this.orders.set(data));
   }

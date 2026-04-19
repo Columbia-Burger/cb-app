@@ -3,7 +3,7 @@ import { Router } from '@angular/router';
 import { CurrencyPipe, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Subscription, interval } from 'rxjs';
-import { switchMap } from 'rxjs/operators';
+import { filter, switchMap } from 'rxjs/operators';
 import { DomicilioService } from '../../services/domicilio.service';
 import { OrderResponse, CatalogProduct, OrderItemRequest } from '../../../admin/models/admin.model';
 
@@ -459,7 +459,9 @@ export class DomicilioBoardComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.loadDeliveries();
-    this.pollSub = interval(10000).pipe(
+    // Poll cada 30s, pero solo cuando la tab está visible
+    this.pollSub = interval(30000).pipe(
+      filter(() => document.visibilityState === 'visible'),
       switchMap(() => this.svc.getDeliveryOrders())
     ).subscribe(data => this.orders.set(data));
   }
