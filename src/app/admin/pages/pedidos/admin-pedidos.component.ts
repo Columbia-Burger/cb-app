@@ -6,6 +6,7 @@ import { OrderResponse, OrderStatus } from '../../models/admin.model';
 import { Subscription, interval } from 'rxjs';
 import { filter, switchMap } from 'rxjs/operators';
 import { getCurrentBusinessDayStartParam, isCurrentBusinessDayOrder } from '../../../shared/business-hours';
+import { OrderEvent, OrderEventsService } from '../../../services/order-events.service';
 
 interface KanbanColumn {
   status: OrderStatus;
@@ -337,6 +338,7 @@ interface KanbanColumn {
 })
 export class AdminPedidosComponent implements OnInit, AfterViewInit, OnDestroy {
   private adminService = inject(AdminService);
+  private orderEvents = inject(OrderEventsService);
   private router = inject(Router);
 
   loading = signal(true);
@@ -363,6 +365,7 @@ export class AdminPedidosComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private knownIds = new Set<number>();
   private pollSub?: Subscription;
+  private eventSub?: Subscription;
 
   ngOnInit(): void {
     this.startPolling();
@@ -375,7 +378,10 @@ export class AdminPedidosComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private startPolling(): void {
     this.load();
-    this.pollSub = interval(5000).pipe(
+    this.eventSub = this.orderEvents.connect(this.adminService.getToken()).subscribe({
+      next: event => this.applyOrderEvent(event),
+    });
+    this.pollSub = interval(60000).pipe(
       filter(() => document.visibilityState === 'visible'),
       switchMap(() => this.adminService.getOrders(undefined, this.getBusinessDayStart()))
     ).subscribe({
@@ -386,6 +392,7 @@ export class AdminPedidosComponent implements OnInit, AfterViewInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.pollSub?.unsubscribe();
+    this.eventSub?.unsubscribe();
     const overlay = this.overlayRef?.nativeElement;
     if (overlay?.parentNode === document.body) {
       document.body.removeChild(overlay);
@@ -427,6 +434,16 @@ export class AdminPedidosComponent implements OnInit, AfterViewInit, OnDestroy {
     this.columns.update(cols =>
       cols.map(col => ({ ...col, orders: currentOrders.filter(o => o.status === col.status) }))
     );
+  }
+
+  private applyOrderEvent(event: OrderEvent): void {
+    if (!isCurrentBusinessDayOrder(event.order.createdAt)) return;
+
+    const orders = this.columns()
+      .flatMap(col => col.orders)
+      .filter(order => order.id !== event.order.id);
+
+    this.applyOrders([event.order, ...orders]);
   }
 
   private playAlert(): void {

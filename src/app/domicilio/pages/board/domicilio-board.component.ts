@@ -7,6 +7,7 @@ import { filter, switchMap } from 'rxjs/operators';
 import { isCurrentBusinessDayOrder } from '../../../shared/business-hours';
 import { DomicilioService } from '../../services/domicilio.service';
 import { OrderResponse, CatalogProduct, OrderItemRequest } from '../../../admin/models/admin.model';
+import { OrderEvent, OrderEventsService } from '../../../services/order-events.service';
 
 interface MenuCategory { id: number; name: string; products: CatalogProduct[]; }
 interface CartItem { product: CatalogProduct; quantity: number; note: string; }
@@ -430,6 +431,7 @@ interface CartItem { product: CatalogProduct; quantity: number; note: string; }
 })
 export class DomicilioBoardComponent implements OnInit, OnDestroy {
   private svc = inject(DomicilioService);
+  private orderEvents = inject(OrderEventsService);
   private router = inject(Router);
 
   // ── Vista activa ──────────────────────────────────────────────
@@ -440,6 +442,7 @@ export class DomicilioBoardComponent implements OnInit, OnDestroy {
   loadingDeliveries = signal(true);
   updating = new Set<number>();
   private pollSub?: Subscription;
+  private eventSub?: Subscription;
 
   // ── Tomar pedido ──────────────────────────────────────────────
   loadingMenu = signal(true);
@@ -464,13 +467,19 @@ export class DomicilioBoardComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.loadDeliveries();
-    this.pollSub = interval(5000).pipe(
+    this.eventSub = this.orderEvents.connect(this.svc.getToken()).subscribe({
+      next: event => this.applyOrderEvent(event),
+    });
+    this.pollSub = interval(60000).pipe(
       filter(() => document.visibilityState === 'visible'),
       switchMap(() => this.svc.getDeliveryOrders())
     ).subscribe(data => this.setOrders(data));
   }
 
-  ngOnDestroy(): void { this.pollSub?.unsubscribe(); }
+  ngOnDestroy(): void {
+    this.pollSub?.unsubscribe();
+    this.eventSub?.unsubscribe();
+  }
 
   loadDeliveries(): void {
     this.svc.getDeliveryOrders().subscribe({
@@ -481,6 +490,16 @@ export class DomicilioBoardComponent implements OnInit, OnDestroy {
 
   private setOrders(data: OrderResponse[]): void {
     this.orders.set(data.filter(order => isCurrentBusinessDayOrder(order.createdAt)));
+  }
+
+  private applyOrderEvent(event: OrderEvent): void {
+    const order = event.order;
+    const shouldShow = isCurrentBusinessDayOrder(order.createdAt) && order.status === 'ON_THE_WAY';
+
+    this.orders.update(list => {
+      const current = list.filter(item => item.id !== order.id);
+      return shouldShow ? [order, ...current] : current;
+    });
   }
 
   switchToOrder(): void {

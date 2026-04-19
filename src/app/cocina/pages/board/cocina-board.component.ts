@@ -6,6 +6,7 @@ import { filter, switchMap } from 'rxjs/operators';
 import { isCurrentBusinessDayOrder } from '../../../shared/business-hours';
 import { CocinaService } from '../../services/cocina.service';
 import { OrderResponse, OrderStatus } from '../../../admin/models/admin.model';
+import { OrderEvent, OrderEventsService } from '../../../services/order-events.service';
 
 @Component({
   selector: 'app-cocina-board',
@@ -268,6 +269,7 @@ import { OrderResponse, OrderStatus } from '../../../admin/models/admin.model';
 })
 export class CocinaBoardComponent implements OnInit, OnDestroy {
   private svc = inject(CocinaService);
+  private orderEvents = inject(OrderEventsService);
   private router = inject(Router);
 
   orders = signal<OrderResponse[]>([]);
@@ -275,10 +277,14 @@ export class CocinaBoardComponent implements OnInit, OnDestroy {
   updating = new Set<number>();
 
   private pollSub?: Subscription;
+  private eventSub?: Subscription;
 
   ngOnInit(): void {
     this.load();
-    this.pollSub = interval(5000).pipe(
+    this.eventSub = this.orderEvents.connect(this.svc.getToken()).subscribe({
+      next: event => this.applyOrderEvent(event),
+    });
+    this.pollSub = interval(60000).pipe(
       filter(() => document.visibilityState === 'visible'),
       switchMap(() => this.svc.getKitchenOrders())
     ).subscribe(data => this.setOrders(data));
@@ -286,6 +292,7 @@ export class CocinaBoardComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.pollSub?.unsubscribe();
+    this.eventSub?.unsubscribe();
   }
 
   load(): void {
@@ -297,6 +304,17 @@ export class CocinaBoardComponent implements OnInit, OnDestroy {
 
   private setOrders(data: OrderResponse[]): void {
     this.orders.set(data.filter(order => isCurrentBusinessDayOrder(order.createdAt)));
+  }
+
+  private applyOrderEvent(event: OrderEvent): void {
+    const order = event.order;
+    const shouldShow = isCurrentBusinessDayOrder(order.createdAt)
+      && (order.status === 'RECEIVED' || order.status === 'PREPARING');
+
+    this.orders.update(list => {
+      const current = list.filter(item => item.id !== order.id);
+      return shouldShow ? [order, ...current] : current;
+    });
   }
 
   changeStatus(order: OrderResponse, status: OrderStatus): void {
