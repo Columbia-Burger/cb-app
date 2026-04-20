@@ -220,6 +220,7 @@ import { AdminService } from '../services/admin.service';
       .sidebar {
         transform: translateX(-100%);
         top: 0;
+        padding-top: 52px;
       }
       .sidebar.open { transform: translateX(0); }
       .sidebar-brand { display: none; }
