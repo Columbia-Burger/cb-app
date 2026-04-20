@@ -97,6 +97,14 @@ public class ProductService {
     }
 
     @Transactional
+    public void updateFlavors(Long id, List<Long> flavorIds) {
+        Product product = getOrThrow(id);
+        product.getFlavors().clear();
+        product.getFlavors().addAll(resolveFlavors(flavorIds));
+        productRepository.save(product);
+    }
+
+    @Transactional
     public void toggleAvailable(Long id) {
         Product product = getOrThrow(id);
         product.setAvailable(!product.getAvailable());

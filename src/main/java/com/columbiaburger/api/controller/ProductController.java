@@ -54,4 +54,11 @@ public class ProductController {
     public void toggleAvailable(@PathVariable Long id) {
         productService.toggleAvailable(id);
     }
+
+    @Operation(summary = "Actualizar sabores del producto")
+    @PatchMapping("/{id}/flavors")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void updateFlavors(@PathVariable Long id, @RequestBody List<Long> flavorIds) {
+        productService.updateFlavors(id, flavorIds);
+    }
 }

@@ -30,9 +30,7 @@ public class FlavorSeeder implements ApplicationRunner {
                 .orElseGet(() -> flavorRepository.save(
                         Flavor.builder().name("Leche").active(true).build()));
 
-        List<Product> jugos = productRepository.findAll().stream()
-                .filter(p -> p.getName() != null && p.getName().contains("Jugo Natural"))
-                .toList();
+        List<Product> jugos = productRepository.findByNameContainingIgnoreCaseWithFlavors("jugo natural");
 
         for (Product product : jugos) {
             List<Flavor> flavors = product.getFlavors();
