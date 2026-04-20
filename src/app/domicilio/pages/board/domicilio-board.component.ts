@@ -142,8 +142,13 @@ interface CartItem { product: CatalogProduct; flavor: string; quantity: number; 
                 <h3 class="cart-title">Pedido</h3>
 
                 <div class="fields">
-                  <input type="text" placeholder="Mesa o referencia (ej: Mesa 3, Para llevar...)"
-                         [(ngModel)]="customerName" />
+                  <div class="order-type-picker">
+                    <button class="type-btn" [class.selected]="orderType() === 'mesa'" (click)="orderType.set('mesa')">🪑 Mesa</button>
+                    <button class="type-btn" [class.selected]="orderType() === 'llevar'" (click)="orderType.set('llevar')">🥡 Para llevar</button>
+                  </div>
+                  @if (orderType() === 'mesa') {
+                    <input type="text" placeholder="Número de mesa (ej: 3)" [(ngModel)]="tableNumber" />
+                  }
                 </div>
 
                 @if (cart().length === 0) {
@@ -179,7 +184,7 @@ interface CartItem { product: CatalogProduct; flavor: string; quantity: number; 
                   </div>
 
                   <button class="submit-btn"
-                          [disabled]="submitting() || !customerName"
+                          [disabled]="submitting() || !orderType() || (orderType() === 'mesa' && !tableNumber)"
                           (click)="submitOrder()">
                     {{ submitting() ? 'Enviando...' : 'Confirmar Pedido' }}
                   </button>
@@ -403,6 +408,14 @@ interface CartItem { product: CatalogProduct; flavor: string; quantity: number; 
       border-radius: 8px; color: #c9d1d9; font-size: 0.85em; outline: none;
     }
     .fields input:focus { border-color: #e94560; }
+    .order-type-picker { display: flex; gap: 0.5em; }
+    .type-btn {
+      flex: 1; padding: 0.6em 0.5em;
+      background: #0d1117; border: 1px solid #30363d;
+      border-radius: 8px; color: #8b949e; font-size: 0.82em;
+      cursor: pointer; transition: all 0.15s; font-weight: 500;
+    }
+    .type-btn.selected { background: rgba(233,69,96,0.12); border-color: #e94560; color: #e94560; }
     .empty-cart { color: #8b949e; font-size: 0.85em; text-align: center; padding: 1.5em 0; }
     .cart-items { display: flex; flex-direction: column; gap: 0.75em; margin-bottom: 1em; }
     .cart-item { background: #0d1117; border: 1px solid #21262d; border-radius: 8px; padding: 0.65em; }
@@ -495,7 +508,8 @@ export class DomicilioBoardComponent implements OnInit, OnDestroy {
   successMsg = signal('');
   errorMsg = signal('');
   pendingProduct = signal<CatalogProduct | null>(null);
-  customerName = '';
+  orderType = signal<'mesa' | 'llevar' | ''>('');
+  tableNumber = '';
 
   currentProducts = computed(() =>
     this.categories().find(c => c.id === this.selectedCat())?.products ?? []
@@ -503,10 +517,6 @@ export class DomicilioBoardComponent implements OnInit, OnDestroy {
   total = computed(() =>
     this.cart().reduce((sum, item) => sum + item.product.price * item.quantity, 0)
   );
-
-  private buildOrderReference(): string {
-    return `DOM${Date.now().toString().slice(-13)}`;
-  }
 
   ngOnInit(): void {
     this.loadDeliveries();
@@ -611,10 +621,15 @@ export class DomicilioBoardComponent implements OnInit, OnDestroy {
   }
 
   submitOrder(): void {
-    if (!this.customerName || this.cart().length === 0) return;
+    const type = this.orderType();
+    if (!type || this.cart().length === 0) return;
+    if (type === 'mesa' && !this.tableNumber) return;
+
     this.submitting.set(true);
     this.successMsg.set('');
     this.errorMsg.set('');
+
+    const notes = type === 'mesa' ? `Mesa ${this.tableNumber}` : 'Para llevar';
 
     const orderItems: OrderItemRequest[] = this.cart().map(i => ({
       productId: i.product.id,
@@ -626,16 +641,17 @@ export class DomicilioBoardComponent implements OnInit, OnDestroy {
     }));
 
     this.svc.createOrder({
-      customerName: this.customerName,
-      customerWhatsapp: this.buildOrderReference(),
+      customerName: 'Domiciliario',
+      customerWhatsapp: 'DOMICILIO-WAITER',
       items: orderItems,
-      notes: this.customerName,
+      notes,
       source: 'WAITER'
     }).subscribe({
       next: order => {
-        this.successMsg.set(`Pedido #${order.id} creado`);
+        this.successMsg.set(`Pedido #${order.id} — ${notes}`);
         this.cart.set([]);
-        this.customerName = '';
+        this.orderType.set('');
+        this.tableNumber = '';
         this.submitting.set(false);
       },
       error: () => {
