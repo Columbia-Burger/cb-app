@@ -66,7 +66,7 @@ import { CatalogProduct, CatalogCategory, FlavorItem } from '../../models/admin.
                   </button>
                   <span class="toggle-label">{{ p.available ? 'Disponible' : 'No disponible' }}</span>
                   <button class="flavors-btn" (click)="openFlavorEditor(p); $event.stopPropagation()">
-                    🏷️{{ p.flavors?.length ? ' ' + p.flavors.length : '' }}
+                    🏷️{{ p.flavors?.length ? ' ' + p.flavors!.length : '' }}
                   </button>
                 </div>
               </div>
