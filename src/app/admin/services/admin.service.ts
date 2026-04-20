@@ -6,7 +6,7 @@ import { environment } from '../../../environments/environment';
 import {
   LoginRequest, LoginResponse, OrderResponse, OrderStatus,
   CustomerResponse, DashboardStats, TopProduct,
-  CreateOrderRequest, CatalogProduct, ShiftResponse, DailyStatResponse
+  CreateOrderRequest, CatalogProduct, FlavorItem, ShiftResponse, DailyStatResponse
 } from '../models/admin.model';
 import { ProductResponse } from '../../models/api.model';
 
@@ -136,8 +136,22 @@ export class AdminService {
         available: p.available,
         categoryId: p.categoryId,
         categoryName: p.categoryName,
-        ...(p.flavors?.length ? { flavors: p.flavors.map(f => f.name) } : {}),
+        ...(p.flavors?.length ? { flavors: p.flavors.map(f => ({ id: f.id, name: f.name })) } : {}),
       })))
+    );
+  }
+
+  getFlavors(): Observable<FlavorItem[]> {
+    return this.http.get<FlavorItem[]>(`${this.base}/api/admin/catalog/flavors`, {
+      headers: this.authHeaders()
+    });
+  }
+
+  updateProductFlavors(productId: number, flavorIds: number[]): Observable<void> {
+    return this.http.patch<void>(
+      `${this.base}/api/admin/catalog/products/${productId}/flavors`,
+      flavorIds,
+      { headers: this.authHeaders() }
     );
   }
 

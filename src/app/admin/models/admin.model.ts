@@ -88,6 +88,11 @@ export interface CreateOrderRequest {
   source: OrderSource;
 }
 
+export interface FlavorItem {
+  id: number;
+  name: string;
+}
+
 export interface CatalogProduct {
   id: number;
   name: string;
@@ -97,7 +102,7 @@ export interface CatalogProduct {
   available: boolean;
   categoryId: number;
   categoryName: string;
-  flavors?: string[];
+  flavors?: FlavorItem[];
 }
 
 export interface DailyStatResponse {

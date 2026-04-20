@@ -68,7 +68,7 @@ export class DomicilioService {
         available: p.available,
         categoryId: p.categoryId,
         categoryName: p.categoryName,
-        ...(p.flavors?.length ? { flavors: p.flavors.map(f => f.name) } : {}),
+        ...(p.flavors?.length ? { flavors: p.flavors.map(f => ({ id: f.id, name: f.name })) } : {}),
       })))
     );
   }

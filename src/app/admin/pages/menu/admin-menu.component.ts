@@ -2,7 +2,7 @@ import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { CurrencyPipe, NgClass } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AdminService } from '../../services/admin.service';
-import { CatalogProduct, CatalogCategory } from '../../models/admin.model';
+import { CatalogProduct, CatalogCategory, FlavorItem } from '../../models/admin.model';
 
 @Component({
   selector: 'app-admin-menu',
@@ -65,6 +65,9 @@ import { CatalogProduct, CatalogCategory } from '../../models/admin.model';
                     <span class="toggle-dot"></span>
                   </button>
                   <span class="toggle-label">{{ p.available ? 'Disponible' : 'No disponible' }}</span>
+                  <button class="flavors-btn" (click)="openFlavorEditor(p); $event.stopPropagation()">
+                    🏷️{{ p.flavors?.length ? ' ' + p.flavors.length : '' }}
+                  </button>
                 </div>
               </div>
             }
@@ -74,6 +77,34 @@ import { CatalogProduct, CatalogCategory } from '../../models/admin.model';
 
       @if (!loading() && filteredCategories().length === 0) {
         <p class="empty">No se encontraron productos.</p>
+      }
+
+      @if (editingProduct()) {
+        <div class="fl-overlay" (click)="editingProduct.set(null)">
+          <div class="fl-sheet" (click)="$event.stopPropagation()">
+            <div class="fl-title">Sabores — {{ editingProduct()!.name }}</div>
+            @if (loadingFlavors()) {
+              <p class="fl-loading">Cargando...</p>
+            } @else {
+              <div class="fl-options">
+                @for (f of allFlavors(); track f.id) {
+                  <label class="fl-option">
+                    <input type="checkbox"
+                           [checked]="selectedFlavorIds().has(f.id)"
+                           (change)="toggleFlavorId(f.id)" />
+                    <span>{{ f.name }}</span>
+                  </label>
+                }
+              </div>
+              <div class="fl-actions">
+                <button class="fl-save" [disabled]="savingFlavors()" (click)="saveFlavors()">
+                  {{ savingFlavors() ? 'Guardando...' : 'Guardar' }}
+                </button>
+                <button class="fl-cancel" (click)="editingProduct.set(null)">Cancelar</button>
+              </div>
+            }
+          </div>
+        </div>
       }
     </div>
   `,
@@ -222,6 +253,49 @@ import { CatalogProduct, CatalogCategory } from '../../models/admin.model';
     .toggle-on .toggle-dot { transform: translateX(16px); }
 
     .empty { color: #8b949e; text-align: center; padding: 3em; }
+
+    .flavors-btn {
+      margin-left: auto;
+      background: none;
+      border: 1px solid #30363d;
+      border-radius: 6px;
+      color: #8b949e;
+      font-size: 0.7em;
+      padding: 0.2em 0.5em;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .flavors-btn:hover { border-color: #e94560; color: #e94560; }
+
+    .fl-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.6);
+      display: flex; align-items: flex-end; justify-content: center; z-index: 200;
+    }
+    .fl-sheet {
+      background: #161b22; border: 1px solid #30363d; border-radius: 14px 14px 0 0;
+      padding: 1.25em 1.25em 1.5em; width: 100%; max-width: 480px;
+      max-height: 70vh; overflow-y: auto;
+    }
+    .fl-title { font-size: 1em; font-weight: 700; color: #e6edf3; margin-bottom: 1em; }
+    .fl-loading { color: #8b949e; font-size: 0.85em; }
+    .fl-options { display: flex; flex-direction: column; gap: 0.5em; margin-bottom: 1em; }
+    .fl-option {
+      display: flex; align-items: center; gap: 0.6em;
+      padding: 0.6em 0.75em;
+      background: #21262d; border-radius: 8px;
+      cursor: pointer; font-size: 0.9em; color: #e6edf3;
+    }
+    .fl-option input { accent-color: #e94560; width: 16px; height: 16px; cursor: pointer; }
+    .fl-actions { display: flex; gap: 0.75em; }
+    .fl-save {
+      flex: 1; padding: 0.75em; background: #e94560; color: #fff;
+      border: none; border-radius: 8px; font-size: 0.9em; font-weight: 600; cursor: pointer;
+    }
+    .fl-save:disabled { opacity: 0.5; cursor: wait; }
+    .fl-cancel {
+      padding: 0.75em 1em; background: none; border: 1px solid #30363d;
+      border-radius: 8px; color: #8b949e; font-size: 0.9em; cursor: pointer;
+    }
   `]
 })
 export class AdminMenuComponent implements OnInit {
@@ -231,6 +305,12 @@ export class AdminMenuComponent implements OnInit {
   products = signal<CatalogProduct[]>([]);
   toggling = new Set<number>();
   search = '';
+
+  editingProduct = signal<CatalogProduct | null>(null);
+  allFlavors = signal<FlavorItem[]>([]);
+  selectedFlavorIds = signal<Set<number>>(new Set());
+  loadingFlavors = signal(false);
+  savingFlavors = signal(false);
 
   categories = computed<CatalogCategory[]>(() => {
     const map = new Map<number, CatalogCategory>();
@@ -264,6 +344,43 @@ export class AdminMenuComponent implements OnInit {
         this.loading.set(false);
       },
       error: () => this.loading.set(false)
+    });
+  }
+
+  openFlavorEditor(product: CatalogProduct): void {
+    this.editingProduct.set(product);
+    this.selectedFlavorIds.set(new Set(product.flavors?.map(f => f.id) ?? []));
+    if (this.allFlavors().length === 0) {
+      this.loadingFlavors.set(true);
+      this.svc.getFlavors().subscribe({
+        next: flavors => { this.allFlavors.set(flavors); this.loadingFlavors.set(false); },
+        error: () => this.loadingFlavors.set(false)
+      });
+    }
+  }
+
+  toggleFlavorId(id: number): void {
+    this.selectedFlavorIds.update(ids => {
+      const next = new Set(ids);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  }
+
+  saveFlavors(): void {
+    const product = this.editingProduct();
+    if (!product) return;
+    this.savingFlavors.set(true);
+    this.svc.updateProductFlavors(product.id, [...this.selectedFlavorIds()]).subscribe({
+      next: () => {
+        const updatedFlavors = this.allFlavors().filter(f => this.selectedFlavorIds().has(f.id));
+        this.products.update(list =>
+          list.map(p => p.id === product.id ? { ...p, flavors: updatedFlavors } : p)
+        );
+        this.savingFlavors.set(false);
+        this.editingProduct.set(null);
+      },
+      error: () => this.savingFlavors.set(false)
     });
   }
 

@@ -204,8 +204,8 @@ interface CartItem { product: CatalogProduct; flavor: string; quantity: number; 
             <div class="flavor-header">{{ pendingProduct()!.name }}</div>
             <p class="flavor-prompt">Selecciona el sabor:</p>
             <div class="flavor-options">
-              @for (f of pendingProduct()!.flavors!; track f) {
-                <button class="flavor-btn" (click)="pickFlavor(f)">{{ f }}</button>
+              @for (f of pendingProduct()!.flavors!; track f.id) {
+                <button class="flavor-btn" (click)="pickFlavor(f.name)">{{ f.name }}</button>
               }
             </div>
             <button class="flavor-cancel" (click)="pendingProduct.set(null)">Cancelar</button>
@@ -445,21 +445,23 @@ interface CartItem { product: CatalogProduct; flavor: string; quantity: number; 
 
     .flavor-overlay {
       position: fixed; inset: 0; background: rgba(0,0,0,0.6);
-      display: flex; align-items: center; justify-content: center; z-index: 100;
+      display: flex; align-items: flex-end; justify-content: center; z-index: 100;
+      padding: 0 0 env(safe-area-inset-bottom, 0);
     }
     .flavor-sheet {
-      background: #161b22; border: 1px solid #30363d; border-radius: 14px;
-      padding: 1.5em; min-width: 260px; max-width: 320px; width: 90%;
+      background: #161b22; border: 1px solid #30363d; border-radius: 14px 14px 0 0;
+      padding: 1em 1em 1.25em; width: 100%; max-width: 480px;
+      max-height: 60vh; overflow-y: auto;
     }
-    .flavor-header { font-size: 1.05em; font-weight: 700; color: #e6edf3; margin-bottom: 0.3em; }
-    .flavor-prompt { font-size: 0.82em; color: #8b949e; margin: 0 0 1em; }
-    .flavor-options { display: flex; flex-direction: column; gap: 0.5em; margin-bottom: 0.75em; }
+    .flavor-header { font-size: 1em; font-weight: 700; color: #e6edf3; margin-bottom: 0.2em; }
+    .flavor-prompt { font-size: 0.8em; color: #8b949e; margin: 0 0 0.75em; }
+    .flavor-options { display: flex; flex-direction: column; gap: 0.4em; margin-bottom: 0.6em; }
     .flavor-btn {
-      padding: 0.7em 1em; background: #21262d; border: 1px solid #30363d;
-      border-radius: 8px; color: #e6edf3; font-size: 0.95em; cursor: pointer; text-align: left; transition: all 0.15s;
+      padding: 0.65em 1em; background: #21262d; border: 1px solid #30363d;
+      border-radius: 8px; color: #e6edf3; font-size: 0.9em; cursor: pointer; text-align: left; transition: all 0.15s;
     }
     .flavor-btn:hover { border-color: #e94560; color: #e94560; }
-    .flavor-cancel { width: 100%; padding: 0.5em; background: none; border: none; color: #8b949e; font-size: 0.85em; cursor: pointer; }
+    .flavor-cancel { width: 100%; padding: 0.4em; background: none; border: none; color: #8b949e; font-size: 0.82em; cursor: pointer; }
     .flavor-cancel:hover { color: #c9d1d9; }
 
     @media (max-width: 700px) {
