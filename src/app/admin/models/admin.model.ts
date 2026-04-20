@@ -97,6 +97,7 @@ export interface CatalogProduct {
   available: boolean;
   categoryId: number;
   categoryName: string;
+  flavors?: string[];
 }
 
 export interface DailyStatResponse {

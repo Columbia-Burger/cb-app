@@ -10,7 +10,7 @@ import { OrderResponse, CatalogProduct, OrderItemRequest } from '../../../admin/
 import { OrderEvent, OrderEventsService } from '../../../services/order-events.service';
 
 interface MenuCategory { id: number; name: string; products: CatalogProduct[]; }
-interface CartItem { product: CatalogProduct; quantity: number; note: string; }
+interface CartItem { product: CatalogProduct; flavor: string; quantity: number; note: string; }
 
 @Component({
   selector: 'app-domicilio-board',
@@ -150,10 +150,15 @@ interface CartItem { product: CatalogProduct; quantity: number; note: string; }
                   <div class="empty-cart">Agrega productos al pedido</div>
                 } @else {
                   <div class="cart-items">
-                    @for (item of cart(); track item.product.id) {
+                    @for (item of cart(); track item.product.id + '-' + item.flavor) {
                       <div class="cart-item">
                         <div class="item-info">
-                          <span class="item-name">{{ item.product.name }}</span>
+                          <div>
+                            <span class="item-name">{{ item.product.name }}</span>
+                            @if (item.flavor) {
+                              <div class="item-flavor-tag">{{ item.flavor }}</div>
+                            }
+                          </div>
                           <span class="item-price">{{ item.product.price * item.quantity | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
                         </div>
                         <div class="item-controls">
@@ -192,6 +197,21 @@ interface CartItem { product: CatalogProduct; quantity: number; note: string; }
         }
 
       </main>
+
+      @if (pendingProduct()) {
+        <div class="flavor-overlay" (click)="pendingProduct.set(null)">
+          <div class="flavor-sheet" (click)="$event.stopPropagation()">
+            <div class="flavor-header">{{ pendingProduct()!.name }}</div>
+            <p class="flavor-prompt">Selecciona el sabor:</p>
+            <div class="flavor-options">
+              @for (f of pendingProduct()!.flavors!; track f) {
+                <button class="flavor-btn" (click)="pickFlavor(f)">{{ f }}</button>
+              }
+            </div>
+            <button class="flavor-cancel" (click)="pendingProduct.set(null)">Cancelar</button>
+          </div>
+        </div>
+      }
     </div>
   `,
   styles: [`
@@ -421,6 +441,26 @@ interface CartItem { product: CatalogProduct; quantity: number; note: string; }
       margin-top: 0.75em; background: rgba(233,69,96,0.15); border: 1px solid #e94560;
       color: #e94560; padding: 0.6em 0.9em; border-radius: 8px; font-size: 0.85em;
     }
+    .item-flavor-tag { font-size: 0.75em; color: #8b949e; margin-top: 2px; }
+
+    .flavor-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.6);
+      display: flex; align-items: center; justify-content: center; z-index: 100;
+    }
+    .flavor-sheet {
+      background: #161b22; border: 1px solid #30363d; border-radius: 14px;
+      padding: 1.5em; min-width: 260px; max-width: 320px; width: 90%;
+    }
+    .flavor-header { font-size: 1.05em; font-weight: 700; color: #e6edf3; margin-bottom: 0.3em; }
+    .flavor-prompt { font-size: 0.82em; color: #8b949e; margin: 0 0 1em; }
+    .flavor-options { display: flex; flex-direction: column; gap: 0.5em; margin-bottom: 0.75em; }
+    .flavor-btn {
+      padding: 0.7em 1em; background: #21262d; border: 1px solid #30363d;
+      border-radius: 8px; color: #e6edf3; font-size: 0.95em; cursor: pointer; text-align: left; transition: all 0.15s;
+    }
+    .flavor-btn:hover { border-color: #e94560; color: #e94560; }
+    .flavor-cancel { width: 100%; padding: 0.5em; background: none; border: none; color: #8b949e; font-size: 0.85em; cursor: pointer; }
+    .flavor-cancel:hover { color: #c9d1d9; }
 
     @media (max-width: 700px) {
       .order-layout { grid-template-columns: 1fr; }
@@ -452,6 +492,7 @@ export class DomicilioBoardComponent implements OnInit, OnDestroy {
   submitting = signal(false);
   successMsg = signal('');
   errorMsg = signal('');
+  pendingProduct = signal<CatalogProduct | null>(null);
   customerName = '';
 
   currentProducts = computed(() =>
@@ -536,20 +577,35 @@ export class DomicilioBoardComponent implements OnInit, OnDestroy {
   }
 
   addToCart(product: CatalogProduct): void {
+    if (product.flavors?.length) {
+      this.pendingProduct.set(product);
+      return;
+    }
+    this.addProductToCart(product, '');
+  }
+
+  pickFlavor(flavor: string): void {
+    const product = this.pendingProduct();
+    if (!product) return;
+    this.pendingProduct.set(null);
+    this.addProductToCart(product, flavor);
+  }
+
+  private addProductToCart(product: CatalogProduct, flavor: string): void {
     this.cart.update(items => {
-      const existing = items.find(i => i.product.id === product.id);
-      if (existing) return items.map(i => i.product.id === product.id ? { ...i, quantity: i.quantity + 1 } : i);
-      return [...items, { product, quantity: 1, note: '' }];
+      const existing = items.find(i => i.product.id === product.id && i.flavor === flavor);
+      if (existing) return items.map(i => i.product.id === product.id && i.flavor === flavor ? { ...i, quantity: i.quantity + 1 } : i);
+      return [...items, { product, flavor, quantity: 1, note: '' }];
     });
   }
 
   decreaseQty(item: CartItem): void {
     if (item.quantity <= 1) { this.removeFromCart(item); return; }
-    this.cart.update(items => items.map(i => i.product.id === item.product.id ? { ...i, quantity: i.quantity - 1 } : i));
+    this.cart.update(items => items.map(i => i.product.id === item.product.id && i.flavor === item.flavor ? { ...i, quantity: i.quantity - 1 } : i));
   }
 
   removeFromCart(item: CartItem): void {
-    this.cart.update(items => items.filter(i => i.product.id !== item.product.id));
+    this.cart.update(items => items.filter(i => !(i.product.id === item.product.id && i.flavor === item.flavor)));
   }
 
   submitOrder(): void {
@@ -561,6 +617,7 @@ export class DomicilioBoardComponent implements OnInit, OnDestroy {
     const orderItems: OrderItemRequest[] = this.cart().map(i => ({
       productId: i.product.id,
       productName: i.product.name,
+      flavor: i.flavor || undefined,
       quantity: i.quantity,
       unitPrice: i.product.price,
       note: i.note || undefined

@@ -1,13 +1,14 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { tap } from 'rxjs/operators';
+import { tap, map } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import {
   LoginRequest, LoginResponse, OrderResponse, OrderStatus,
   CustomerResponse, DashboardStats, TopProduct,
   CreateOrderRequest, CatalogProduct, ShiftResponse, DailyStatResponse
 } from '../models/admin.model';
+import { ProductResponse } from '../../models/api.model';
 
 @Injectable({ providedIn: 'root' })
 export class AdminService {
@@ -125,7 +126,19 @@ export class AdminService {
 
   // ── Menú (catálogo) ──────────────────────────────────────────
   getMenu(): Observable<CatalogProduct[]> {
-    return this.http.get<CatalogProduct[]>(`${environment.apiUrl}/api/products?availableOnly=true`);
+    return this.http.get<ProductResponse[]>(`${environment.apiUrl}/api/products?availableOnly=true`).pipe(
+      map(products => products.map(p => ({
+        id: p.id,
+        name: p.name,
+        description: p.description,
+        price: p.price,
+        imageUrl: p.imageUrl,
+        available: p.available,
+        categoryId: p.categoryId,
+        categoryName: p.categoryName,
+        ...(p.flavors?.length ? { flavors: p.flavors.map(f => f.name) } : {}),
+      })))
+    );
   }
 
   getAdminProducts(): Observable<CatalogProduct[]> {
