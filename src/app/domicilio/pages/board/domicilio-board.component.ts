@@ -147,7 +147,15 @@ interface CartItem { product: CatalogProduct; flavor: string; quantity: number; 
                     <button class="type-btn" [class.selected]="orderType() === 'llevar'" (click)="orderType.set('llevar')">🥡 Para llevar</button>
                   </div>
                   @if (orderType() === 'mesa') {
-                    <input type="text" placeholder="Número de mesa (ej: 3)" [(ngModel)]="tableNumber" />
+                    <select [(ngModel)]="tableNumber">
+                      <option value="">Selecciona una mesa...</option>
+                      <option>Barra 1</option>
+                      <option>Barra 2</option>
+                      <option>Barra 3</option>
+                      <option>Barra 4</option>
+                      <option>Mesa 1</option>
+                      <option>Mesa 2</option>
+                    </select>
                   }
                 </div>
 
@@ -408,6 +416,17 @@ interface CartItem { product: CatalogProduct; flavor: string; quantity: number; 
       border-radius: 8px; color: #c9d1d9; font-size: 0.85em; outline: none;
     }
     .fields input:focus { border-color: #e94560; }
+    .fields select {
+      padding: 0.65em 0.85em;
+      background: #0d1117;
+      border: 1px solid #30363d;
+      border-radius: 8px;
+      color: #c9d1d9;
+      font-size: 0.85em;
+      outline: none;
+      cursor: pointer;
+    }
+    .fields select:focus { border-color: #e94560; }
     .order-type-picker { display: flex; gap: 0.5em; }
     .type-btn {
       flex: 1; padding: 0.6em 0.5em;
@@ -629,7 +648,7 @@ export class DomicilioBoardComponent implements OnInit, OnDestroy {
     this.successMsg.set('');
     this.errorMsg.set('');
 
-    const notes = type === 'mesa' ? `Mesa ${this.tableNumber}` : 'Para llevar';
+    const notes = type === 'mesa' ? this.tableNumber : 'Para llevar';
 
     const orderItems: OrderItemRequest[] = this.cart().map(i => ({
       productId: i.product.id,
