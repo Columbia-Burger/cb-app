@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import org.springframework.web.bind.annotation.RequestBody;
 
 @RestController
 @RequestMapping("/api/admin")
@@ -44,6 +45,19 @@ public class AdminController {
     @PatchMapping("/catalog/products/{id}/toggle")
     public ResponseEntity<Void> toggleProduct(@PathVariable Long id) {
         catalogProxyService.toggleAvailable(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/catalog/flavors")
+    public ResponseEntity<String> getFlavors() {
+        return ResponseEntity.ok(catalogProxyService.getFlavors());
+    }
+
+    @PatchMapping("/catalog/products/{id}/flavors")
+    public ResponseEntity<Void> updateProductFlavors(
+            @PathVariable Long id,
+            @RequestBody List<Long> flavorIds) {
+        catalogProxyService.updateProductFlavors(id, flavorIds);
         return ResponseEntity.noContent().build();
     }
 }
