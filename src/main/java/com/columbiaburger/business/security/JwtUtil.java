@@ -50,6 +50,8 @@ public class JwtUtil {
             Claims claims = parseClaims(token);
             return claims.getExpiration().after(new Date());
         } catch (Exception e) {
+            org.slf4j.LoggerFactory.getLogger(JwtUtil.class)
+                    .warn("[JWT] validation failed: {}", e.getMessage());
             return false;
         }
     }
