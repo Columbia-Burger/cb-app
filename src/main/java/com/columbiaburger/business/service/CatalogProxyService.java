@@ -2,6 +2,7 @@ package com.columbiaburger.business.service;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
+import org.springframework.http.client.JdkClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 
@@ -13,7 +14,7 @@ import java.util.List;
 @Service
 public class CatalogProxyService {
 
-    private final RestTemplate restTemplate = new RestTemplate();
+    private final RestTemplate restTemplate = new RestTemplate(new JdkClientHttpRequestFactory());
 
     @Value("${catalog.api.url}")
     private String catalogApiUrl;
