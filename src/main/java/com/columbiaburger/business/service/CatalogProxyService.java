@@ -3,7 +3,10 @@ package com.columbiaburger.business.service;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
+
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -32,9 +35,14 @@ public class CatalogProxyService {
         HttpHeaders headers = new HttpHeaders();
         headers.set("X-API-Key", catalogApiKey);
         HttpEntity<Void> entity = new HttpEntity<>(headers);
-        restTemplate.exchange(
-                catalogApiUrl + "/api/products/" + productId + "/toggle-available",
-                HttpMethod.PATCH, entity, Void.class);
+        try {
+            restTemplate.exchange(
+                    catalogApiUrl + "/api/products/" + productId + "/toggle-available",
+                    HttpMethod.PATCH, entity, Void.class);
+        } catch (HttpClientErrorException e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+                    "Error al contactar el catálogo: " + e.getStatusCode());
+        }
     }
 
     public String getFlavors() {
@@ -52,8 +60,13 @@ public class CatalogProxyService {
         headers.set("X-API-Key", catalogApiKey);
         headers.setContentType(MediaType.APPLICATION_JSON);
         HttpEntity<List<Long>> entity = new HttpEntity<>(flavorIds, headers);
-        restTemplate.exchange(
-                catalogApiUrl + "/api/products/" + productId + "/flavors",
-                HttpMethod.PATCH, entity, Void.class);
+        try {
+            restTemplate.exchange(
+                    catalogApiUrl + "/api/products/" + productId + "/flavors",
+                    HttpMethod.PATCH, entity, Void.class);
+        } catch (HttpClientErrorException e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+                    "Error al contactar el catálogo: " + e.getStatusCode());
+        }
     }
 }
