@@ -2,6 +2,8 @@ package com.columbiaburger.business.controller;
 
 import com.columbiaburger.business.dto.response.DailyStatResponse;
 import com.columbiaburger.business.dto.response.DashboardStatsResponse;
+import com.columbiaburger.business.dto.response.HourlyStatResponse;
+import com.columbiaburger.business.dto.response.SourceStatResponse;
 import com.columbiaburger.business.dto.response.TopProductResponse;
 import com.columbiaburger.business.service.AdminService;
 import com.columbiaburger.business.service.CatalogProxyService;
@@ -35,6 +37,16 @@ public class AdminController {
     public ResponseEntity<List<DailyStatResponse>> getDailyStats(
             @RequestParam(defaultValue = "7") int days) {
         return ResponseEntity.ok(adminService.getDailyStats(days));
+    }
+
+    @GetMapping("/stats/by-source")
+    public ResponseEntity<List<SourceStatResponse>> getStatsBySource() {
+        return ResponseEntity.ok(adminService.getStatsBySource());
+    }
+
+    @GetMapping("/stats/by-hour")
+    public ResponseEntity<List<HourlyStatResponse>> getStatsByHour() {
+        return ResponseEntity.ok(adminService.getStatsByHour());
     }
 
     @GetMapping("/catalog/products")

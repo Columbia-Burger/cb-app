@@ -27,4 +27,10 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
 
     @Query("SELECT COUNT(o) FROM Order o WHERE o.createdAt BETWEEN :from AND :to AND o.status != 'CANCELLED'")
     long countByCreatedAtBetweenExcludingCancelled(@Param("from") LocalDateTime from, @Param("to") LocalDateTime to);
+
+    @Query("SELECT o.source, COUNT(o) FROM Order o WHERE o.status <> com.columbiaburger.business.entity.OrderStatus.CANCELLED GROUP BY o.source ORDER BY COUNT(o) DESC")
+    List<Object[]> countBySource();
+
+    @Query(value = "SELECT EXTRACT(HOUR FROM (created_at AT TIME ZONE 'UTC') AT TIME ZONE 'America/Bogota')::int AS hour, COUNT(*) AS orders, COALESCE(SUM(total), 0) AS revenue FROM business.orders WHERE status != 'CANCELLED' GROUP BY 1 ORDER BY 1", nativeQuery = true)
+    List<Object[]> countByHour();
 }

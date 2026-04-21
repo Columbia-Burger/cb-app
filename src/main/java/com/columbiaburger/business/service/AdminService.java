@@ -2,6 +2,8 @@ package com.columbiaburger.business.service;
 
 import com.columbiaburger.business.dto.response.DailyStatResponse;
 import com.columbiaburger.business.dto.response.DashboardStatsResponse;
+import com.columbiaburger.business.dto.response.HourlyStatResponse;
+import com.columbiaburger.business.dto.response.SourceStatResponse;
 import com.columbiaburger.business.dto.response.TopProductResponse;
 import com.columbiaburger.business.entity.OrderStatus;
 import com.columbiaburger.business.repository.CustomerRepository;
@@ -81,6 +83,24 @@ public class AdminService {
                             .revenue(orderRepository.sumTotalBetween(from, to))
                             .build();
                 })
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<SourceStatResponse> getStatsBySource() {
+        return orderRepository.countBySource().stream()
+                .map(row -> new SourceStatResponse(row[0].toString(), ((Number) row[1]).longValue()))
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<HourlyStatResponse> getStatsByHour() {
+        return orderRepository.countByHour().stream()
+                .map(row -> new HourlyStatResponse(
+                        ((Number) row[0]).intValue(),
+                        ((Number) row[1]).longValue(),
+                        new java.math.BigDecimal(row[2].toString())
+                ))
                 .toList();
     }
 }
