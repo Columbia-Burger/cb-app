@@ -9,9 +9,18 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const router = inject(Router);
   const adminService = inject(AdminService);
 
-  return next(req).pipe(
+  const isBusinessApi = req.url.startsWith(environment.businessApiUrl);
+
+  let authReq = req;
+  if (isBusinessApi) {
+    const token = adminService.getToken();
+    if (token) {
+      authReq = req.clone({ setHeaders: { Authorization: `Bearer ${token}` } });
+    }
+  }
+
+  return next(authReq).pipe(
     catchError((error: HttpErrorResponse) => {
-      const isBusinessApi = req.url.startsWith(environment.businessApiUrl);
       if (isBusinessApi && (error.status === 401 || error.status === 403)) {
         adminService.logout();
         router.navigate(['/admin/login']);
