@@ -111,6 +111,17 @@ export interface DailyStatResponse {
   revenue: number;
 }
 
+export interface SourceStatResponse {
+  source: string;
+  orders: number;
+}
+
+export interface HourlyStatResponse {
+  hour: number;
+  orders: number;
+  revenue: number;
+}
+
 export interface ShiftResponse {
   id: number;
   openedAt: string;

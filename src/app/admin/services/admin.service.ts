@@ -6,7 +6,8 @@ import { environment } from '../../../environments/environment';
 import {
   LoginRequest, LoginResponse, OrderResponse, OrderStatus,
   CustomerResponse, DashboardStats, TopProduct,
-  CreateOrderRequest, CatalogProduct, FlavorItem, ShiftResponse, DailyStatResponse
+  CreateOrderRequest, CatalogProduct, FlavorItem, ShiftResponse, DailyStatResponse,
+  SourceStatResponse, HourlyStatResponse
 } from '../models/admin.model';
 import { ProductResponse } from '../../models/api.model';
 
@@ -79,6 +80,18 @@ export class AdminService {
 
   getDailyStats(days = 7): Observable<DailyStatResponse[]> {
     return this.http.get<DailyStatResponse[]>(`${this.base}/api/admin/stats/daily?days=${days}`, {
+      headers: this.authHeaders()
+    });
+  }
+
+  getStatsBySource(): Observable<SourceStatResponse[]> {
+    return this.http.get<SourceStatResponse[]>(`${this.base}/api/admin/stats/by-source`, {
+      headers: this.authHeaders()
+    });
+  }
+
+  getStatsByHour(): Observable<HourlyStatResponse[]> {
+    return this.http.get<HourlyStatResponse[]>(`${this.base}/api/admin/stats/by-hour`, {
       headers: this.authHeaders()
     });
   }
