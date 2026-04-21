@@ -2,8 +2,7 @@ import { Component, inject, signal, computed, OnInit, OnDestroy } from '@angular
 import { Router } from '@angular/router';
 import { CurrencyPipe, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Subscription, interval } from 'rxjs';
-import { filter, switchMap } from 'rxjs/operators';
+import { Subscription } from 'rxjs';
 import { isCurrentBusinessDayOrder } from '../../../shared/business-hours';
 import { DomicilioService } from '../../services/domicilio.service';
 import { OrderResponse, CatalogProduct, OrderItemRequest } from '../../../admin/models/admin.model';
@@ -515,7 +514,6 @@ export class DomicilioBoardComponent implements OnInit, OnDestroy {
   orders = signal<OrderResponse[]>([]);
   loadingDeliveries = signal(true);
   updating = new Set<number>();
-  private pollSub?: Subscription;
   private eventSub?: Subscription;
 
   // ── Tomar pedido ──────────────────────────────────────────────
@@ -542,14 +540,9 @@ export class DomicilioBoardComponent implements OnInit, OnDestroy {
     this.eventSub = this.orderEvents.connect(this.svc.getToken()).subscribe({
       next: event => this.applyOrderEvent(event),
     });
-    this.pollSub = interval(60000).pipe(
-      filter(() => document.visibilityState === 'visible'),
-      switchMap(() => this.svc.getDeliveryOrders())
-    ).subscribe(data => this.setOrders(data));
   }
 
   ngOnDestroy(): void {
-    this.pollSub?.unsubscribe();
     this.eventSub?.unsubscribe();
   }
 

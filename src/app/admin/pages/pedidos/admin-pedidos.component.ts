@@ -3,8 +3,7 @@ import { CurrencyPipe, DatePipe } from '@angular/common';
 import { Router } from '@angular/router';
 import { AdminService } from '../../services/admin.service';
 import { OrderResponse, OrderStatus } from '../../models/admin.model';
-import { Subscription, interval } from 'rxjs';
-import { filter, switchMap } from 'rxjs/operators';
+import { Subscription } from 'rxjs';
 import { getCurrentBusinessDayStartParam, isCurrentBusinessDayOrder } from '../../../shared/business-hours';
 import { OrderEvent, OrderEventsService } from '../../../services/order-events.service';
 
@@ -364,7 +363,6 @@ export class AdminPedidosComponent implements OnInit, AfterViewInit, OnDestroy {
   };
 
   private knownIds = new Set<number>();
-  private pollSub?: Subscription;
   private eventSub?: Subscription;
 
   ngOnInit(): void {
@@ -381,17 +379,9 @@ export class AdminPedidosComponent implements OnInit, AfterViewInit, OnDestroy {
     this.eventSub = this.orderEvents.connect(this.adminService.getToken()).subscribe({
       next: event => this.applyOrderEvent(event),
     });
-    this.pollSub = interval(60000).pipe(
-      filter(() => document.visibilityState === 'visible'),
-      switchMap(() => this.adminService.getOrders(undefined, this.getBusinessDayStart()))
-    ).subscribe({
-      next: orders => this.applyOrders(orders),
-      error: err => this.handleLoadError(err),
-    });
   }
 
   ngOnDestroy(): void {
-    this.pollSub?.unsubscribe();
     this.eventSub?.unsubscribe();
     const overlay = this.overlayRef?.nativeElement;
     if (overlay?.parentNode === document.body) {

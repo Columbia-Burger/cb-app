@@ -1,8 +1,7 @@
 import { Component, inject, signal, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { DatePipe, CurrencyPipe } from '@angular/common';
-import { Subscription, interval } from 'rxjs';
-import { filter, switchMap } from 'rxjs/operators';
+import { Subscription } from 'rxjs';
 import { isCurrentBusinessDayOrder } from '../../../shared/business-hours';
 import { CocinaService } from '../../services/cocina.service';
 import { OrderResponse, OrderStatus } from '../../../admin/models/admin.model';
@@ -276,7 +275,6 @@ export class CocinaBoardComponent implements OnInit, OnDestroy {
   loading = signal(true);
   updating = new Set<number>();
 
-  private pollSub?: Subscription;
   private eventSub?: Subscription;
 
   ngOnInit(): void {
@@ -284,14 +282,9 @@ export class CocinaBoardComponent implements OnInit, OnDestroy {
     this.eventSub = this.orderEvents.connect(this.svc.getToken()).subscribe({
       next: event => this.applyOrderEvent(event),
     });
-    this.pollSub = interval(60000).pipe(
-      filter(() => document.visibilityState === 'visible'),
-      switchMap(() => this.svc.getKitchenOrders())
-    ).subscribe(data => this.setOrders(data));
   }
 
   ngOnDestroy(): void {
-    this.pollSub?.unsubscribe();
     this.eventSub?.unsubscribe();
   }
 
