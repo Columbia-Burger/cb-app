@@ -60,19 +60,25 @@ import { CatalogProduct, CatalogCategory, FlavorItem } from '../../models/admin.
                     class="toggle-btn"
                     [ngClass]="p.available ? 'toggle-on' : 'toggle-off'"
                     (click)="toggle(p)"
-                    [disabled]="toggling.has(p.id)"
+                    [disabled]="toggling().has(p.id)"
                   >
                     <span class="toggle-dot"></span>
                   </button>
                   <span class="toggle-label">{{ p.available ? 'Disponible' : 'No disponible' }}</span>
-                  <button class="flavors-btn" (click)="openFlavorEditor(p); $event.stopPropagation()">
-                    🏷️{{ p.flavors?.length ? ' ' + p.flavors!.length : '' }}
-                  </button>
+                  @if (cat.name.toLowerCase().includes('bebida')) {
+                    <button class="flavors-btn" (click)="openFlavorEditor(p); $event.stopPropagation()">
+                      🏷️{{ p.flavors?.length ? ' ' + p.flavors!.length : '' }}
+                    </button>
+                  }
                 </div>
               </div>
             }
           </div>
         </div>
+      }
+
+      @if (toggleError()) {
+        <div class="toggle-error">⚠️ {{ toggleError() }}</div>
       }
 
       @if (!loading() && filteredCategories().length === 0) {
@@ -253,6 +259,11 @@ import { CatalogProduct, CatalogCategory, FlavorItem } from '../../models/admin.
     .toggle-on .toggle-dot { transform: translateX(16px); }
 
     .empty { color: #8b949e; text-align: center; padding: 3em; }
+    .toggle-error {
+      background: rgba(233,69,96,0.12); border: 1px solid #e94560;
+      color: #e94560; padding: 0.7em 1em; border-radius: 8px;
+      font-size: 0.85em; margin-bottom: 1em;
+    }
 
     .flavors-btn {
       margin-left: auto;
@@ -303,7 +314,8 @@ export class AdminMenuComponent implements OnInit {
 
   loading = signal(true);
   products = signal<CatalogProduct[]>([]);
-  toggling = new Set<number>();
+  toggling = signal(new Set<number>());
+  toggleError = signal('');
   search = '';
 
   editingProduct = signal<CatalogProduct | null>(null);
@@ -384,16 +396,28 @@ export class AdminMenuComponent implements OnInit {
     });
   }
 
+  private addToggling(id: number): void {
+    this.toggling.update(s => new Set([...s, id]));
+  }
+
+  private removeToggling(id: number): void {
+    this.toggling.update(s => { const n = new Set(s); n.delete(id); return n; });
+  }
+
   toggle(product: CatalogProduct): void {
-    this.toggling.add(product.id);
+    this.toggleError.set('');
+    this.addToggling(product.id);
     this.svc.toggleProduct(product.id).subscribe({
       next: () => {
         this.products.update(list =>
           list.map(p => p.id === product.id ? { ...p, available: !p.available } : p)
         );
-        this.toggling.delete(product.id);
+        this.removeToggling(product.id);
       },
-      error: () => this.toggling.delete(product.id)
+      error: () => {
+        this.removeToggling(product.id);
+        this.toggleError.set('Error al actualizar el producto. Intenta de nuevo.');
+      }
     });
   }
 }
