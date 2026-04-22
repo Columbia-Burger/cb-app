@@ -21,28 +21,41 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     private final JwtUtil jwtUtil;
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request,
-                                    HttpServletResponse response,
-                                    FilterChain filterChain) throws ServletException, IOException {
+protected void doFilterInternal(HttpServletRequest request,
+                                HttpServletResponse response,
+                                FilterChain filterChain) throws ServletException, IOException {
 
-        String header = request.getHeader("Authorization");
+    String header = request.getHeader("Authorization");
 
-        if (header != null && header.startsWith("Bearer ")) {
+    if (header != null && header.startsWith("Bearer ")) {
+        try {
             String token = header.substring(7);
+
             if (jwtUtil.isTokenValid(token)) {
                 String subject = jwtUtil.extractSubject(token);
                 String role = jwtUtil.extractRole(token);
-                String authority = "CUSTOMER".equals(role) ? "ROLE_CUSTOMER"
-                        : "KITCHEN".equals(role) ? "ROLE_KITCHEN"
-                        : "DELIVERY".equals(role) ? "ROLE_DELIVERY" : "ROLE_ADMIN";
+
+                String authority = switch (role) {
+                    case "CUSTOMER" -> "ROLE_CUSTOMER";
+                    case "KITCHEN" -> "ROLE_KITCHEN";
+                    case "DELIVERY" -> "ROLE_DELIVERY";
+                    default -> "ROLE_ADMIN";
+                };
+
                 var auth = new UsernamePasswordAuthenticationToken(
                         subject, null,
                         List.of(new SimpleGrantedAuthority(authority))
                 );
+
                 SecurityContextHolder.getContext().setAuthentication(auth);
             }
-        }
 
-        filterChain.doFilter(request, response);
+        } catch (Exception e) {
+            // 👇 CLAVE: ignorar token inválido
+            SecurityContextHolder.clearContext();
+        }
     }
+
+    filterChain.doFilter(request, response);
+}
 }
