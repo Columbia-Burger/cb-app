@@ -70,4 +70,30 @@ public class CatalogProxyService {
                     "Error al contactar el catálogo: " + e.getStatusCode());
         }
     }
+
+    public String getCategories() {
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("X-API-Key", catalogApiKey);
+        HttpEntity<Void> entity = new HttpEntity<>(headers);
+        ResponseEntity<String> response = restTemplate.exchange(
+                catalogApiUrl + "/api/categories",
+                HttpMethod.GET, entity, String.class);
+        return response.getBody();
+    }
+
+    public String createProduct(String body) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("X-API-Key", catalogApiKey);
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        HttpEntity<String> entity = new HttpEntity<>(body, headers);
+        try {
+            ResponseEntity<String> response = restTemplate.exchange(
+                    catalogApiUrl + "/api/products",
+                    HttpMethod.POST, entity, String.class);
+            return response.getBody();
+        } catch (HttpClientErrorException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Error al crear el producto: " + e.getStatusCode());
+        }
+    }
 }
