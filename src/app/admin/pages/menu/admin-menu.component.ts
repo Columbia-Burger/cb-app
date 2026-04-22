@@ -2,7 +2,7 @@ import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { CurrencyPipe, NgClass } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AdminService } from '../../services/admin.service';
-import { CatalogProduct, CatalogCategory, FlavorItem } from '../../models/admin.model';
+import { CatalogProduct, CatalogCategory, FlavorItem, CategoryItem, CreateProductRequest } from '../../models/admin.model';
 
 @Component({
   selector: 'app-admin-menu',
@@ -15,9 +15,12 @@ import { CatalogProduct, CatalogCategory, FlavorItem } from '../../models/admin.
           <h2 class="page-title">Menú</h2>
           <p class="page-sub">Activa o desactiva productos para el agente y el menú público</p>
         </div>
-        <div class="header-stats">
-          <span class="stat active">{{ activeCount() }} activos</span>
-          <span class="stat inactive">{{ inactiveCount() }} inactivos</span>
+        <div class="header-right">
+          <div class="header-stats">
+            <span class="stat active">{{ activeCount() }} activos</span>
+            <span class="stat inactive">{{ inactiveCount() }} inactivos</span>
+          </div>
+          <button class="create-btn" (click)="openCreateModal()">+ Nuevo producto</button>
         </div>
       </div>
 
@@ -25,7 +28,8 @@ import { CatalogProduct, CatalogCategory, FlavorItem } from '../../models/admin.
         <input
           type="text"
           placeholder="Buscar producto..."
-          [(ngModel)]="search"
+          [ngModel]="search()"
+          (ngModelChange)="search.set($event)"
         />
       </div>
 
@@ -85,6 +89,7 @@ import { CatalogProduct, CatalogCategory, FlavorItem } from '../../models/admin.
         <p class="empty">No se encontraron productos.</p>
       }
 
+      <!-- Flavor editor modal -->
       @if (editingProduct()) {
         <div class="fl-overlay" (click)="editingProduct.set(null)">
           <div class="fl-sheet" (click)="$event.stopPropagation()">
@@ -112,6 +117,55 @@ import { CatalogProduct, CatalogCategory, FlavorItem } from '../../models/admin.
           </div>
         </div>
       }
+
+      <!-- Create product modal -->
+      @if (showCreateModal()) {
+        <div class="fl-overlay" (click)="closeCreateModal()">
+          <div class="create-sheet" (click)="$event.stopPropagation()">
+            <div class="fl-title">Nuevo producto</div>
+            <div class="create-form">
+              <label class="form-field">
+                <span class="form-label">Nombre *</span>
+                <input type="text" [(ngModel)]="newProduct.name" placeholder="Nombre del producto" />
+              </label>
+              <label class="form-field">
+                <span class="form-label">Descripción</span>
+                <textarea [(ngModel)]="newProduct.description" placeholder="Descripción (opcional)" rows="2"></textarea>
+              </label>
+              <label class="form-field">
+                <span class="form-label">Precio (COP) *</span>
+                <input type="number" [(ngModel)]="newProduct.price" placeholder="0" min="0" />
+              </label>
+              <label class="form-field">
+                <span class="form-label">URL de imagen</span>
+                <input type="text" [(ngModel)]="newProduct.imageUrl" placeholder="https://..." />
+              </label>
+              <label class="form-field">
+                <span class="form-label">Categoría *</span>
+                @if (loadingCategories()) {
+                  <p class="fl-loading">Cargando categorías...</p>
+                } @else {
+                  <select [(ngModel)]="newProduct.categoryId">
+                    <option [value]="0" disabled>Seleccionar categoría</option>
+                    @for (cat of allCategories(); track cat.id) {
+                      <option [value]="cat.id">{{ cat.name }}</option>
+                    }
+                  </select>
+                }
+              </label>
+              @if (createError()) {
+                <p class="create-error">⚠️ {{ createError() }}</p>
+              }
+            </div>
+            <div class="fl-actions">
+              <button class="fl-save" [disabled]="creatingProduct()" (click)="submitCreateProduct()">
+                {{ creatingProduct() ? 'Creando...' : 'Crear producto' }}
+              </button>
+              <button class="fl-cancel" (click)="closeCreateModal()">Cancelar</button>
+            </div>
+          </div>
+        </div>
+      }
     </div>
   `,
   styles: [`
@@ -129,6 +183,7 @@ import { CatalogProduct, CatalogCategory, FlavorItem } from '../../models/admin.
     .page-title { font-size: 1.5em; font-weight: 700; color: #e6edf3; margin: 0 0 0.2em; }
     .page-sub { color: #8b949e; font-size: 0.85em; margin: 0; }
 
+    .header-right { display: flex; flex-direction: column; align-items: flex-end; gap: 0.6em; }
     .header-stats { display: flex; gap: 0.6em; align-items: center; }
     .stat {
       font-size: 0.8em;
@@ -138,6 +193,19 @@ import { CatalogProduct, CatalogCategory, FlavorItem } from '../../models/admin.
     }
     .stat.active { background: rgba(63,185,80,0.15); color: #3fb950; }
     .stat.inactive { background: rgba(248,81,73,0.12); color: #f85149; }
+
+    .create-btn {
+      background: #e94560;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 0.5em 1em;
+      font-size: 0.85em;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .create-btn:hover { background: #c73652; }
 
     .search-bar { margin-bottom: 1.5em; }
     .search-bar input {
@@ -287,6 +355,11 @@ import { CatalogProduct, CatalogCategory, FlavorItem } from '../../models/admin.
       padding: 1.25em 1.25em 1.5em; width: 100%; max-width: 480px;
       max-height: 70vh; overflow-y: auto;
     }
+    .create-sheet {
+      background: #161b22; border: 1px solid #30363d; border-radius: 14px 14px 0 0;
+      padding: 1.25em 1.25em 1.5em; width: 100%; max-width: 480px;
+      max-height: 85vh; overflow-y: auto;
+    }
     .fl-title { font-size: 1em; font-weight: 700; color: #e6edf3; margin-bottom: 1em; }
     .fl-loading { color: #8b949e; font-size: 0.85em; }
     .fl-options { display: flex; flex-direction: column; gap: 0.5em; margin-bottom: 1em; }
@@ -297,7 +370,7 @@ import { CatalogProduct, CatalogCategory, FlavorItem } from '../../models/admin.
       cursor: pointer; font-size: 0.9em; color: #e6edf3;
     }
     .fl-option input { accent-color: #e94560; width: 16px; height: 16px; cursor: pointer; }
-    .fl-actions { display: flex; gap: 0.75em; }
+    .fl-actions { display: flex; gap: 0.75em; margin-top: 1em; }
     .fl-save {
       flex: 1; padding: 0.75em; background: #e94560; color: #fff;
       border: none; border-radius: 8px; font-size: 0.9em; font-weight: 600; cursor: pointer;
@@ -307,6 +380,30 @@ import { CatalogProduct, CatalogCategory, FlavorItem } from '../../models/admin.
       padding: 0.75em 1em; background: none; border: 1px solid #30363d;
       border-radius: 8px; color: #8b949e; font-size: 0.9em; cursor: pointer;
     }
+
+    /* Create form */
+    .create-form { display: flex; flex-direction: column; gap: 0.85em; }
+    .form-field { display: flex; flex-direction: column; gap: 0.3em; }
+    .form-label { font-size: 0.8em; color: #8b949e; font-weight: 600; }
+    .create-form input,
+    .create-form textarea,
+    .create-form select {
+      background: #21262d;
+      border: 1px solid #30363d;
+      border-radius: 8px;
+      color: #e6edf3;
+      font-size: 0.9em;
+      padding: 0.6em 0.75em;
+      outline: none;
+      width: 100%;
+      transition: border-color 0.2s;
+    }
+    .create-form input:focus,
+    .create-form textarea:focus,
+    .create-form select:focus { border-color: #e94560; }
+    .create-form textarea { resize: vertical; font-family: inherit; }
+    .create-form select option { background: #21262d; }
+    .create-error { color: #f85149; font-size: 0.82em; margin: 0; }
   `]
 })
 export class AdminMenuComponent implements OnInit {
@@ -316,13 +413,20 @@ export class AdminMenuComponent implements OnInit {
   products = signal<CatalogProduct[]>([]);
   toggling = signal(new Set<number>());
   toggleError = signal('');
-  search = '';
+  search = signal('');
 
   editingProduct = signal<CatalogProduct | null>(null);
   allFlavors = signal<FlavorItem[]>([]);
   selectedFlavorIds = signal<Set<number>>(new Set());
   loadingFlavors = signal(false);
   savingFlavors = signal(false);
+
+  showCreateModal = signal(false);
+  allCategories = signal<CategoryItem[]>([]);
+  loadingCategories = signal(false);
+  creatingProduct = signal(false);
+  createError = signal('');
+  newProduct: CreateProductRequest = { name: '', description: '', price: 0, imageUrl: '', categoryId: 0 };
 
   categories = computed<CatalogCategory[]>(() => {
     const map = new Map<number, CatalogCategory>();
@@ -336,7 +440,7 @@ export class AdminMenuComponent implements OnInit {
   });
 
   filteredCategories = computed<CatalogCategory[]>(() => {
-    const q = this.search.toLowerCase().trim();
+    const q = this.search().toLowerCase().trim();
     if (!q) return this.categories();
     return this.categories()
       .map(cat => ({
@@ -393,6 +497,52 @@ export class AdminMenuComponent implements OnInit {
         this.editingProduct.set(null);
       },
       error: () => this.savingFlavors.set(false)
+    });
+  }
+
+  openCreateModal(): void {
+    this.newProduct = { name: '', description: '', price: 0, imageUrl: '', categoryId: 0 };
+    this.createError.set('');
+    this.showCreateModal.set(true);
+    if (this.allCategories().length === 0) {
+      this.loadingCategories.set(true);
+      this.svc.getCategories().subscribe({
+        next: cats => { this.allCategories.set(cats); this.loadingCategories.set(false); },
+        error: () => this.loadingCategories.set(false)
+      });
+    }
+  }
+
+  closeCreateModal(): void {
+    this.showCreateModal.set(false);
+    this.createError.set('');
+  }
+
+  submitCreateProduct(): void {
+    if (!this.newProduct.name.trim()) {
+      this.createError.set('El nombre es obligatorio.');
+      return;
+    }
+    if (!this.newProduct.price || this.newProduct.price <= 0) {
+      this.createError.set('El precio debe ser mayor a 0.');
+      return;
+    }
+    if (!this.newProduct.categoryId) {
+      this.createError.set('Selecciona una categoría.');
+      return;
+    }
+    this.creatingProduct.set(true);
+    this.createError.set('');
+    this.svc.createProduct(this.newProduct).subscribe({
+      next: created => {
+        this.products.update(list => [...list, created]);
+        this.creatingProduct.set(false);
+        this.showCreateModal.set(false);
+      },
+      error: () => {
+        this.createError.set('Error al crear el producto. Intenta de nuevo.');
+        this.creatingProduct.set(false);
+      }
     });
   }
 

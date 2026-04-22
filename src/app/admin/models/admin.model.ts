@@ -135,6 +135,19 @@ export interface CatalogCategory {
   products: CatalogProduct[];
 }
 
+export interface CategoryItem {
+  id: number;
+  name: string;
+}
+
+export interface CreateProductRequest {
+  name: string;
+  description?: string;
+  price: number;
+  imageUrl?: string;
+  categoryId: number;
+}
+
 export interface TrackingItem {
   productName: string;
   flavor: string;

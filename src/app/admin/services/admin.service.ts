@@ -7,7 +7,7 @@ import {
   LoginRequest, LoginResponse, OrderResponse, OrderStatus,
   CustomerResponse, DashboardStats, TopProduct,
   CreateOrderRequest, CatalogProduct, FlavorItem, ShiftResponse, DailyStatResponse,
-  SourceStatResponse, HourlyStatResponse
+  SourceStatResponse, HourlyStatResponse, CategoryItem, CreateProductRequest
 } from '../models/admin.model';
 import { ProductResponse } from '../../models/api.model';
 
@@ -176,6 +176,18 @@ export class AdminService {
 
   toggleProduct(id: number): Observable<void> {
     return this.http.patch<void>(`${this.base}/api/admin/catalog/products/${id}/toggle`, null, {
+      headers: this.authHeaders()
+    });
+  }
+
+  getCategories(): Observable<CategoryItem[]> {
+    return this.http.get<CategoryItem[]>(`${this.base}/api/admin/catalog/categories`, {
+      headers: this.authHeaders()
+    });
+  }
+
+  createProduct(request: CreateProductRequest): Observable<CatalogProduct> {
+    return this.http.post<CatalogProduct>(`${this.base}/api/admin/catalog/products`, request, {
       headers: this.authHeaders()
     });
   }
