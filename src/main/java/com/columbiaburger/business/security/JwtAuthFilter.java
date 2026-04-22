@@ -14,14 +14,10 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 @Component
 @RequiredArgsConstructor
 public class JwtAuthFilter extends OncePerRequestFilter {
 
-    private static final Logger log = LoggerFactory.getLogger(JwtAuthFilter.class);
     private final JwtUtil jwtUtil;
 
     @Override
@@ -33,11 +29,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
         if (header != null && header.startsWith("Bearer ")) {
             String token = header.substring(7);
-            boolean valid = jwtUtil.isTokenValid(token);
-            log.info("[JWT] method={} path={} tokenPrefix={} valid={}",
-                    request.getMethod(), request.getRequestURI(),
-                    token.substring(0, Math.min(20, token.length())), valid);
-            if (valid) {
+            if (jwtUtil.isTokenValid(token)) {
                 String subject = jwtUtil.extractSubject(token);
                 String role = jwtUtil.extractRole(token);
                 String authority = "CUSTOMER".equals(role) ? "ROLE_CUSTOMER"
@@ -49,8 +41,6 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                 );
                 SecurityContextHolder.getContext().setAuthentication(auth);
             }
-        } else {
-            log.warn("[JWT] method={} path={} NO Authorization header", request.getMethod(), request.getRequestURI());
         }
 
         filterChain.doFilter(request, response);
