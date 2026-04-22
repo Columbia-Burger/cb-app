@@ -51,7 +51,7 @@ public class SecurityConfig {
             .exceptionHandling(ex -> ex
                 .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))
             )
-            .addFilterBefore(apiKeyAuthFilter(), UsernamePasswordAuthenticationFilter.class)
+            //.addFilterBefore(apiKeyAuthFilter(), UsernamePasswordAuthenticationFilter.class)
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**", "/webjars/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/**").permitAll()
