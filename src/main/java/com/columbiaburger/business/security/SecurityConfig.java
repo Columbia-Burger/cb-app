@@ -68,6 +68,7 @@ public class SecurityConfig {
                 .requestMatchers("/api/customers/whatsapp/**").permitAll()
                 .requestMatchers("/api/orders/*/tracking").permitAll()
                 .requestMatchers("/api/orders/events").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/products/**").permitAll()
                 .requestMatchers("/api/customers/me", "/api/customers/me/orders").hasRole("CUSTOMER")
                 .requestMatchers("/api/orders/kitchen").hasAnyRole("ADMIN", "KITCHEN")
                 .requestMatchers("/api/orders/delivery").hasAnyRole("ADMIN", "DELIVERY")
