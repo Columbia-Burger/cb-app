@@ -11,6 +11,19 @@ import { OrderEvent, OrderEventsService } from '../../../services/order-events.s
 interface MenuCategory { id: number; name: string; products: CatalogProduct[]; }
 interface CartItem { product: CatalogProduct; flavor: string; quantity: number; note: string; }
 
+interface DeliveryZone { name: string; price: number; }
+const DELIVERY_ZONES: DeliveryZone[] = [
+  { name: 'Recoger aquí',  price: 0 },
+  { name: 'Danubio Azul',  price: 2000 },
+  { name: 'La Paz',        price: 3000 },
+  { name: 'La Fiscala',    price: 4000 },
+  { name: 'Éxito',         price: 6000 },
+  { name: 'Artillería',    price: 5000 },
+  { name: 'Picota',        price: 5000 },
+  { name: 'Diana Turbay',  price: 6000 },
+  { name: 'Aptos Caracas', price: 3000 },
+];
+
 @Component({
   selector: 'app-domicilio-board',
   standalone: true,
@@ -156,6 +169,16 @@ interface CartItem { product: CatalogProduct; flavor: string; quantity: number; 
                       <option>Mesa 2</option>
                     </select>
                   }
+                  @if (orderType() === 'llevar') {
+                    <select [ngModel]="selectedZoneName()" (ngModelChange)="selectedZoneName.set($event)">
+                      <option value="">Selecciona ubicación...</option>
+                      @for (z of deliveryZones; track z.name) {
+                        <option [value]="z.name">
+                          {{ z.name }}{{ z.price > 0 ? ' — ' + (z.price | currency:'COP':'symbol-narrow':'1.0-0') : '' }}
+                        </option>
+                      }
+                    </select>
+                  }
                 </div>
 
                 @if (cart().length === 0) {
@@ -185,13 +208,23 @@ interface CartItem { product: CatalogProduct; flavor: string; quantity: number; 
                     }
                   </div>
 
+                  @if (orderType() === 'llevar' && (selectedZone()?.price ?? 0) > 0) {
+                    <div class="cart-subtotal">
+                      <span>Subtotal</span>
+                      <span>{{ total() | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
+                    </div>
+                    <div class="cart-delivery">
+                      <span>Domicilio ({{ selectedZone()!.name }})</span>
+                      <span>+ {{ selectedZone()!.price | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
+                    </div>
+                  }
                   <div class="cart-total">
                     <span>Total</span>
-                    <span>{{ total() | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
+                    <span>{{ grandTotal() | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
                   </div>
 
                   <button class="submit-btn"
-                          [disabled]="submitting() || !orderType() || (orderType() === 'mesa' && !tableNumber)"
+                          [disabled]="submitting() || !orderType() || (orderType() === 'mesa' && !tableNumber) || (orderType() === 'llevar' && !selectedZoneName())"
                           (click)="submitOrder()">
                     {{ submitting() ? 'Enviando...' : 'Confirmar Pedido' }}
                   </button>
@@ -453,6 +486,11 @@ interface CartItem { product: CatalogProduct; flavor: string; quantity: number; 
       border: 1px solid #21262d; border-radius: 6px;
       color: #8b949e; font-size: 0.78em;
     }
+    .cart-subtotal, .cart-delivery {
+      display: flex; justify-content: space-between;
+      font-size: 0.82em; color: #8b949e; padding: 0.3em 0;
+    }
+    .cart-delivery { color: #bc8cff; }
     .cart-total {
       display: flex; justify-content: space-between; font-weight: 700;
       color: #e6edf3; font-size: 1em; padding: 0.75em 0;
@@ -527,12 +565,22 @@ export class DomicilioBoardComponent implements OnInit, OnDestroy {
   pendingProduct = signal<CatalogProduct | null>(null);
   orderType = signal<'mesa' | 'llevar' | ''>('');
   tableNumber = '';
+  selectedZoneName = signal('');
+
+  readonly deliveryZones = DELIVERY_ZONES;
+
+  selectedZone = computed(() =>
+    DELIVERY_ZONES.find(z => z.name === this.selectedZoneName()) ?? null
+  );
 
   currentProducts = computed(() =>
     this.categories().find(c => c.id === this.selectedCat())?.products ?? []
   );
   total = computed(() =>
     this.cart().reduce((sum, item) => sum + item.product.price * item.quantity, 0)
+  );
+  grandTotal = computed(() =>
+    this.total() + (this.selectedZone()?.price ?? 0)
   );
 
   ngOnInit(): void {
@@ -634,8 +682,10 @@ export class DomicilioBoardComponent implements OnInit, OnDestroy {
 
   submitOrder(): void {
     const type = this.orderType();
+    const zone = this.selectedZone();
     if (!type || this.cart().length === 0) return;
     if (type === 'mesa' && !this.tableNumber) return;
+    if (type === 'llevar' && !this.selectedZoneName()) return;
 
     this.submitting.set(true);
     this.successMsg.set('');
@@ -657,6 +707,8 @@ export class DomicilioBoardComponent implements OnInit, OnDestroy {
       customerWhatsapp: 'DOMICILIO-WAITER',
       items: orderItems,
       notes,
+      deliveryZone: type === 'llevar' ? zone?.name : undefined,
+      deliveryFee: type === 'llevar' ? (zone?.price ?? 0) : undefined,
       source: 'WAITER'
     }).subscribe({
       next: order => {
@@ -664,6 +716,7 @@ export class DomicilioBoardComponent implements OnInit, OnDestroy {
         this.cart.set([]);
         this.orderType.set('');
         this.tableNumber = '';
+        this.selectedZoneName.set('');
         this.submitting.set(false);
       },
       error: () => {
