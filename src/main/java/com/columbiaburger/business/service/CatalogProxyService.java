@@ -22,24 +22,30 @@ public class CatalogProxyService {
     @Value("${catalog.api.key}")
     private String catalogApiKey;
 
+    private HttpHeaders apiHeaders() {
+        HttpHeaders h = new HttpHeaders();
+        h.set("X-API-Key", catalogApiKey);
+        return h;
+    }
+
+    private HttpHeaders apiJsonHeaders() {
+        HttpHeaders h = apiHeaders();
+        h.setContentType(MediaType.APPLICATION_JSON);
+        return h;
+    }
+
     public String getProducts() {
-        HttpHeaders headers = new HttpHeaders();
-        headers.set("X-API-Key", catalogApiKey);
-        HttpEntity<Void> entity = new HttpEntity<>(headers);
         ResponseEntity<String> response = restTemplate.exchange(
                 catalogApiUrl + "/api/products",
-                HttpMethod.GET, entity, String.class);
+                HttpMethod.GET, new HttpEntity<>(apiHeaders()), String.class);
         return response.getBody();
     }
 
     public void toggleAvailable(Long productId) {
-        HttpHeaders headers = new HttpHeaders();
-        headers.set("X-API-Key", catalogApiKey);
-        HttpEntity<Void> entity = new HttpEntity<>(headers);
         try {
             restTemplate.exchange(
                     catalogApiUrl + "/api/products/" + productId + "/toggle-available",
-                    HttpMethod.PATCH, entity, Void.class);
+                    HttpMethod.PATCH, new HttpEntity<>(apiHeaders()), Void.class);
         } catch (HttpClientErrorException e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
                     "Error al contactar el catálogo: " + e.getStatusCode());
@@ -47,24 +53,17 @@ public class CatalogProxyService {
     }
 
     public String getFlavors() {
-        HttpHeaders headers = new HttpHeaders();
-        headers.set("X-API-Key", catalogApiKey);
-        HttpEntity<Void> entity = new HttpEntity<>(headers);
         ResponseEntity<String> response = restTemplate.exchange(
                 catalogApiUrl + "/api/flavors",
-                HttpMethod.GET, entity, String.class);
+                HttpMethod.GET, new HttpEntity<>(apiHeaders()), String.class);
         return response.getBody();
     }
 
     public void updateProductFlavors(Long productId, List<Long> flavorIds) {
-        HttpHeaders headers = new HttpHeaders();
-        headers.set("X-API-Key", catalogApiKey);
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        HttpEntity<List<Long>> entity = new HttpEntity<>(flavorIds, headers);
         try {
             restTemplate.exchange(
                     catalogApiUrl + "/api/products/" + productId + "/flavors",
-                    HttpMethod.PATCH, entity, Void.class);
+                    HttpMethod.PATCH, new HttpEntity<>(flavorIds, apiJsonHeaders()), Void.class);
         } catch (HttpClientErrorException e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
                     "Error al contactar el catálogo: " + e.getStatusCode());
@@ -72,24 +71,22 @@ public class CatalogProxyService {
     }
 
     public String getCategories() {
-        HttpHeaders headers = new HttpHeaders();
-        headers.set("X-API-Key", catalogApiKey);
-        HttpEntity<Void> entity = new HttpEntity<>(headers);
-        ResponseEntity<String> response = restTemplate.exchange(
-                catalogApiUrl + "/api/categories",
-                HttpMethod.GET, entity, String.class);
-        return response.getBody();
+        try {
+            ResponseEntity<String> response = restTemplate.exchange(
+                    catalogApiUrl + "/api/categories",
+                    HttpMethod.GET, new HttpEntity<>(apiHeaders()), String.class);
+            return response.getBody();
+        } catch (HttpClientErrorException e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+                    "Error al contactar el catálogo: " + e.getStatusCode());
+        }
     }
 
     public String createProduct(String body) {
-        HttpHeaders headers = new HttpHeaders();
-        headers.set("X-API-Key", catalogApiKey);
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        HttpEntity<String> entity = new HttpEntity<>(body, headers);
         try {
             ResponseEntity<String> response = restTemplate.exchange(
                     catalogApiUrl + "/api/products",
-                    HttpMethod.POST, entity, String.class);
+                    HttpMethod.POST, new HttpEntity<>(body, apiJsonHeaders()), String.class);
             return response.getBody();
         } catch (HttpClientErrorException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,

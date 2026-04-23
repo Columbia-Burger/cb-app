@@ -21,41 +21,40 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     private final JwtUtil jwtUtil;
 
     @Override
-protected void doFilterInternal(HttpServletRequest request,
-                                HttpServletResponse response,
-                                FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest request,
+                                    HttpServletResponse response,
+                                    FilterChain filterChain) throws ServletException, IOException {
 
-    String header = request.getHeader("Authorization");
+        String header = request.getHeader("Authorization");
 
-    if (header != null && header.startsWith("Bearer ")) {
-        try {
-            String token = header.substring(7);
+        if (header != null && header.startsWith("Bearer ")) {
+            try {
+                String token = header.substring(7);
 
-            if (jwtUtil.isTokenValid(token)) {
-                String subject = jwtUtil.extractSubject(token);
-                String role = jwtUtil.extractRole(token);
+                if (jwtUtil.isTokenValid(token)) {
+                    String subject = jwtUtil.extractSubject(token);
+                    String role = jwtUtil.extractRole(token);
 
-                String authority = switch (role) {
-                    case "CUSTOMER" -> "ROLE_CUSTOMER";
-                    case "KITCHEN" -> "ROLE_KITCHEN";
-                    case "DELIVERY" -> "ROLE_DELIVERY";
-                    default -> "ROLE_ADMIN";
-                };
+                    String authority = switch (role) {
+                        case "CUSTOMER" -> "ROLE_CUSTOMER";
+                        case "KITCHEN" -> "ROLE_KITCHEN";
+                        case "DELIVERY" -> "ROLE_DELIVERY";
+                        default -> "ROLE_ADMIN";
+                    };
 
-                var auth = new UsernamePasswordAuthenticationToken(
-                        subject, null,
-                        List.of(new SimpleGrantedAuthority(authority))
-                );
+                    var auth = new UsernamePasswordAuthenticationToken(
+                            subject, null,
+                            List.of(new SimpleGrantedAuthority(authority))
+                    );
 
-                SecurityContextHolder.getContext().setAuthentication(auth);
+                    SecurityContextHolder.getContext().setAuthentication(auth);
+                }
+
+            } catch (Exception e) {
+                SecurityContextHolder.clearContext();
             }
-
-        } catch (Exception e) {
-            // 👇 CLAVE: ignorar token inválido
-            SecurityContextHolder.clearContext();
         }
-    }
 
-    filterChain.doFilter(request, response);
-}
+        filterChain.doFilter(request, response);
+    }
 }

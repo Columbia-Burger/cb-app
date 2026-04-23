@@ -6,11 +6,6 @@ import org.springframework.stereotype.Component;
 
 import javax.sql.DataSource;
 
-/**
- * Wraps the auto-configured HikariCP DataSource with RlsDataSourceWrapper
- * so every borrowed connection has the current user's id and role injected
- * as PostgreSQL session variables before any query runs.
- */
 @Component
 public class RlsDataSourcePostProcessor implements BeanPostProcessor {
 

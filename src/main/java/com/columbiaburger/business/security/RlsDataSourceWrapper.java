@@ -8,12 +8,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
-/**
- * Wraps the application DataSource. Every time a connection is borrowed
- * from the pool, injects the current user's id and role as PostgreSQL
- * session-level variables so RLS policies can evaluate them.
- * Resets the variables when the connection is returned to the pool.
- */
 public class RlsDataSourceWrapper extends DelegatingDataSource {
 
     public RlsDataSourceWrapper(DataSource delegate) {
@@ -44,20 +38,21 @@ public class RlsDataSourceWrapper extends DelegatingDataSource {
         );
     }
 
+    private static final String SET_CTX_SQL =
+            "SELECT set_config('app.user_id', ?, false), set_config('app.user_role', ?, false)";
+    private static final String CLEAR_CTX_SQL =
+            "SELECT set_config('app.user_id', '', false), set_config('app.user_role', '', false)";
+
     private static void applyContext(Connection conn) throws SQLException {
-        String userId = RlsContextHolder.getUserId();
-        String role   = RlsContextHolder.getUserRole();
-        try (PreparedStatement ps = conn.prepareStatement(
-                "SELECT set_config('app.user_id', ?, false), set_config('app.user_role', ?, false)")) {
-            ps.setString(1, userId);
-            ps.setString(2, role);
+        try (PreparedStatement ps = conn.prepareStatement(SET_CTX_SQL)) {
+            ps.setString(1, RlsContextHolder.getUserId());
+            ps.setString(2, RlsContextHolder.getUserRole());
             ps.execute();
         }
     }
 
     private static void clearContext(Connection conn) {
-        try (PreparedStatement ps = conn.prepareStatement(
-                "SELECT set_config('app.user_id', '', false), set_config('app.user_role', '', false)")) {
+        try (PreparedStatement ps = conn.prepareStatement(CLEAR_CTX_SQL)) {
             ps.execute();
         } catch (SQLException ignored) {}
     }

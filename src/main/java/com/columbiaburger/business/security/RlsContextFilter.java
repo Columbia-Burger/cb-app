@@ -11,11 +11,6 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
-/**
- * Runs inside the Spring Security chain, after JwtAuthFilter.
- * Reads the authenticated principal and role, stores them in RlsContextHolder
- * so RlsDataSourceWrapper can inject them as PostgreSQL session variables.
- */
 public class RlsContextFilter extends OncePerRequestFilter {
 
     @Override
