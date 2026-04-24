@@ -8,4 +8,5 @@ import java.util.List;
 public interface ProductAdditionRepository extends JpaRepository<ProductAddition, Long> {
     List<ProductAddition> findByProductId(Long productId);
     List<ProductAddition> findByAdditionId(Long additionId);
+    void deleteByProductId(Long productId);
 }

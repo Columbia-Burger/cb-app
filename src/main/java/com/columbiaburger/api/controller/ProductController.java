@@ -61,4 +61,11 @@ public class ProductController {
     public void updateFlavors(@PathVariable Long id, @RequestBody List<Long> flavorIds) {
         productService.updateFlavors(id, flavorIds);
     }
+
+    @Operation(summary = "Reemplazar adiciones del producto")
+    @PatchMapping("/{id}/additions")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void updateAdditions(@PathVariable Long id, @RequestBody List<Long> additionIds) {
+        productService.updateAdditions(id, additionIds);
+    }
 }

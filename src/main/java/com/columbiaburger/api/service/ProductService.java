@@ -4,11 +4,15 @@ import com.columbiaburger.api.dto.request.ProductRequest;
 import com.columbiaburger.api.dto.response.FlavorResponse;
 import com.columbiaburger.api.dto.response.ProductAdditionResponse;
 import com.columbiaburger.api.dto.response.ProductResponse;
+import com.columbiaburger.api.entity.Addition;
 import com.columbiaburger.api.entity.Category;
 import com.columbiaburger.api.entity.Flavor;
 import com.columbiaburger.api.entity.Product;
+import com.columbiaburger.api.entity.ProductAddition;
+import com.columbiaburger.api.repository.AdditionRepository;
 import com.columbiaburger.api.repository.CategoryRepository;
 import com.columbiaburger.api.repository.FlavorRepository;
+import com.columbiaburger.api.repository.ProductAdditionRepository;
 import com.columbiaburger.api.repository.ProductRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +28,8 @@ public class ProductService {
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
     private final FlavorRepository flavorRepository;
+    private final AdditionRepository additionRepository;
+    private final ProductAdditionRepository productAdditionRepository;
 
     @Transactional(readOnly = true)
     public List<ProductResponse> findAll() {
@@ -102,6 +108,21 @@ public class ProductService {
         product.getFlavors().clear();
         product.getFlavors().addAll(resolveFlavors(flavorIds));
         productRepository.save(product);
+    }
+
+    @Transactional
+    public void updateAdditions(Long id, List<Long> additionIds) {
+        Product product = getOrThrow(id);
+        productAdditionRepository.deleteByProductId(product.getId());
+        if (additionIds == null || additionIds.isEmpty()) return;
+        for (Long additionId : additionIds) {
+            Addition addition = additionRepository.findById(additionId)
+                    .orElseThrow(() -> new EntityNotFoundException("Addition not found: " + additionId));
+            productAdditionRepository.save(ProductAddition.builder()
+                    .product(product)
+                    .addition(addition)
+                    .build());
+        }
     }
 
     @Transactional
