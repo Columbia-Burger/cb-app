@@ -517,9 +517,9 @@ export class AdminMeseroComponent implements OnInit {
   errorMsg = signal('');
   pendingProduct = signal<CatalogProduct | null>(null);
 
-  pendingAdditionsItem = signal<{ product: CatalogProduct; flavor: string; additions: string; additionsPrice: number } | null>(null);
+  pendingComboItem = signal<{ product: CatalogProduct; flavor: string } | null>(null);
+  pendingAdditionsItem = signal<{ product: CatalogProduct; flavor: string; combo: string } | null>(null);
   selectedPendingAdditionIds = signal<Set<number>>(new Set());
-  pendingComboItem = signal<{ product: CatalogProduct; flavor: string; additions: string; additionsPrice: number } | null>(null);
   comboAccepted = signal<boolean | null>(null);
   comboDrink = signal('');
   comboDrinkFlavor = signal('');
@@ -603,12 +603,34 @@ export class AdminMeseroComponent implements OnInit {
   }
 
   private confirmItem(product: CatalogProduct, flavor: string): void {
-    if (product.additions?.length) {
-      this.selectedPendingAdditionIds.set(new Set());
-      this.pendingAdditionsItem.set({ product, flavor, additions: '', additionsPrice: 0 });
+    if (product.comboDescription) {
+      this.comboAccepted.set(null);
+      this.comboDrink.set('');
+      this.comboDrinkFlavor.set('');
+      this.pendingComboItem.set({ product, flavor });
       return;
     }
-    this.confirmComboOrAdd(product, flavor, '', 0);
+    this.confirmAdditionsOrAdd(product, flavor, '');
+  }
+
+  confirmCombo(): void {
+    const item = this.pendingComboItem();
+    if (!item || !this.canConfirmCombo()) return;
+    this.pendingComboItem.set(null);
+    const accepted = this.comboAccepted()!;
+    const combo = accepted
+      ? `Combo (${item.product.comboDescription}) — ${this.comboDrink()} ${this.comboDrinkFlavor()}`
+      : '';
+    this.confirmAdditionsOrAdd(item.product, item.flavor, combo);
+  }
+
+  private confirmAdditionsOrAdd(product: CatalogProduct, flavor: string, combo: string): void {
+    if (product.additions?.length) {
+      this.selectedPendingAdditionIds.set(new Set());
+      this.pendingAdditionsItem.set({ product, flavor, combo });
+      return;
+    }
+    this.addProductToCart(product, flavor, '', 0, combo, 0);
   }
 
   togglePendingAdditionId(id: number): void {
@@ -626,29 +648,7 @@ export class AdminMeseroComponent implements OnInit {
     const additionsStr = selected.map(a => a.name).join(', ');
     const additionsPrice = selected.reduce((s, a) => s + a.effectivePrice, 0);
     this.pendingAdditionsItem.set(null);
-    this.confirmComboOrAdd(item.product, item.flavor, additionsStr, additionsPrice);
-  }
-
-  private confirmComboOrAdd(product: CatalogProduct, flavor: string, additions: string, additionsPrice: number): void {
-    if (product.comboDescription) {
-      this.comboAccepted.set(null);
-      this.comboDrink.set('');
-      this.comboDrinkFlavor.set('');
-      this.pendingComboItem.set({ product, flavor, additions, additionsPrice });
-      return;
-    }
-    this.addProductToCart(product, flavor, additions, additionsPrice, '', 0);
-  }
-
-  confirmCombo(): void {
-    const item = this.pendingComboItem();
-    if (!item || !this.canConfirmCombo()) return;
-    this.pendingComboItem.set(null);
-    const accepted = this.comboAccepted()!;
-    const combo = accepted
-      ? `Combo (${item.product.comboDescription}) — ${this.comboDrink()} ${this.comboDrinkFlavor()}`
-      : '';
-    this.addProductToCart(item.product, item.flavor, item.additions, item.additionsPrice, combo, 0);
+    this.addProductToCart(item.product, item.flavor, additionsStr, additionsPrice, item.combo, 0);
   }
 
   private addProductToCart(product: CatalogProduct, flavor: string, additions: string, additionsPrice: number, combo: string, comboPrice: number): void {

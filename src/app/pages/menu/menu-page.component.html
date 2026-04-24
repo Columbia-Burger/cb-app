@@ -156,24 +156,6 @@
           </div>
         }
 
-        <!-- Adiciones -->
-        @if (selectedItem()!.additions?.length) {
-          <div class="detail-modal__flavors">
-            <p class="detail-modal__flavors-label">Adiciones (opcional):</p>
-            <div class="additions-list">
-              @for (a of selectedItem()!.additions!; track a.id) {
-                <label class="addition-row">
-                  <input type="checkbox"
-                         [checked]="selectedAdditionIds().has(a.id)"
-                         (change)="toggleAddition(a.id)" />
-                  <span class="addition-row__name">{{ a.name }}</span>
-                  <span class="addition-row__price">+ $ {{ a.effectivePrice.toLocaleString('es-CO') }}</span>
-                </label>
-              }
-            </div>
-          </div>
-        }
-
         <!-- Combo -->
         @if (selectedItem()!.comboDescription) {
           <div class="detail-modal__flavors">
@@ -216,6 +198,24 @@
           </div>
         }
 
+        <!-- Adiciones -->
+        @if (selectedItem()!.additions?.length) {
+          <div class="detail-modal__flavors">
+            <p class="detail-modal__flavors-label">Adiciones (opcional):</p>
+            <div class="additions-list">
+              @for (a of selectedItem()!.additions!; track a.id) {
+                <label class="addition-row">
+                  <input type="checkbox"
+                         [checked]="selectedAdditionIds().has(a.id)"
+                         (change)="toggleAddition(a.id)" />
+                  <span class="addition-row__name">{{ a.name }}</span>
+                  <span class="addition-row__price">+ $ {{ a.effectivePrice.toLocaleString('es-CO') }}</span>
+                </label>
+              }
+            </div>
+          </div>
+        }
+
         <div class="detail-modal__footer">
           <span class="detail-modal__price">{{ modalPrice() }}</span>
           <button
@@ -234,9 +234,9 @@
               Elige el sabor para continuar
             } @else if (selectedItem()!.comboDescription && comboAccepted() === null) {
               Elige si deseas el combo para continuar
-            } @else if (selectedItem()!.comboDescription && comboAccepted() === true && !comboDrink()) {
+            } @else if (comboAccepted() === true && !comboDrink()) {
               Elige la bebida del combo para continuar
-            } @else if (selectedItem()!.comboDescription && comboAccepted() === true && !comboDrinkFlavor()) {
+            } @else if (comboAccepted() === true && !comboDrinkFlavor()) {
               Elige el sabor de la bebida para continuar
             }
           </p>
