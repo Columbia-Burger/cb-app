@@ -3,7 +3,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
-import { OrderResponse, OrderStatus, LoginRequest, LoginResponse, CatalogProduct, CreateOrderRequest } from '../../admin/models/admin.model';
+import { OrderResponse, OrderStatus, LoginRequest, LoginResponse, CatalogProduct, CreateOrderRequest, DeliveryZone } from '../../admin/models/admin.model';
 import { ProductResponse } from '../../models/api.model';
 
 @Injectable({ providedIn: 'root' })
@@ -69,7 +69,17 @@ export class DomicilioService {
         categoryId: p.categoryId,
         categoryName: p.categoryName,
         ...(p.flavors?.length ? { flavors: p.flavors.map(f => ({ id: f.id, name: f.name })) } : {}),
+        ...(p.additions?.length ? { additions: p.additions.map(a => ({
+          id: a.id, additionId: a.additionId, name: a.additionName, effectivePrice: a.effectivePrice
+        })) } : {}),
       })))
+    );
+  }
+
+  getDeliveryZones(): Observable<DeliveryZone[]> {
+    return this.http.get<DeliveryZone[]>(
+      `${this.base}/api/admin/catalog/delivery-zones?activeOnly=true`,
+      { headers: this.authHeaders() }
     );
   }
 

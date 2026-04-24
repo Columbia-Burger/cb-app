@@ -40,6 +40,16 @@ export const adminRoutes: Routes = [
           import('./pages/menu/admin-menu.component').then(m => m.AdminMenuComponent)
       },
       {
+        path: 'adiciones',
+        loadComponent: () =>
+          import('./pages/adiciones/admin-adiciones.component').then(m => m.AdminAdicionesComponent)
+      },
+      {
+        path: 'zonas',
+        loadComponent: () =>
+          import('./pages/zonas/admin-zonas.component').then(m => m.AdminZonasComponent)
+      },
+      {
         path: 'reportes',
         loadComponent: () =>
           import('./pages/reportes/admin-reportes.component').then(m => m.AdminReportesComponent)

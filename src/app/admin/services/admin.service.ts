@@ -7,7 +7,8 @@ import {
   LoginRequest, LoginResponse, OrderResponse, OrderStatus,
   CustomerResponse, DashboardStats, TopProduct,
   CreateOrderRequest, CatalogProduct, FlavorItem, AdditionItem, ShiftResponse, DailyStatResponse,
-  SourceStatResponse, HourlyStatResponse, CategoryItem, CreateProductRequest
+  SourceStatResponse, HourlyStatResponse, CategoryItem, CreateProductRequest, CreateAdditionRequest,
+  DeliveryZone, CreateDeliveryZoneRequest
 } from '../models/admin.model';
 import { ProductResponse } from '../../models/api.model';
 
@@ -217,5 +218,50 @@ export class AdminService {
     return this.http.post<OrderResponse>(`${this.base}/api/orders`, request, {
       headers: this.authHeaders()
     });
+  }
+
+  createAddition(request: CreateAdditionRequest): Observable<AdditionItem> {
+    return this.http.post<AdditionItem>(`${this.base}/api/admin/catalog/additions`, request, {
+      headers: this.authHeaders()
+    });
+  }
+
+  updateAddition(id: number, request: CreateAdditionRequest): Observable<AdditionItem> {
+    return this.http.put<AdditionItem>(`${this.base}/api/admin/catalog/additions/${id}`, request, {
+      headers: this.authHeaders()
+    });
+  }
+
+  toggleAdditionActive(id: number): Observable<void> {
+    return this.http.patch<void>(`${this.base}/api/admin/catalog/additions/${id}/toggle-active`, null, {
+      headers: this.authHeaders()
+    });
+  }
+
+  // ── Zonas de domicilio ────────────────────────────────────────
+  getDeliveryZones(activeOnly = false): Observable<DeliveryZone[]> {
+    return this.http.get<DeliveryZone[]>(
+      `${this.base}/api/admin/catalog/delivery-zones?activeOnly=${activeOnly}`,
+      { headers: this.authHeaders() }
+    );
+  }
+
+  createDeliveryZone(request: CreateDeliveryZoneRequest): Observable<DeliveryZone> {
+    return this.http.post<DeliveryZone>(`${this.base}/api/admin/catalog/delivery-zones`, request, {
+      headers: this.authHeaders()
+    });
+  }
+
+  updateDeliveryZone(id: number, request: CreateDeliveryZoneRequest): Observable<DeliveryZone> {
+    return this.http.put<DeliveryZone>(`${this.base}/api/admin/catalog/delivery-zones/${id}`, request, {
+      headers: this.authHeaders()
+    });
+  }
+
+  toggleDeliveryZoneActive(id: number): Observable<void> {
+    return this.http.patch<void>(
+      `${this.base}/api/admin/catalog/delivery-zones/${id}/toggle-active`, null,
+      { headers: this.authHeaders() }
+    );
   }
 }

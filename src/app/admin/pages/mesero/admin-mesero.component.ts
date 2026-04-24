@@ -19,18 +19,8 @@ interface CartItem {
   note: string;
 }
 
-interface DeliveryZone { name: string; price: number; }
-const DELIVERY_ZONES: DeliveryZone[] = [
-  { name: 'Recoger aquí',  price: 0 },
-  { name: 'Danubio Azul',  price: 2000 },
-  { name: 'La Paz',        price: 3000 },
-  { name: 'La Fiscala',    price: 4000 },
-  { name: 'Éxito',         price: 6000 },
-  { name: 'Artillería',    price: 5000 },
-  { name: 'Picota',        price: 5000 },
-  { name: 'Diana Turbay',  price: 6000 },
-  { name: 'Aptos Caracas', price: 3000 },
-];
+interface ZoneOption { name: string; price: number; }
+const PICKUP_OPTION: ZoneOption = { name: 'Recoger aquí', price: 0 };
 
 @Component({
   selector: 'app-admin-mesero',
@@ -93,7 +83,7 @@ const DELIVERY_ZONES: DeliveryZone[] = [
               @if (orderType() === 'llevar') {
                 <select [ngModel]="selectedZoneName()" (ngModelChange)="selectedZoneName.set($event)">
                   <option value="">Selecciona ubicación...</option>
-                  @for (z of deliveryZones; track z.name) {
+                  @for (z of deliveryZones(); track z.name) {
                     <option [value]="z.name">
                       {{ z.name }}{{ z.price > 0 ? ' — ' + (z.price | currency:'COP':'symbol-narrow':'1.0-0') : '' }}
                     </option>
@@ -475,11 +465,10 @@ export class AdminMeseroComponent implements OnInit {
   orderType = signal<'mesa' | 'llevar' | ''>('');
   tableNumber = '';
   selectedZoneName = signal('');
-
-  readonly deliveryZones = DELIVERY_ZONES;
+  deliveryZones = signal<ZoneOption[]>([PICKUP_OPTION]);
 
   selectedZone = computed(() =>
-    DELIVERY_ZONES.find(z => z.name === this.selectedZoneName()) ?? null
+    this.deliveryZones().find(z => z.name === this.selectedZoneName()) ?? null
   );
 
   currentProducts = computed(() =>
@@ -510,6 +499,14 @@ export class AdminMeseroComponent implements OnInit {
         this.loading.set(false);
       },
       error: () => this.loading.set(false)
+    });
+    this.adminService.getDeliveryZones(true).subscribe({
+      next: zones => {
+        this.deliveryZones.set([
+          PICKUP_OPTION,
+          ...zones.map(z => ({ name: z.name, price: z.deliveryFee }))
+        ]);
+      }
     });
   }
 

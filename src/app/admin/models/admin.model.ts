@@ -165,6 +165,24 @@ export interface CreateProductRequest {
   categoryId: number;
 }
 
+export interface CreateAdditionRequest {
+  name: string;
+  description?: string;
+  basePrice: number;
+}
+
+export interface DeliveryZone {
+  id: number;
+  name: string;
+  deliveryFee: number;
+  active: boolean;
+}
+
+export interface CreateDeliveryZoneRequest {
+  name: string;
+  deliveryFee: number;
+}
+
 export interface TrackingItem {
   productName: string;
   flavor: string;

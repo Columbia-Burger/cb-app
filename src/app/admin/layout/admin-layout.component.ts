@@ -53,6 +53,14 @@ import { AdminService } from '../services/admin.service';
             <span class="nav-icon">🍔</span>
             <span>Menú</span>
           </a>
+          <a routerLink="/admin/adiciones" routerLinkActive="active" (click)="sidebarOpen.set(false)">
+            <span class="nav-icon">🧩</span>
+            <span>Adiciones</span>
+          </a>
+          <a routerLink="/admin/zonas" routerLinkActive="active" (click)="sidebarOpen.set(false)">
+            <span class="nav-icon">🗺️</span>
+            <span>Zonas</span>
+          </a>
           <a routerLink="/admin/reportes" routerLinkActive="active" (click)="sidebarOpen.set(false)">
             <span class="nav-icon">📈</span>
             <span>Reportes</span>
