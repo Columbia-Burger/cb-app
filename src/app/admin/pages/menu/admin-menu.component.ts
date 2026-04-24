@@ -2,7 +2,7 @@ import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { CurrencyPipe, NgClass } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AdminService } from '../../services/admin.service';
-import { CatalogProduct, CatalogCategory, FlavorItem, CategoryItem, CreateProductRequest } from '../../models/admin.model';
+import { CatalogProduct, CatalogCategory, FlavorItem, AdditionItem, CategoryItem, CreateProductRequest } from '../../models/admin.model';
 
 @Component({
   selector: 'app-admin-menu',
@@ -74,6 +74,9 @@ import { CatalogProduct, CatalogCategory, FlavorItem, CategoryItem, CreateProduc
                       🏷️{{ p.flavors?.length ? ' ' + p.flavors!.length : '' }}
                     </button>
                   }
+                  <button class="additions-btn" (click)="openAdditionEditor(p); $event.stopPropagation()">
+                    🧩{{ p.additions?.length ? ' ' + p.additions!.length : '' }}
+                  </button>
                 </div>
               </div>
             }
@@ -87,6 +90,36 @@ import { CatalogProduct, CatalogCategory, FlavorItem, CategoryItem, CreateProduc
 
       @if (!loading() && filteredCategories().length === 0) {
         <p class="empty">No se encontraron productos.</p>
+      }
+
+      <!-- Additions editor modal -->
+      @if (editingProductAdditions()) {
+        <div class="fl-overlay" (click)="editingProductAdditions.set(null)">
+          <div class="fl-sheet" (click)="$event.stopPropagation()">
+            <div class="fl-title">Adiciones — {{ editingProductAdditions()!.name }}</div>
+            @if (loadingAdditions()) {
+              <p class="fl-loading">Cargando...</p>
+            } @else {
+              <div class="fl-options">
+                @for (a of allAdditions(); track a.id) {
+                  <label class="fl-option">
+                    <input type="checkbox"
+                           [checked]="selectedAdditionIds().has(a.id)"
+                           (change)="toggleAdditionId(a.id)" />
+                    <span class="fl-option-name">{{ a.name }}</span>
+                    <span class="fl-option-price">{{ a.basePrice | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
+                  </label>
+                }
+              </div>
+              <div class="fl-actions">
+                <button class="fl-save" [disabled]="savingAdditions()" (click)="saveAdditions()">
+                  {{ savingAdditions() ? 'Guardando...' : 'Guardar' }}
+                </button>
+                <button class="fl-cancel" (click)="editingProductAdditions.set(null)">Cancelar</button>
+              </div>
+            }
+          </div>
+        </div>
       }
 
       <!-- Flavor editor modal -->
@@ -346,6 +379,21 @@ import { CatalogProduct, CatalogCategory, FlavorItem, CategoryItem, CreateProduc
     }
     .flavors-btn:hover { border-color: #e94560; color: #e94560; }
 
+    .additions-btn {
+      background: none;
+      border: 1px solid #30363d;
+      border-radius: 6px;
+      color: #8b949e;
+      font-size: 0.7em;
+      padding: 0.2em 0.5em;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .additions-btn:hover { border-color: #e94560; color: #e94560; }
+
+    .fl-option-name { flex: 1; }
+    .fl-option-price { font-size: 0.8em; color: #8b949e; white-space: nowrap; }
+
     .fl-overlay {
       position: fixed; inset: 0; background: rgba(0,0,0,0.6);
       display: flex; align-items: flex-end; justify-content: center; z-index: 200;
@@ -421,6 +469,12 @@ export class AdminMenuComponent implements OnInit {
   loadingFlavors = signal(false);
   savingFlavors = signal(false);
 
+  editingProductAdditions = signal<CatalogProduct | null>(null);
+  allAdditions = signal<AdditionItem[]>([]);
+  selectedAdditionIds = signal<Set<number>>(new Set());
+  loadingAdditions = signal(false);
+  savingAdditions = signal(false);
+
   showCreateModal = signal(false);
   allCategories = signal<CategoryItem[]>([]);
   loadingCategories = signal(false);
@@ -460,6 +514,45 @@ export class AdminMenuComponent implements OnInit {
         this.loading.set(false);
       },
       error: () => this.loading.set(false)
+    });
+  }
+
+  openAdditionEditor(product: CatalogProduct): void {
+    this.editingProductAdditions.set(product);
+    this.selectedAdditionIds.set(new Set(product.additions?.map(a => a.additionId) ?? []));
+    if (this.allAdditions().length === 0) {
+      this.loadingAdditions.set(true);
+      this.svc.getAdditions().subscribe({
+        next: additions => { this.allAdditions.set(additions); this.loadingAdditions.set(false); },
+        error: () => this.loadingAdditions.set(false)
+      });
+    }
+  }
+
+  toggleAdditionId(id: number): void {
+    this.selectedAdditionIds.update(ids => {
+      const next = new Set(ids);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  }
+
+  saveAdditions(): void {
+    const product = this.editingProductAdditions();
+    if (!product) return;
+    this.savingAdditions.set(true);
+    this.svc.updateProductAdditions(product.id, [...this.selectedAdditionIds()]).subscribe({
+      next: () => {
+        const updated = this.allAdditions()
+          .filter(a => this.selectedAdditionIds().has(a.id))
+          .map(a => ({ id: 0, additionId: a.id, name: a.name, effectivePrice: a.basePrice }));
+        this.products.update(list =>
+          list.map(p => p.id === product.id ? { ...p, additions: updated } : p)
+        );
+        this.savingAdditions.set(false);
+        this.editingProductAdditions.set(null);
+      },
+      error: () => this.savingAdditions.set(false)
     });
   }
 

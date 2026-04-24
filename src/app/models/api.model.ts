@@ -10,6 +10,15 @@ export interface FlavorResponse {
   name: string;
 }
 
+export interface ProductAdditionResponse {
+  id: number;
+  additionId: number;
+  additionName: string;
+  basePrice: number;
+  priceOverride: number | null;
+  effectivePrice: number;
+}
+
 export interface ProductResponse {
   id: number;
   name: string;
@@ -20,6 +29,7 @@ export interface ProductResponse {
   categoryId: number;
   categoryName: string;
   flavors: FlavorResponse[];
+  additions: ProductAdditionResponse[];
 }
 
 export interface SeasonalSpecialResponse {

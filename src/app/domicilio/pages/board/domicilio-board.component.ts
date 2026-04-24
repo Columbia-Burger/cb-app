@@ -9,7 +9,7 @@ import { OrderResponse, CatalogProduct, OrderItemRequest } from '../../../admin/
 import { OrderEvent, OrderEventsService } from '../../../services/order-events.service';
 
 interface MenuCategory { id: number; name: string; products: CatalogProduct[]; }
-interface CartItem { product: CatalogProduct; flavor: string; quantity: number; note: string; }
+interface CartItem { product: CatalogProduct; flavor: string; additions: string; additionsPrice: number; quantity: number; note: string; }
 
 interface DeliveryZone { name: string; price: number; }
 const DELIVERY_ZONES: DeliveryZone[] = [
@@ -185,7 +185,7 @@ const DELIVERY_ZONES: DeliveryZone[] = [
                   <div class="empty-cart">Agrega productos al pedido</div>
                 } @else {
                   <div class="cart-items">
-                    @for (item of cart(); track item.product.id + '-' + item.flavor) {
+                    @for (item of cart(); track item.product.id + '-' + item.flavor + '-' + item.additions) {
                       <div class="cart-item">
                         <div class="item-info">
                           <div>
@@ -193,8 +193,11 @@ const DELIVERY_ZONES: DeliveryZone[] = [
                             @if (item.flavor) {
                               <div class="item-flavor-tag">{{ item.flavor }}</div>
                             }
+                            @if (item.additions) {
+                              <div class="item-additions-tag">+ {{ item.additions }}</div>
+                            }
                           </div>
-                          <span class="item-price">{{ item.product.price * item.quantity | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
+                          <span class="item-price">{{ (item.product.price + item.additionsPrice) * item.quantity | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
                         </div>
                         <div class="item-controls">
                           <button class="qty-btn" (click)="decreaseQty(item)">−</button>
@@ -254,6 +257,30 @@ const DELIVERY_ZONES: DeliveryZone[] = [
               }
             </div>
             <button class="flavor-cancel" (click)="pendingProduct.set(null)">Cancelar</button>
+          </div>
+        </div>
+      }
+
+      @if (pendingAdditionsItem()) {
+        <div class="flavor-overlay" (click)="pendingAdditionsItem.set(null)">
+          <div class="flavor-sheet" (click)="$event.stopPropagation()">
+            <div class="flavor-header">{{ pendingAdditionsItem()!.product.name }}</div>
+            <p class="flavor-prompt">Adiciones (opcional):</p>
+            <div class="flavor-options">
+              @for (a of pendingAdditionsItem()!.product.additions!; track a.id) {
+                <label class="addition-option">
+                  <input type="checkbox"
+                         [checked]="selectedPendingAdditionIds().has(a.id)"
+                         (change)="togglePendingAdditionId(a.id)" />
+                  <span class="addition-name">{{ a.name }}</span>
+                  <span class="addition-price">+{{ a.effectivePrice | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
+                </label>
+              }
+            </div>
+            <div class="flavor-options" style="margin-top:0.75em">
+              <button class="flavor-btn" style="background:#e94560;border-color:#e94560;color:#fff" (click)="confirmAdditions()">Confirmar</button>
+              <button class="flavor-cancel" (click)="pendingAdditionsItem.set(null)">Cancelar</button>
+            </div>
           </div>
         </div>
       }
@@ -511,6 +538,15 @@ const DELIVERY_ZONES: DeliveryZone[] = [
       color: #e94560; padding: 0.6em 0.9em; border-radius: 8px; font-size: 0.85em;
     }
     .item-flavor-tag { font-size: 0.75em; color: #8b949e; margin-top: 2px; }
+    .item-additions-tag { font-size: 0.75em; color: #bc8cff; margin-top: 2px; }
+    .addition-option {
+      display: flex; align-items: center; gap: 0.6em;
+      padding: 0.6em 0.75em; background: #21262d; border-radius: 8px; cursor: pointer;
+      font-size: 0.9em; color: #e6edf3;
+    }
+    .addition-option input { accent-color: #e94560; width: 16px; height: 16px; cursor: pointer; }
+    .addition-name { flex: 1; }
+    .addition-price { font-size: 0.8em; color: #3fb950; white-space: nowrap; }
 
     .flavor-overlay {
       position: fixed; inset: 0; background: rgba(0,0,0,0.6);
@@ -563,6 +599,8 @@ export class DomicilioBoardComponent implements OnInit, OnDestroy {
   successMsg = signal('');
   errorMsg = signal('');
   pendingProduct = signal<CatalogProduct | null>(null);
+  pendingAdditionsItem = signal<{ product: CatalogProduct; flavor: string } | null>(null);
+  selectedPendingAdditionIds = signal<Set<number>>(new Set());
   orderType = signal<'mesa' | 'llevar' | ''>('');
   tableNumber = '';
   selectedZoneName = signal('');
@@ -577,7 +615,7 @@ export class DomicilioBoardComponent implements OnInit, OnDestroy {
     this.categories().find(c => c.id === this.selectedCat())?.products ?? []
   );
   total = computed(() =>
-    this.cart().reduce((sum, item) => sum + item.product.price * item.quantity, 0)
+    this.cart().reduce((sum, item) => sum + (item.product.price + item.additionsPrice) * item.quantity, 0)
   );
   grandTotal = computed(() =>
     this.total() + (this.selectedZone()?.price ?? 0)
@@ -653,31 +691,68 @@ export class DomicilioBoardComponent implements OnInit, OnDestroy {
       this.pendingProduct.set(product);
       return;
     }
-    this.addProductToCart(product, '');
+    this.confirmItem(product, '');
   }
 
   pickFlavor(flavor: string): void {
     const product = this.pendingProduct();
     if (!product) return;
     this.pendingProduct.set(null);
-    this.addProductToCart(product, flavor);
+    this.confirmItem(product, flavor);
   }
 
-  private addProductToCart(product: CatalogProduct, flavor: string): void {
+  private confirmItem(product: CatalogProduct, flavor: string): void {
+    if (product.additions?.length) {
+      this.selectedPendingAdditionIds.set(new Set());
+      this.pendingAdditionsItem.set({ product, flavor });
+      return;
+    }
+    this.addProductToCart(product, flavor, '', 0);
+  }
+
+  togglePendingAdditionId(id: number): void {
+    this.selectedPendingAdditionIds.update(ids => {
+      const next = new Set(ids);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  }
+
+  confirmAdditions(): void {
+    const item = this.pendingAdditionsItem();
+    if (!item) return;
+    const selected = item.product.additions!.filter(a => this.selectedPendingAdditionIds().has(a.id));
+    const additionsStr = selected.map(a => a.name).join(', ');
+    const additionsPrice = selected.reduce((s, a) => s + a.effectivePrice, 0);
+    this.pendingAdditionsItem.set(null);
+    this.addProductToCart(item.product, item.flavor, additionsStr, additionsPrice);
+  }
+
+  private addProductToCart(product: CatalogProduct, flavor: string, additions: string, additionsPrice: number): void {
     this.cart.update(items => {
-      const existing = items.find(i => i.product.id === product.id && i.flavor === flavor);
-      if (existing) return items.map(i => i.product.id === product.id && i.flavor === flavor ? { ...i, quantity: i.quantity + 1 } : i);
-      return [...items, { product, flavor, quantity: 1, note: '' }];
+      const existing = items.find(i => i.product.id === product.id && i.flavor === flavor && i.additions === additions);
+      if (existing) return items.map(i =>
+        i.product.id === product.id && i.flavor === flavor && i.additions === additions
+          ? { ...i, quantity: i.quantity + 1 }
+          : i
+      );
+      return [...items, { product, flavor, additions, additionsPrice, quantity: 1, note: '' }];
     });
   }
 
   decreaseQty(item: CartItem): void {
     if (item.quantity <= 1) { this.removeFromCart(item); return; }
-    this.cart.update(items => items.map(i => i.product.id === item.product.id && i.flavor === item.flavor ? { ...i, quantity: i.quantity - 1 } : i));
+    this.cart.update(items => items.map(i =>
+      i.product.id === item.product.id && i.flavor === item.flavor && i.additions === item.additions
+        ? { ...i, quantity: i.quantity - 1 }
+        : i
+    ));
   }
 
   removeFromCart(item: CartItem): void {
-    this.cart.update(items => items.filter(i => !(i.product.id === item.product.id && i.flavor === item.flavor)));
+    this.cart.update(items => items.filter(i =>
+      !(i.product.id === item.product.id && i.flavor === item.flavor && i.additions === item.additions)
+    ));
   }
 
   submitOrder(): void {
@@ -697,8 +772,9 @@ export class DomicilioBoardComponent implements OnInit, OnDestroy {
       productId: i.product.id,
       productName: i.product.name,
       flavor: i.flavor || undefined,
+      additions: i.additions || undefined,
       quantity: i.quantity,
-      unitPrice: i.product.price,
+      unitPrice: i.product.price + i.additionsPrice,
       note: i.note || undefined
     }));
 

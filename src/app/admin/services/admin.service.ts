@@ -6,7 +6,7 @@ import { environment } from '../../../environments/environment';
 import {
   LoginRequest, LoginResponse, OrderResponse, OrderStatus,
   CustomerResponse, DashboardStats, TopProduct,
-  CreateOrderRequest, CatalogProduct, FlavorItem, ShiftResponse, DailyStatResponse,
+  CreateOrderRequest, CatalogProduct, FlavorItem, AdditionItem, ShiftResponse, DailyStatResponse,
   SourceStatResponse, HourlyStatResponse, CategoryItem, CreateProductRequest
 } from '../models/admin.model';
 import { ProductResponse } from '../../models/api.model';
@@ -150,6 +150,12 @@ export class AdminService {
         categoryId: p.categoryId,
         categoryName: p.categoryName,
         ...(p.flavors?.length ? { flavors: p.flavors.map(f => ({ id: f.id, name: f.name })) } : {}),
+        ...(p.additions?.length ? { additions: p.additions.map(a => ({
+          id: a.id,
+          additionId: a.additionId,
+          name: a.additionName,
+          effectivePrice: a.effectivePrice
+        })) } : {}),
       })))
     );
   }
@@ -193,6 +199,20 @@ export class AdminService {
   }
 
   // ── Crear pedido ─────────────────────────────────────────────
+  getAdditions(): Observable<AdditionItem[]> {
+    return this.http.get<AdditionItem[]>(`${this.base}/api/admin/catalog/additions`, {
+      headers: this.authHeaders()
+    });
+  }
+
+  updateProductAdditions(productId: number, additionIds: number[]): Observable<void> {
+    return this.http.patch<void>(
+      `${this.base}/api/admin/catalog/products/${productId}/additions`,
+      additionIds,
+      { headers: this.authHeaders() }
+    );
+  }
+
   createOrder(request: CreateOrderRequest): Observable<OrderResponse> {
     return this.http.post<OrderResponse>(`${this.base}/api/orders`, request, {
       headers: this.authHeaders()

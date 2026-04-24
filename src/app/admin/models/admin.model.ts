@@ -71,6 +71,7 @@ export interface OrderItemRequest {
   productId: number;
   productName: string;
   flavor?: string;
+  additions?: string;
   quantity: number;
   unitPrice: number;
   note?: string;
@@ -93,6 +94,21 @@ export interface FlavorItem {
   name: string;
 }
 
+export interface AdditionItem {
+  id: number;
+  name: string;
+  description?: string;
+  basePrice: number;
+  active?: boolean;
+}
+
+export interface ProductAdditionItem {
+  id: number;
+  additionId: number;
+  name: string;
+  effectivePrice: number;
+}
+
 export interface CatalogProduct {
   id: number;
   name: string;
@@ -103,6 +119,7 @@ export interface CatalogProduct {
   categoryId: number;
   categoryName: string;
   flavors?: FlavorItem[];
+  additions?: ProductAdditionItem[];
 }
 
 export interface DailyStatResponse {
