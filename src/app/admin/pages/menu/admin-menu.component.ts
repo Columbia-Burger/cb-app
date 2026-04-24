@@ -77,6 +77,9 @@ import { CatalogProduct, CatalogCategory, FlavorItem, AdditionItem, CategoryItem
                   <button class="additions-btn" (click)="openAdditionEditor(p); $event.stopPropagation()">
                     🧩{{ p.additions?.length ? ' ' + p.additions!.length : '' }}
                   </button>
+                  <button class="combo-btn" [class.combo-active]="p.comboDescription" (click)="openComboEditor(p); $event.stopPropagation()">
+                    🍟
+                  </button>
                 </div>
               </div>
             }
@@ -90,6 +93,40 @@ import { CatalogProduct, CatalogCategory, FlavorItem, AdditionItem, CategoryItem
 
       @if (!loading() && filteredCategories().length === 0) {
         <p class="empty">No se encontraron productos.</p>
+      }
+
+      <!-- Combo editor modal -->
+      @if (editingProductCombo()) {
+        <div class="fl-overlay" (click)="editingProductCombo.set(null)">
+          <div class="fl-sheet" (click)="$event.stopPropagation()">
+            <div class="fl-title">Combo — {{ editingProductCombo()!.name }}</div>
+            @if (editingProductCombo()!.comboDescription) {
+              <p class="combo-current">
+                Actual: <strong>{{ editingProductCombo()!.comboDescription }}</strong>
+                (+{{ editingProductCombo()!.comboPrice! | currency:'COP':'symbol-narrow':'1.0-0' }})
+              </p>
+            }
+            <div class="combo-form">
+              <label class="combo-field">
+                <span class="combo-label">Descripción (ej: papas + gaseosa personal)</span>
+                <input type="text" [(ngModel)]="comboForm.description" placeholder="papas + gaseosa personal" />
+              </label>
+              <label class="combo-field">
+                <span class="combo-label">Precio adicional (COP)</span>
+                <input type="number" [(ngModel)]="comboForm.price" min="0" placeholder="0" />
+              </label>
+            </div>
+            <div class="fl-actions">
+              <button class="fl-save" [disabled]="savingCombo()" (click)="saveCombo()">
+                {{ savingCombo() ? 'Guardando...' : 'Asignar combo' }}
+              </button>
+              @if (editingProductCombo()!.comboDescription) {
+                <button class="fl-remove" [disabled]="savingCombo()" (click)="removeCombo()">Quitar</button>
+              }
+              <button class="fl-cancel" (click)="editingProductCombo.set(null)">Cancelar</button>
+            </div>
+          </div>
+        </div>
       }
 
       <!-- Additions editor modal -->
@@ -391,8 +428,36 @@ import { CatalogProduct, CatalogCategory, FlavorItem, AdditionItem, CategoryItem
     }
     .additions-btn:hover { border-color: #e94560; color: #e94560; }
 
+    .combo-btn {
+      background: none;
+      border: 1px solid #30363d;
+      border-radius: 6px;
+      color: #8b949e;
+      font-size: 0.7em;
+      padding: 0.2em 0.5em;
+      cursor: pointer;
+    }
+    .combo-btn:hover { border-color: #e3b341; color: #e3b341; }
+    .combo-btn.combo-active { border-color: #e3b341; color: #e3b341; background: rgba(227,179,65,0.1); }
+
     .fl-option-name { flex: 1; }
     .fl-option-price { font-size: 0.8em; color: #8b949e; white-space: nowrap; }
+
+    .combo-current { font-size: 0.82em; color: #8b949e; margin: 0 0 0.75em; }
+    .combo-current strong { color: #e3b341; }
+    .combo-form { display: flex; flex-direction: column; gap: 0.75em; margin-bottom: 1em; }
+    .combo-field { display: flex; flex-direction: column; gap: 0.3em; }
+    .combo-label { font-size: 0.78em; color: #8b949e; font-weight: 600; }
+    .combo-form input {
+      background: #21262d; border: 1px solid #30363d; border-radius: 8px;
+      color: #e6edf3; font-size: 0.9em; padding: 0.6em 0.75em; outline: none; width: 100%;
+    }
+    .combo-form input:focus { border-color: #e3b341; }
+    .fl-remove {
+      padding: 0.75em 1em; background: rgba(248,81,73,0.1); border: 1px solid #f85149;
+      border-radius: 8px; color: #f85149; font-size: 0.9em; cursor: pointer;
+    }
+    .fl-remove:disabled { opacity: 0.5; cursor: wait; }
 
     .fl-overlay {
       position: fixed; inset: 0; background: rgba(0,0,0,0.6);
@@ -475,6 +540,10 @@ export class AdminMenuComponent implements OnInit {
   loadingAdditions = signal(false);
   savingAdditions = signal(false);
 
+  editingProductCombo = signal<CatalogProduct | null>(null);
+  savingCombo = signal(false);
+  comboForm = { description: '', price: 0 };
+
   showCreateModal = signal(false);
   allCategories = signal<CategoryItem[]>([]);
   loadingCategories = signal(false);
@@ -514,6 +583,53 @@ export class AdminMenuComponent implements OnInit {
         this.loading.set(false);
       },
       error: () => this.loading.set(false)
+    });
+  }
+
+  openComboEditor(product: CatalogProduct): void {
+    this.comboForm = {
+      description: product.comboDescription ?? '',
+      price: product.comboPrice ?? 0
+    };
+    this.editingProductCombo.set(product);
+  }
+
+  saveCombo(): void {
+    const product = this.editingProductCombo();
+    if (!product || !this.comboForm.description.trim()) return;
+    this.savingCombo.set(true);
+    this.svc.setProductCombo(product.id, {
+      description: this.comboForm.description.trim(),
+      price: this.comboForm.price
+    }).subscribe({
+      next: () => {
+        this.products.update(list =>
+          list.map(p => p.id === product.id
+            ? { ...p, comboDescription: this.comboForm.description.trim(), comboPrice: this.comboForm.price }
+            : p)
+        );
+        this.savingCombo.set(false);
+        this.editingProductCombo.set(null);
+      },
+      error: () => this.savingCombo.set(false)
+    });
+  }
+
+  removeCombo(): void {
+    const product = this.editingProductCombo();
+    if (!product) return;
+    this.savingCombo.set(true);
+    this.svc.clearProductCombo(product.id).subscribe({
+      next: () => {
+        this.products.update(list =>
+          list.map(p => p.id === product.id
+            ? { ...p, comboDescription: undefined, comboPrice: undefined }
+            : p)
+        );
+        this.savingCombo.set(false);
+        this.editingProductCombo.set(null);
+      },
+      error: () => this.savingCombo.set(false)
     });
   }
 

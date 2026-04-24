@@ -30,6 +30,8 @@ export interface ProductResponse {
   categoryName: string;
   flavors: FlavorResponse[];
   additions: ProductAdditionResponse[];
+  comboDescription?: string;
+  comboPrice?: number;
 }
 
 export interface SeasonalSpecialResponse {

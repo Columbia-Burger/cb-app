@@ -120,6 +120,8 @@ export interface CatalogProduct {
   categoryName: string;
   flavors?: FlavorItem[];
   additions?: ProductAdditionItem[];
+  comboDescription?: string;
+  comboPrice?: number;
 }
 
 export interface DailyStatResponse {

@@ -72,6 +72,7 @@ export class DomicilioService {
         ...(p.additions?.length ? { additions: p.additions.map(a => ({
           id: a.id, additionId: a.additionId, name: a.additionName, effectivePrice: a.effectivePrice
         })) } : {}),
+        ...(p.comboDescription ? { comboDescription: p.comboDescription, comboPrice: p.comboPrice ?? 0 } : {}),
       })))
     );
   }

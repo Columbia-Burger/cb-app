@@ -9,7 +9,7 @@ import { OrderResponse, CatalogProduct, OrderItemRequest } from '../../../admin/
 import { OrderEvent, OrderEventsService } from '../../../services/order-events.service';
 
 interface MenuCategory { id: number; name: string; products: CatalogProduct[]; }
-interface CartItem { product: CatalogProduct; flavor: string; additions: string; additionsPrice: number; quantity: number; note: string; }
+interface CartItem { product: CatalogProduct; flavor: string; additions: string; additionsPrice: number; combo: string; comboPrice: number; quantity: number; note: string; }
 
 interface ZoneOption { name: string; price: number; }
 const PICKUP_OPTION: ZoneOption = { name: 'Recoger aquí', price: 0 };
@@ -186,8 +186,11 @@ const PICKUP_OPTION: ZoneOption = { name: 'Recoger aquí', price: 0 };
                             @if (item.additions) {
                               <div class="item-additions-tag">+ {{ item.additions }}</div>
                             }
+                            @if (item.combo) {
+                              <div class="item-combo-tag">🍟 {{ item.combo }}</div>
+                            }
                           </div>
-                          <span class="item-price">{{ (item.product.price + item.additionsPrice) * item.quantity | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
+                          <span class="item-price">{{ (item.product.price + item.additionsPrice + item.comboPrice) * item.quantity | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
                         </div>
                         <div class="item-controls">
                           <button class="qty-btn" (click)="decreaseQty(item)">−</button>
@@ -247,6 +250,24 @@ const PICKUP_OPTION: ZoneOption = { name: 'Recoger aquí', price: 0 };
               }
             </div>
             <button class="flavor-cancel" (click)="pendingProduct.set(null)">Cancelar</button>
+          </div>
+        </div>
+      }
+
+      @if (pendingComboItem()) {
+        <div class="flavor-overlay" (click)="pendingComboItem.set(null)">
+          <div class="flavor-sheet" (click)="$event.stopPropagation()">
+            <div class="flavor-header">{{ pendingComboItem()!.product.name }}</div>
+            <p class="flavor-prompt">
+              ¿La deseas en combo? ({{ pendingComboItem()!.product.comboDescription }})
+            </p>
+            <div class="flavor-options">
+              <button class="flavor-btn combo-yes-btn" (click)="confirmCombo(true)">
+                Sí, en combo
+                <span class="combo-price-tag">+{{ pendingComboItem()!.product.comboPrice! | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
+              </button>
+              <button class="flavor-btn" (click)="confirmCombo(false)">No, sin combo</button>
+            </div>
           </div>
         </div>
       }
@@ -529,6 +550,9 @@ const PICKUP_OPTION: ZoneOption = { name: 'Recoger aquí', price: 0 };
     }
     .item-flavor-tag { font-size: 0.75em; color: #8b949e; margin-top: 2px; }
     .item-additions-tag { font-size: 0.75em; color: #bc8cff; margin-top: 2px; }
+    .item-combo-tag { font-size: 0.75em; color: #e3b341; margin-top: 2px; }
+    .combo-yes-btn { display: flex; justify-content: space-between; align-items: center; }
+    .combo-price-tag { color: #3fb950; font-size: 0.85em; font-weight: 700; }
     .addition-option {
       display: flex; align-items: center; gap: 0.6em;
       padding: 0.6em 0.75em; background: #21262d; border-radius: 8px; cursor: pointer;
@@ -589,8 +613,9 @@ export class DomicilioBoardComponent implements OnInit, OnDestroy {
   successMsg = signal('');
   errorMsg = signal('');
   pendingProduct = signal<CatalogProduct | null>(null);
-  pendingAdditionsItem = signal<{ product: CatalogProduct; flavor: string } | null>(null);
+  pendingAdditionsItem = signal<{ product: CatalogProduct; flavor: string; additions: string; additionsPrice: number } | null>(null);
   selectedPendingAdditionIds = signal<Set<number>>(new Set());
+  pendingComboItem = signal<{ product: CatalogProduct; flavor: string; additions: string; additionsPrice: number } | null>(null);
   orderType = signal<'mesa' | 'llevar' | ''>('');
   tableNumber = '';
   selectedZoneName = signal('');
@@ -604,7 +629,7 @@ export class DomicilioBoardComponent implements OnInit, OnDestroy {
     this.categories().find(c => c.id === this.selectedCat())?.products ?? []
   );
   total = computed(() =>
-    this.cart().reduce((sum, item) => sum + (item.product.price + item.additionsPrice) * item.quantity, 0)
+    this.cart().reduce((sum, item) => sum + (item.product.price + item.additionsPrice + item.comboPrice) * item.quantity, 0)
   );
   grandTotal = computed(() =>
     this.total() + (this.selectedZone()?.price ?? 0)
@@ -701,10 +726,10 @@ export class DomicilioBoardComponent implements OnInit, OnDestroy {
   private confirmItem(product: CatalogProduct, flavor: string): void {
     if (product.additions?.length) {
       this.selectedPendingAdditionIds.set(new Set());
-      this.pendingAdditionsItem.set({ product, flavor });
+      this.pendingAdditionsItem.set({ product, flavor, additions: '', additionsPrice: 0 });
       return;
     }
-    this.addProductToCart(product, flavor, '', 0);
+    this.confirmComboOrAdd(product, flavor, '', 0);
   }
 
   togglePendingAdditionId(id: number): void {
@@ -722,25 +747,44 @@ export class DomicilioBoardComponent implements OnInit, OnDestroy {
     const additionsStr = selected.map(a => a.name).join(', ');
     const additionsPrice = selected.reduce((s, a) => s + a.effectivePrice, 0);
     this.pendingAdditionsItem.set(null);
-    this.addProductToCart(item.product, item.flavor, additionsStr, additionsPrice);
+    this.confirmComboOrAdd(item.product, item.flavor, additionsStr, additionsPrice);
   }
 
-  private addProductToCart(product: CatalogProduct, flavor: string, additions: string, additionsPrice: number): void {
+  private confirmComboOrAdd(product: CatalogProduct, flavor: string, additions: string, additionsPrice: number): void {
+    if (product.comboDescription) {
+      this.pendingComboItem.set({ product, flavor, additions, additionsPrice });
+      return;
+    }
+    this.addProductToCart(product, flavor, additions, additionsPrice, '', 0);
+  }
+
+  confirmCombo(accepted: boolean): void {
+    const item = this.pendingComboItem();
+    if (!item) return;
+    this.pendingComboItem.set(null);
+    const combo = accepted ? `Combo (${item.product.comboDescription})` : '';
+    const comboPrice = accepted ? (item.product.comboPrice ?? 0) : 0;
+    this.addProductToCart(item.product, item.flavor, item.additions, item.additionsPrice, combo, comboPrice);
+  }
+
+  private addProductToCart(product: CatalogProduct, flavor: string, additions: string, additionsPrice: number, combo: string, comboPrice: number): void {
     this.cart.update(items => {
-      const existing = items.find(i => i.product.id === product.id && i.flavor === flavor && i.additions === additions);
+      const existing = items.find(i =>
+        i.product.id === product.id && i.flavor === flavor && i.additions === additions && i.combo === combo
+      );
       if (existing) return items.map(i =>
-        i.product.id === product.id && i.flavor === flavor && i.additions === additions
+        i.product.id === product.id && i.flavor === flavor && i.additions === additions && i.combo === combo
           ? { ...i, quantity: i.quantity + 1 }
           : i
       );
-      return [...items, { product, flavor, additions, additionsPrice, quantity: 1, note: '' }];
+      return [...items, { product, flavor, additions, additionsPrice, combo, comboPrice, quantity: 1, note: '' }];
     });
   }
 
   decreaseQty(item: CartItem): void {
     if (item.quantity <= 1) { this.removeFromCart(item); return; }
     this.cart.update(items => items.map(i =>
-      i.product.id === item.product.id && i.flavor === item.flavor && i.additions === item.additions
+      i.product.id === item.product.id && i.flavor === item.flavor && i.additions === item.additions && i.combo === item.combo
         ? { ...i, quantity: i.quantity - 1 }
         : i
     ));
@@ -748,7 +792,7 @@ export class DomicilioBoardComponent implements OnInit, OnDestroy {
 
   removeFromCart(item: CartItem): void {
     this.cart.update(items => items.filter(i =>
-      !(i.product.id === item.product.id && i.flavor === item.flavor && i.additions === item.additions)
+      !(i.product.id === item.product.id && i.flavor === item.flavor && i.additions === item.additions && i.combo === item.combo)
     ));
   }
 
@@ -765,15 +809,18 @@ export class DomicilioBoardComponent implements OnInit, OnDestroy {
 
     const notes = type === 'mesa' ? this.tableNumber : 'Para llevar';
 
-    const orderItems: OrderItemRequest[] = this.cart().map(i => ({
-      productId: i.product.id,
-      productName: i.product.name,
-      flavor: i.flavor || undefined,
-      additions: i.additions || undefined,
-      quantity: i.quantity,
-      unitPrice: i.product.price + i.additionsPrice,
-      note: i.note || undefined
-    }));
+    const orderItems: OrderItemRequest[] = this.cart().map(i => {
+      const allExtras = [i.additions, i.combo].filter(Boolean).join(', ');
+      return {
+        productId: i.product.id,
+        productName: i.product.name,
+        flavor: i.flavor || undefined,
+        additions: allExtras || undefined,
+        quantity: i.quantity,
+        unitPrice: i.product.price + i.additionsPrice + i.comboPrice,
+        note: i.note || undefined
+      };
+    });
 
     this.svc.createOrder({
       customerName: 'Domiciliario',

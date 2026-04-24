@@ -157,6 +157,7 @@ export class AdminService {
           name: a.additionName,
           effectivePrice: a.effectivePrice
         })) } : {}),
+        ...(p.comboDescription ? { comboDescription: p.comboDescription, comboPrice: p.comboPrice ?? 0 } : {}),
       })))
     );
   }
@@ -216,6 +217,18 @@ export class AdminService {
 
   createOrder(request: CreateOrderRequest): Observable<OrderResponse> {
     return this.http.post<OrderResponse>(`${this.base}/api/orders`, request, {
+      headers: this.authHeaders()
+    });
+  }
+
+  setProductCombo(productId: number, request: { description: string; price: number }): Observable<void> {
+    return this.http.patch<void>(`${this.base}/api/admin/catalog/products/${productId}/combo`, request, {
+      headers: this.authHeaders()
+    });
+  }
+
+  clearProductCombo(productId: number): Observable<void> {
+    return this.http.delete<void>(`${this.base}/api/admin/catalog/products/${productId}/combo`, {
       headers: this.authHeaders()
     });
   }
