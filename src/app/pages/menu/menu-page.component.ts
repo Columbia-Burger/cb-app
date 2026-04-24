@@ -49,7 +49,7 @@ export class MenuPageComponent implements OnInit {
     return true;
   });
 
-  // Precio activo en el modal: base + adiciones seleccionadas (combo ya incluido en el precio)
+  // Precio activo en el modal: base + adiciones seleccionadas + combo si aplica
   modalPriceValue = computed(() => {
     const item = this.selectedItem();
     if (!item) return 0;
@@ -57,7 +57,8 @@ export class MenuPageComponent implements OnInit {
     const additionsTotal = item.additions
       ?.filter(a => this.selectedAdditionIds().has(a.id))
       .reduce((s, a) => s + a.effectivePrice, 0) ?? 0;
-    return base + additionsTotal;
+    const comboTotal = this.comboAccepted() ? (item.comboPrice ?? 0) : 0;
+    return base + additionsTotal + comboTotal;
   });
 
   modalPrice = computed(() => {
