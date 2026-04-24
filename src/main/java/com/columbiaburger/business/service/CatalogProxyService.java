@@ -35,8 +35,19 @@ public class CatalogProxyService {
     }
 
     public String getProducts() {
+        return getProducts(false);
+    }
+
+    public String getProducts(boolean availableOnly) {
         ResponseEntity<String> response = restTemplate.exchange(
-                catalogApiUrl + "/api/products",
+                catalogApiUrl + "/api/products?availableOnly=" + availableOnly,
+                HttpMethod.GET, new HttpEntity<>(apiHeaders()), String.class);
+        return response.getBody();
+    }
+
+    public String getSeasonalSpecials(boolean currentOnly) {
+        ResponseEntity<String> response = restTemplate.exchange(
+                catalogApiUrl + "/api/seasonal-specials?currentOnly=" + currentOnly,
                 HttpMethod.GET, new HttpEntity<>(apiHeaders()), String.class);
         return response.getBody();
     }
