@@ -84,12 +84,18 @@ export class CatalogService {
       description: p.description,
       price: this.formatPrice(p.price),
       priceValue: p.price,
-      image: p.imageUrl,
+      image: this.cloudinaryOptimize(p.imageUrl),
       ...(baseOptions ? { baseOptions } : {}),
       ...(flavors?.length ? { flavors } : {}),
       ...(additions?.length ? { additions } : {}),
       ...(p.comboDescription ? { comboDescription: p.comboDescription, comboPrice: p.comboPrice ?? 0 } : {}),
     };
+  }
+
+  private cloudinaryOptimize(url: string): string {
+    if (!url?.includes('res.cloudinary.com')) return url;
+    // Inserta transformaciones: formato automático (WebP/AVIF), calidad automática, ancho 600px
+    return url.replace('/upload/', '/upload/f_auto,q_auto,w_600/');
   }
 
   private formatPrice(value: number): string {
