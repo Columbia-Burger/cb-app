@@ -17,6 +17,7 @@ public class OrderItemRequest {
     private String productName;
 
     private String flavor;
+    private String additions;
 
     @NotNull
     @Min(1)

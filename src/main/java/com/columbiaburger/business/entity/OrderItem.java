@@ -28,6 +28,9 @@ public class OrderItem {
     @Column(length = 100)
     private String flavor;
 
+    @Column(length = 500)
+    private String additions;
+
     @Column(nullable = false)
     private Integer quantity;
 

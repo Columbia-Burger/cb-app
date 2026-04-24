@@ -83,4 +83,17 @@ public class AdminController {
         String result = catalogProxyService.createProduct(body);
         return ResponseEntity.status(201).body(result);
     }
+
+    @GetMapping("/catalog/additions")
+    public ResponseEntity<String> getAdditions() {
+        return ResponseEntity.ok(catalogProxyService.getAdditions());
+    }
+
+    @PatchMapping("/catalog/products/{id}/additions")
+    public ResponseEntity<Void> updateProductAdditions(
+            @PathVariable Long id,
+            @RequestBody List<Long> additionIds) {
+        catalogProxyService.updateProductAdditions(id, additionIds);
+        return ResponseEntity.noContent().build();
+    }
 }

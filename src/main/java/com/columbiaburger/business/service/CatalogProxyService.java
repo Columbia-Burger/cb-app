@@ -82,6 +82,29 @@ public class CatalogProxyService {
         }
     }
 
+    public String getAdditions() {
+        try {
+            ResponseEntity<String> response = restTemplate.exchange(
+                    catalogApiUrl + "/api/additions",
+                    HttpMethod.GET, new HttpEntity<>(apiHeaders()), String.class);
+            return response.getBody();
+        } catch (HttpClientErrorException e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+                    "Error al contactar el catálogo: " + e.getStatusCode());
+        }
+    }
+
+    public void updateProductAdditions(Long productId, List<Long> additionIds) {
+        try {
+            restTemplate.exchange(
+                    catalogApiUrl + "/api/products/" + productId + "/additions",
+                    HttpMethod.PATCH, new HttpEntity<>(additionIds, apiJsonHeaders()), Void.class);
+        } catch (HttpClientErrorException e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+                    "Error al contactar el catálogo: " + e.getStatusCode());
+        }
+    }
+
     public String createProduct(String body) {
         try {
             ResponseEntity<String> response = restTemplate.exchange(
