@@ -20,4 +20,6 @@ public class ProductResponse {
     private String categoryName;
     private List<FlavorResponse> flavors;
     private List<ProductAdditionResponse> additions;
+    private String comboDescription;
+    private BigDecimal comboPrice;
 }

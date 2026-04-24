@@ -1,5 +1,6 @@
 package com.columbiaburger.api.service;
 
+import com.columbiaburger.api.dto.request.ComboRequest;
 import com.columbiaburger.api.dto.request.ProductRequest;
 import com.columbiaburger.api.dto.response.FlavorResponse;
 import com.columbiaburger.api.dto.response.ProductAdditionResponse;
@@ -126,6 +127,22 @@ public class ProductService {
     }
 
     @Transactional
+    public void setCombo(Long id, ComboRequest request) {
+        Product product = getOrThrow(id);
+        product.setComboDescription(request.getDescription());
+        product.setComboPrice(request.getPrice());
+        productRepository.save(product);
+    }
+
+    @Transactional
+    public void clearCombo(Long id) {
+        Product product = getOrThrow(id);
+        product.setComboDescription(null);
+        product.setComboPrice(null);
+        productRepository.save(product);
+    }
+
+    @Transactional
     public void toggleAvailable(Long id) {
         Product product = getOrThrow(id);
         product.setAvailable(!product.getAvailable());
@@ -171,6 +188,8 @@ public class ProductService {
                 .categoryName(p.getCategory().getName())
                 .flavors(flavorResponses)
                 .additions(additions)
+                .comboDescription(p.getComboDescription())
+                .comboPrice(p.getComboPrice())
                 .build();
     }
 }

@@ -31,6 +31,12 @@ public class Product {
     @Column(nullable = false)
     private Boolean available = true;
 
+    @Column(name = "combo_description", length = 300)
+    private String comboDescription;
+
+    @Column(name = "combo_price", precision = 10, scale = 2)
+    private BigDecimal comboPrice;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id", nullable = false)
     private Category category;

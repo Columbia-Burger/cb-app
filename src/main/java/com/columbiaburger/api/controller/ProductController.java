@@ -1,5 +1,6 @@
 package com.columbiaburger.api.controller;
 
+import com.columbiaburger.api.dto.request.ComboRequest;
 import com.columbiaburger.api.dto.request.ProductRequest;
 import com.columbiaburger.api.dto.response.ProductResponse;
 import com.columbiaburger.api.service.ProductService;
@@ -67,5 +68,19 @@ public class ProductController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void updateAdditions(@PathVariable Long id, @RequestBody List<Long> additionIds) {
         productService.updateAdditions(id, additionIds);
+    }
+
+    @Operation(summary = "Asignar combo al producto")
+    @PatchMapping("/{id}/combo")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void setCombo(@PathVariable Long id, @Valid @RequestBody ComboRequest request) {
+        productService.setCombo(id, request);
+    }
+
+    @Operation(summary = "Quitar combo del producto")
+    @DeleteMapping("/{id}/combo")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void clearCombo(@PathVariable Long id) {
+        productService.clearCombo(id);
     }
 }
