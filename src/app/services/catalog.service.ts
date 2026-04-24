@@ -67,7 +67,7 @@ export class CatalogService {
             description: s.description,
             price: this.formatPrice(s.price),
             priceValue: s.price,
-            image: s.imageUrl,
+            image: this.cloudinaryFull(s.imageUrl),
           };
         })
       );
@@ -92,10 +92,18 @@ export class CatalogService {
     };
   }
 
-  private cloudinaryOptimize(url: string): string {
+  cloudinaryThumb(url: string): string {
     if (!url?.includes('res.cloudinary.com')) return url;
-    // Inserta transformaciones: formato automático (WebP/AVIF), calidad automática, ancho 600px
-    return url.replace('/upload/', '/upload/f_auto,q_auto,w_600/');
+    return url.replace('/upload/', '/upload/f_auto,q_auto,w_400/');
+  }
+
+  cloudinaryFull(url: string): string {
+    if (!url?.includes('res.cloudinary.com')) return url;
+    return url.replace('/upload/', '/upload/f_auto,q_auto,w_900/');
+  }
+
+  private cloudinaryOptimize(url: string): string {
+    return this.cloudinaryThumb(url);
   }
 
   private formatPrice(value: number): string {

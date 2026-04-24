@@ -16,8 +16,11 @@ $card-radius: 1.4rem;
 .menu-hero {
   position: relative;
   text-align: center;
-  padding: 5rem 2rem 4rem;
+  padding: 2.5rem 2rem 2rem;   // reducido en móvil → productos más cerca del fold
   overflow: hidden;
+
+  @media (min-width: 600px) { padding: 4rem 2rem 3rem; }
+  @media (min-width: 900px) { padding: 5rem 2rem 4rem; }
 
   &::before {
     content: '';

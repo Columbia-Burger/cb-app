@@ -5,7 +5,9 @@
     <div class="carousel-inner hero__inner">
       @for (slide of slides; track slide.image; let i = $index) {
         <div class="carousel-item hero__item" [class.active]="i === 0">
-          <img [src]="slide.image" [alt]="slide.alt" class="hero__img" />
+          <img [src]="slide.image" [alt]="slide.alt" class="hero__img"
+               [attr.fetchpriority]="i === 0 ? 'high' : null"
+               [attr.loading]="i === 0 ? 'eager' : 'lazy'" />
           <div class="hero__overlay"></div>
         </div>
       }

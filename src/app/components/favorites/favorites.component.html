@@ -13,7 +13,7 @@
     @for (item of favorites; track item.image) {
       <li class="favorite-card">
         <div class="favorite-card__img-wrapper">
-          <img [src]="item.image" [alt]="item.name" class="favorite-card__img" />
+          <img [src]="item.image" [alt]="item.name" class="favorite-card__img" loading="lazy" />
         </div>
         <span class="favorite-card__name">{{ item.name }}</span>
       </li>

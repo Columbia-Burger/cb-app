@@ -17,7 +17,7 @@ import { MenuCategory, MenuItem, BaseOption, MenuAddition } from '../../models/m
 })
 export class MenuPageComponent implements OnInit {
   readonly cart = inject(CartService);
-  private readonly catalog = inject(CatalogService);
+  readonly catalog = inject(CatalogService);
 
   categories = signal<MenuCategory[]>([]);
   loading = signal(true);
