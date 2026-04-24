@@ -21,6 +21,7 @@ export class MenuPageComponent implements OnInit {
 
   categories = signal<MenuCategory[]>([]);
   loading = signal(true);
+  readonly skeletonItems = Array.from({ length: 8 }, (_, i) => i);
 
   selectedItem = signal<MenuItem | null>(null);
   selectedFlavor = signal<string | null>(null);

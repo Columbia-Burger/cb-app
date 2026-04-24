@@ -30,9 +30,17 @@
   <!-- Secciones por categoría -->
   <div class="menu-content">
     @if (loading()) {
-      <div class="menu-loading">Cargando menú...</div>
+      <!-- Skeleton para evitar CLS mientras carga -->
+      <div class="menu-skeleton">
+        <div class="skeleton-header"></div>
+        <div class="row row-cols-2 row-cols-sm-2 row-cols-lg-3 row-cols-xl-4 g-3">
+          @for (n of skeletonItems; track n) {
+            <div class="col"><div class="skeleton-card"><div class="skeleton-img"></div><div class="skeleton-body"><div class="skeleton-line skeleton-line--lg"></div><div class="skeleton-line skeleton-line--sm"></div></div></div></div>
+          }
+        </div>
+      </div>
     }
-    @for (cat of categories(); track cat.id) {
+    @for (cat of categories(); track cat.id; let catIndex = $index) {
       <section [id]="cat.id" class="menu-section">
         <div class="menu-section__header">
           <span class="menu-section__icon">{{ cat.icon }}</span>
@@ -40,7 +48,7 @@
         </div>
 
         <div class="row row-cols-2 row-cols-sm-2 row-cols-lg-3 row-cols-xl-4 g-3">
-          @for (item of cat.items; track item.name) {
+          @for (item of cat.items; track item.name; let itemIndex = $index) {
             <div class="col">
               <div class="menu-card card h-100" (click)="openDetail(item)">
                 <div class="menu-card__img-wrapper">
@@ -48,7 +56,8 @@
                     [src]="item.image || 'assets/burger.jpg'"
                     [alt]="item.name"
                     class="card-img-top menu-card__img"
-                    loading="lazy"
+                    [attr.loading]="(catIndex === 0 && itemIndex < 4) ? 'eager' : 'lazy'"
+                    [attr.fetchpriority]="(catIndex === 0 && itemIndex === 0) ? 'high' : null"
                     onerror="this.src='assets/burger.jpg'"
                   />
                 </div>

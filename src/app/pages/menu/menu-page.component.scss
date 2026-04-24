@@ -139,13 +139,68 @@ $card-radius: 1.4rem;
   max-width: 1280px;
   margin: 0 auto;
   padding: 0 1.2rem 6rem;
+  min-height: 60vh; // reserva espacio mientras carga → reduce CLS
 
   @media (min-width: 600px) { padding: 0 2rem 6rem; }
+}
+
+// ── Skeleton de carga ─────────────────────────────────────────────────────────
+@keyframes skeleton-pulse {
+  0%, 100% { opacity: 0.5; }
+  50%       { opacity: 1; }
+}
+
+.menu-skeleton {
+  padding: 4rem 0 1rem;
+}
+
+.skeleton-header {
+  width: 220px;
+  height: 2rem;
+  border-radius: 8px;
+  background: #2e2e2e;
+  margin-bottom: 2rem;
+  animation: skeleton-pulse 1.4s ease-in-out infinite;
+}
+
+.skeleton-card {
+  border-radius: 1.4rem;
+  overflow: hidden;
+  background: #1e1e1e;
+  border: 1px solid #2a2a2a;
+  height: 100%;
+}
+
+.skeleton-img {
+  height: 11rem;
+  background: #2e2e2e;
+  animation: skeleton-pulse 1.4s ease-in-out infinite;
+
+  @media (min-width: 600px) { height: 15rem; }
+  @media (min-width: 900px) { height: 18rem; }
+}
+
+.skeleton-body {
+  padding: 0.8rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.skeleton-line {
+  border-radius: 4px;
+  background: #2e2e2e;
+  animation: skeleton-pulse 1.4s ease-in-out infinite;
+
+  &--lg { height: 1.1rem; width: 75%; }
+  &--sm { height: 0.9rem; width: 50%; animation-delay: 0.2s; }
 }
 
 // ── Sección por categoría ─────────────────────────────────────────────────────
 .menu-section {
   padding: 4rem 0 1rem;
+  content-visibility: auto;
+  contain-intrinsic-size: 0 800px;
 
   &__header {
     display: flex;
