@@ -84,6 +84,18 @@ public class AdminController {
         return ResponseEntity.status(201).body(result);
     }
 
+    @PatchMapping("/catalog/products/{id}/combo")
+    public ResponseEntity<Void> setProductCombo(@PathVariable Long id, @RequestBody String body) {
+        catalogProxyService.setProductCombo(id, body);
+        return ResponseEntity.noContent().build();
+    }
+
+    @DeleteMapping("/catalog/products/{id}/combo")
+    public ResponseEntity<Void> clearProductCombo(@PathVariable Long id) {
+        catalogProxyService.clearProductCombo(id);
+        return ResponseEntity.noContent().build();
+    }
+
     @GetMapping("/catalog/delivery-zones")
     public ResponseEntity<String> getDeliveryZones(
             @RequestParam(defaultValue = "false") boolean activeOnly) {

@@ -117,6 +117,28 @@ public class CatalogProxyService {
         }
     }
 
+    public void setProductCombo(Long id, String body) {
+        try {
+            restTemplate.exchange(
+                    catalogApiUrl + "/api/products/" + id + "/combo",
+                    HttpMethod.PATCH, new HttpEntity<>(body, apiJsonHeaders()), Void.class);
+        } catch (HttpClientErrorException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Error al asignar el combo: " + e.getStatusCode());
+        }
+    }
+
+    public void clearProductCombo(Long id) {
+        try {
+            restTemplate.exchange(
+                    catalogApiUrl + "/api/products/" + id + "/combo",
+                    HttpMethod.DELETE, new HttpEntity<>(apiHeaders()), Void.class);
+        } catch (HttpClientErrorException e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+                    "Error al quitar el combo: " + e.getStatusCode());
+        }
+    }
+
     public String getDeliveryZones(boolean activeOnly) {
         try {
             ResponseEntity<String> response = restTemplate.exchange(
