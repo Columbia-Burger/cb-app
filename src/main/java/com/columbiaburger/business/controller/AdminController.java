@@ -84,9 +84,48 @@ public class AdminController {
         return ResponseEntity.status(201).body(result);
     }
 
+    @GetMapping("/catalog/delivery-zones")
+    public ResponseEntity<String> getDeliveryZones(
+            @RequestParam(defaultValue = "false") boolean activeOnly) {
+        return ResponseEntity.ok(catalogProxyService.getDeliveryZones(activeOnly));
+    }
+
+    @PostMapping("/catalog/delivery-zones")
+    public ResponseEntity<String> createDeliveryZone(@RequestBody String body) {
+        return ResponseEntity.status(201).body(catalogProxyService.createDeliveryZone(body));
+    }
+
+    @PutMapping("/catalog/delivery-zones/{id}")
+    public ResponseEntity<String> updateDeliveryZone(@PathVariable Long id, @RequestBody String body) {
+        return ResponseEntity.ok(catalogProxyService.updateDeliveryZone(id, body));
+    }
+
+    @PatchMapping("/catalog/delivery-zones/{id}/toggle-active")
+    public ResponseEntity<Void> toggleDeliveryZoneActive(@PathVariable Long id) {
+        catalogProxyService.toggleDeliveryZoneActive(id);
+        return ResponseEntity.noContent().build();
+    }
+
     @GetMapping("/catalog/additions")
     public ResponseEntity<String> getAdditions() {
         return ResponseEntity.ok(catalogProxyService.getAdditions());
+    }
+
+    @PostMapping("/catalog/additions")
+    public ResponseEntity<String> createAddition(@RequestBody String body) {
+        String result = catalogProxyService.createAddition(body);
+        return ResponseEntity.status(201).body(result);
+    }
+
+    @PutMapping("/catalog/additions/{id}")
+    public ResponseEntity<String> updateAddition(@PathVariable Long id, @RequestBody String body) {
+        return ResponseEntity.ok(catalogProxyService.updateAddition(id, body));
+    }
+
+    @PatchMapping("/catalog/additions/{id}/toggle-active")
+    public ResponseEntity<Void> toggleAdditionActive(@PathVariable Long id) {
+        catalogProxyService.toggleAdditionActive(id);
+        return ResponseEntity.noContent().build();
     }
 
     @PatchMapping("/catalog/products/{id}/additions")

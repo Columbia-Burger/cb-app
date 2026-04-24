@@ -116,4 +116,86 @@ public class CatalogProxyService {
                     "Error al crear el producto: " + e.getStatusCode());
         }
     }
+
+    public String getDeliveryZones(boolean activeOnly) {
+        try {
+            ResponseEntity<String> response = restTemplate.exchange(
+                    catalogApiUrl + "/api/delivery-zones?activeOnly=" + activeOnly,
+                    HttpMethod.GET, new HttpEntity<>(apiHeaders()), String.class);
+            return response.getBody();
+        } catch (HttpClientErrorException e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+                    "Error al contactar el catálogo: " + e.getStatusCode());
+        }
+    }
+
+    public String createDeliveryZone(String body) {
+        try {
+            ResponseEntity<String> response = restTemplate.exchange(
+                    catalogApiUrl + "/api/delivery-zones",
+                    HttpMethod.POST, new HttpEntity<>(body, apiJsonHeaders()), String.class);
+            return response.getBody();
+        } catch (HttpClientErrorException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Error al crear la zona: " + e.getStatusCode());
+        }
+    }
+
+    public String updateDeliveryZone(Long id, String body) {
+        try {
+            ResponseEntity<String> response = restTemplate.exchange(
+                    catalogApiUrl + "/api/delivery-zones/" + id,
+                    HttpMethod.PUT, new HttpEntity<>(body, apiJsonHeaders()), String.class);
+            return response.getBody();
+        } catch (HttpClientErrorException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Error al actualizar la zona: " + e.getStatusCode());
+        }
+    }
+
+    public void toggleDeliveryZoneActive(Long id) {
+        try {
+            restTemplate.exchange(
+                    catalogApiUrl + "/api/delivery-zones/" + id + "/toggle-active",
+                    HttpMethod.PATCH, new HttpEntity<>(apiHeaders()), Void.class);
+        } catch (HttpClientErrorException e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+                    "Error al contactar el catálogo: " + e.getStatusCode());
+        }
+    }
+
+    public String createAddition(String body) {
+        try {
+            ResponseEntity<String> response = restTemplate.exchange(
+                    catalogApiUrl + "/api/additions",
+                    HttpMethod.POST, new HttpEntity<>(body, apiJsonHeaders()), String.class);
+            return response.getBody();
+        } catch (HttpClientErrorException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Error al crear la adición: " + e.getStatusCode());
+        }
+    }
+
+    public String updateAddition(Long id, String body) {
+        try {
+            ResponseEntity<String> response = restTemplate.exchange(
+                    catalogApiUrl + "/api/additions/" + id,
+                    HttpMethod.PUT, new HttpEntity<>(body, apiJsonHeaders()), String.class);
+            return response.getBody();
+        } catch (HttpClientErrorException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Error al actualizar la adición: " + e.getStatusCode());
+        }
+    }
+
+    public void toggleAdditionActive(Long id) {
+        try {
+            restTemplate.exchange(
+                    catalogApiUrl + "/api/additions/" + id + "/toggle-active",
+                    HttpMethod.PATCH, new HttpEntity<>(apiHeaders()), Void.class);
+        } catch (HttpClientErrorException e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+                    "Error al contactar el catálogo: " + e.getStatusCode());
+        }
+    }
 }
