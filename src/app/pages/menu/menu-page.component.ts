@@ -30,13 +30,10 @@ export class MenuPageComponent implements OnInit {
   comboDrink = signal('');
   comboDrinkFlavor = signal('');
 
-  readonly comboDrinks = [
-    { label: 'Gaseosa Postobón 400ml', flavors: ['Manzana', 'Uva', 'Naranja', 'Colombiana', 'Bretaña', 'Maracuyá', 'Piña'] },
-    { label: 'Jugo Hit 500ml', flavors: ['Mango', 'Mora', 'Lulo', 'Naranja', 'Guanábana', 'Maracuyá', 'Uva'] },
-  ];
+  comboDrinks = signal<{ label: string; flavors: string[] }[]>([]);
 
   selectedComboDrinkFlavors = computed(() =>
-    this.comboDrinks.find(d => d.label === this.comboDrink())?.flavors ?? []
+    this.comboDrinks().find(d => d.label === this.comboDrink())?.flavors ?? []
   );
 
   canAddToCart = computed(() => {
@@ -72,6 +69,12 @@ export class MenuPageComponent implements OnInit {
     this.catalog.getMenuCategories().subscribe({
       next: cats => {
         this.categories.set(cats);
+        const drinkNames = ['Gaseosa Postobón 400ml', 'Jugo Hit 500ml'];
+        this.comboDrinks.set(
+          cats.flatMap(c => c.items)
+            .filter(p => drinkNames.includes(p.name))
+            .map(p => ({ label: p.name, flavors: p.flavors ?? [] }))
+        );
         this.loading.set(false);
       },
       error: () => this.loading.set(false),

@@ -24,10 +24,7 @@ interface CartItem {
 interface ZoneOption { name: string; price: number; }
 const PICKUP_OPTION: ZoneOption = { name: 'Recoger aquí', price: 0 };
 
-const COMBO_DRINKS: { label: string; flavors: string[] }[] = [
-  { label: 'Gaseosa Postobón 400ml', flavors: ['Manzana', 'Uva', 'Naranja', 'Colombiana', 'Bretaña', 'Maracuyá', 'Piña'] },
-  { label: 'Jugo Hit 500ml', flavors: ['Mango', 'Mora', 'Lulo', 'Naranja', 'Guanábana', 'Maracuyá', 'Uva'] },
-];
+const COMBO_DRINK_NAMES = ['Gaseosa Postobón 400ml', 'Jugo Hit 500ml'];
 
 @Component({
   selector: 'app-admin-mesero',
@@ -198,7 +195,7 @@ const COMBO_DRINKS: { label: string; flavors: string[] }[] = [
               <p class="flavor-prompt" style="margin-top:0.75em">Bebida del combo:</p>
               <select class="combo-select" [ngModel]="comboDrink()" (ngModelChange)="comboDrink.set($event); comboDrinkFlavor.set('')">
                 <option value="">Selecciona la bebida...</option>
-                @for (d of comboDrinks; track d.label) {
+                @for (d of comboDrinks(); track d.label) {
                   <option [value]="d.label">{{ d.label }}</option>
                 }
               </select>
@@ -526,9 +523,9 @@ export class AdminMeseroComponent implements OnInit {
   comboAccepted = signal<boolean | null>(null);
   comboDrink = signal('');
   comboDrinkFlavor = signal('');
-  readonly comboDrinks = COMBO_DRINKS;
+  comboDrinks = signal<{ label: string; flavors: string[] }[]>([]);
   selectedComboDrinkFlavors = computed(() =>
-    COMBO_DRINKS.find(d => d.label === this.comboDrink())?.flavors ?? []
+    this.comboDrinks().find(d => d.label === this.comboDrink())?.flavors ?? []
   );
   canConfirmCombo = computed(() => {
     const accepted = this.comboAccepted();
@@ -571,6 +568,11 @@ export class AdminMeseroComponent implements OnInit {
         const cats = Array.from(map.values());
         this.categories.set(cats);
         if (cats.length > 0) this.selectedCat.set(cats[0].id);
+        this.comboDrinks.set(
+          products
+            .filter(p => COMBO_DRINK_NAMES.includes(p.name))
+            .map(p => ({ label: p.name, flavors: p.flavors?.map(f => f.name) ?? [] }))
+        );
         this.loading.set(false);
       },
       error: () => this.loading.set(false)

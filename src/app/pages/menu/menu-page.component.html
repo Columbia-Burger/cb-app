@@ -197,7 +197,7 @@
                       [value]="comboDrink()"
                       (change)="comboDrink.set($any($event.target).value); comboDrinkFlavor.set('')">
                 <option value="">Selecciona la bebida...</option>
-                @for (d of comboDrinks; track d.label) {
+                @for (d of comboDrinks(); track d.label) {
                   <option [value]="d.label">{{ d.label }}</option>
                 }
               </select>
