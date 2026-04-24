@@ -69,17 +69,19 @@ import { CatalogProduct, CatalogCategory, FlavorItem, AdditionItem, CategoryItem
                     <span class="toggle-dot"></span>
                   </button>
                   <span class="toggle-label">{{ p.available ? 'Disponible' : 'No disponible' }}</span>
-                  @if (cat.name.toLowerCase().includes('bebida')) {
-                    <button class="flavors-btn" (click)="openFlavorEditor(p); $event.stopPropagation()">
-                      🏷️{{ p.flavors?.length ? ' ' + p.flavors!.length : '' }}
+                  <div class="action-btns">
+                    @if (cat.name.toLowerCase().includes('bebida')) {
+                      <button class="flavors-btn" (click)="openFlavorEditor(p); $event.stopPropagation()">
+                        🏷️{{ p.flavors?.length ? ' ' + p.flavors!.length : '' }}
+                      </button>
+                    }
+                    <button class="additions-btn" (click)="openAdditionEditor(p); $event.stopPropagation()">
+                      🧩{{ p.additions?.length ? ' ' + p.additions!.length : '' }}
                     </button>
-                  }
-                  <button class="additions-btn" (click)="openAdditionEditor(p); $event.stopPropagation()">
-                    🧩{{ p.additions?.length ? ' ' + p.additions!.length : '' }}
-                  </button>
-                  <button class="combo-btn" [class.combo-active]="p.comboDescription" (click)="openComboEditor(p); $event.stopPropagation()">
-                    🍟
-                  </button>
+                    <button class="combo-btn" [class.combo-active]="p.comboDescription" (click)="openComboEditor(p); $event.stopPropagation()">
+                      🍟
+                    </button>
+                  </div>
                 </div>
               </div>
             }
@@ -403,8 +405,14 @@ import { CatalogProduct, CatalogCategory, FlavorItem, AdditionItem, CategoryItem
       font-size: 0.85em; margin-bottom: 1em;
     }
 
-    .flavors-btn {
+    .action-btns {
       margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 0.35em;
+    }
+
+    .flavors-btn {
       background: none;
       border: 1px solid #30363d;
       border-radius: 6px;

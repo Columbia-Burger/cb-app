@@ -118,20 +118,21 @@ import { AdditionItem, CreateAdditionRequest } from '../../models/admin.model';
     @keyframes spin { to { transform: rotate(360deg); } }
     .empty { color: #8b949e; text-align: center; padding: 3em; }
 
-    .table-wrap { overflow-x: auto; }
+    .table-wrap { overflow-x: auto; background: #0d1117; border-radius: 10px; border: 1px solid #21262d; }
     .table {
       width: 100%; border-collapse: collapse; font-size: 0.88em;
     }
+    .table thead, .table tbody, .table tr { background: transparent; }
     .table th {
       text-align: left; padding: 0.6em 0.85em;
       color: #8b949e; font-weight: 600; font-size: 0.8em; text-transform: uppercase;
-      border-bottom: 1px solid #21262d; white-space: nowrap;
+      border-bottom: 1px solid #21262d; white-space: nowrap; background: #0d1117;
     }
     .table td {
-      padding: 0.75em 0.85em; border-bottom: 1px solid #161b22; vertical-align: middle;
+      padding: 0.75em 0.85em; border-bottom: 1px solid #21262d; vertical-align: middle; background: #0d1117;
     }
     .table tr:last-child td { border-bottom: none; }
-    .inactive-row { opacity: 0.5; }
+    .inactive-row td { opacity: 0.5; }
     .name-cell { font-weight: 600; color: #e6edf3; }
     .desc-cell { color: #8b949e; font-size: 0.85em; }
     .price-cell { color: #3fb950; font-weight: 600; white-space: nowrap; }

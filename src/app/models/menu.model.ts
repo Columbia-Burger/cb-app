@@ -3,6 +3,12 @@ export interface BaseOption {
   priceValue: number;
 }
 
+export interface MenuAddition {
+  id: number;
+  name: string;
+  effectivePrice: number;
+}
+
 export interface MenuItem {
   name: string;
   description: string;
@@ -11,6 +17,9 @@ export interface MenuItem {
   image: string;
   flavors?: string[];
   baseOptions?: BaseOption[];
+  additions?: MenuAddition[];
+  comboDescription?: string;
+  comboPrice?: number;
 }
 
 export interface MenuCategory {

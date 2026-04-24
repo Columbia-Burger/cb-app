@@ -5,7 +5,7 @@ import { FooterComponent } from '../../components/footer/footer.component';
 import { CartComponent } from '../../components/cart/cart.component';
 import { CartService } from '../../services/cart.service';
 import { CatalogService } from '../../services/catalog.service';
-import { MenuCategory, MenuItem, BaseOption } from '../../models/menu.model';
+import { MenuCategory, MenuItem, BaseOption, MenuAddition } from '../../models/menu.model';
 
 @Component({
   selector: 'app-menu-page',
@@ -24,29 +24,33 @@ export class MenuPageComponent implements OnInit {
   selectedItem = signal<MenuItem | null>(null);
   selectedFlavor = signal<string | null>(null);
   selectedBaseOption = signal<BaseOption | null>(null);
+  selectedAdditionIds = signal<Set<number>>(new Set());
+  selectedCombo = signal<boolean | null>(null);
 
   canAddToCart = computed(() => {
     const item = this.selectedItem();
     if (!item) return false;
     if (item.baseOptions?.length && !this.selectedBaseOption()) return false;
     if (item.flavors?.length && !this.selectedFlavor()) return false;
+    if (item.comboDescription && this.selectedCombo() === null) return false;
     return true;
   });
 
-  // Precio activo en el modal: base option si existe, sino precio del producto
-  modalPrice = computed(() => {
-    const base = this.selectedBaseOption();
-    const item = this.selectedItem();
-    if (!item) return '';
-    if (base) return `$ ${base.priceValue.toLocaleString('es-CO')}`;
-    return item.price;
-  });
-
+  // Precio activo en el modal: base + adiciones seleccionadas + combo si aplica
   modalPriceValue = computed(() => {
-    const base = this.selectedBaseOption();
     const item = this.selectedItem();
     if (!item) return 0;
-    return base ? base.priceValue : item.priceValue;
+    const base = this.selectedBaseOption()?.priceValue ?? item.priceValue;
+    const additionsTotal = item.additions
+      ?.filter(a => this.selectedAdditionIds().has(a.id))
+      .reduce((s, a) => s + a.effectivePrice, 0) ?? 0;
+    const comboTotal = this.selectedCombo() ? (item.comboPrice ?? 0) : 0;
+    return base + additionsTotal + comboTotal;
+  });
+
+  modalPrice = computed(() => {
+    const v = this.modalPriceValue();
+    return `$ ${v.toLocaleString('es-CO')}`;
   });
 
   ngOnInit(): void {
@@ -63,6 +67,8 @@ export class MenuPageComponent implements OnInit {
     this.selectedItem.set(item);
     this.selectedFlavor.set(item.flavors?.[0] ?? null);
     this.selectedBaseOption.set(item.baseOptions?.[0] ?? null);
+    this.selectedAdditionIds.set(new Set());
+    this.selectedCombo.set(item.comboDescription ? null : false);
     document.body.style.overflow = 'hidden';
   }
 
@@ -70,7 +76,17 @@ export class MenuPageComponent implements OnInit {
     this.selectedItem.set(null);
     this.selectedFlavor.set(null);
     this.selectedBaseOption.set(null);
+    this.selectedAdditionIds.set(new Set());
+    this.selectedCombo.set(null);
     document.body.style.overflow = '';
+  }
+
+  toggleAddition(id: number): void {
+    this.selectedAdditionIds.update(ids => {
+      const next = new Set(ids);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
   }
 
   scrollTo(id: string): void {
@@ -99,12 +115,20 @@ export class MenuPageComponent implements OnInit {
   addToCartFromDetail(item: MenuItem): void {
     const base = this.selectedBaseOption();
     const flavor = this.selectedFlavor();
+    const selectedAdditions = item.additions?.filter(a => this.selectedAdditionIds().has(a.id)) ?? [];
+    const comboAccepted = this.selectedCombo();
 
-    const parts = [item.name, base?.name, flavor].filter(Boolean);
+    const parts = [
+      item.name,
+      base?.name,
+      flavor,
+      selectedAdditions.length ? selectedAdditions.map(a => a.name).join(', ') : null,
+      comboAccepted && item.comboDescription ? `Combo (${item.comboDescription})` : null,
+    ].filter(Boolean);
     const name = parts.join(' — ');
 
-    const priceValue = base ? base.priceValue : item.priceValue;
-    const price = base ? `$ ${base.priceValue.toLocaleString('es-CO')}` : item.price;
+    const priceValue = this.modalPriceValue();
+    const price = this.modalPrice();
 
     this.cart.addItem({ name, price, priceValue, image: item.image });
     this.closeDetail();

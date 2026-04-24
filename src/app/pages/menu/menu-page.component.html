@@ -156,6 +156,45 @@
           </div>
         }
 
+        <!-- Adiciones -->
+        @if (selectedItem()!.additions?.length) {
+          <div class="detail-modal__flavors">
+            <p class="detail-modal__flavors-label">Adiciones (opcional):</p>
+            <div class="additions-list">
+              @for (a of selectedItem()!.additions!; track a.id) {
+                <label class="addition-row">
+                  <input type="checkbox"
+                         [checked]="selectedAdditionIds().has(a.id)"
+                         (change)="toggleAddition(a.id)" />
+                  <span class="addition-row__name">{{ a.name }}</span>
+                  <span class="addition-row__price">+ $ {{ a.effectivePrice.toLocaleString('es-CO') }}</span>
+                </label>
+              }
+            </div>
+          </div>
+        }
+
+        <!-- Combo -->
+        @if (selectedItem()!.comboDescription) {
+          <div class="detail-modal__flavors">
+            <p class="detail-modal__flavors-label">¿La deseas en combo?</p>
+            <p class="combo-desc">{{ selectedItem()!.comboDescription }}</p>
+            <div class="flavor-pills">
+              <button class="flavor-pill"
+                      [class.flavor-pill--active]="selectedCombo() === true"
+                      (click)="selectedCombo.set(true)">
+                Sí, en combo
+                <span class="flavor-pill__price">+ $ {{ selectedItem()!.comboPrice!.toLocaleString('es-CO') }}</span>
+              </button>
+              <button class="flavor-pill"
+                      [class.flavor-pill--active]="selectedCombo() === false"
+                      (click)="selectedCombo.set(false)">
+                No, sin combo
+              </button>
+            </div>
+          </div>
+        }
+
         <div class="detail-modal__footer">
           <span class="detail-modal__price">{{ modalPrice() }}</span>
           <button
@@ -172,6 +211,8 @@
               Elige la base para continuar
             } @else if (selectedItem()!.flavors?.length && !selectedFlavor()) {
               Elige el sabor para continuar
+            } @else if (selectedItem()!.comboDescription && selectedCombo() === null) {
+              Elige si deseas el combo para continuar
             }
           </p>
         }

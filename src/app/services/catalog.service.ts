@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, forkJoin, map } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { CategoryResponse, ProductResponse, SeasonalSpecialResponse } from '../models/api.model';
-import { MenuCategory, MenuItem, BaseOption } from '../models/menu.model';
+import { MenuCategory, MenuItem, BaseOption, MenuAddition } from '../models/menu.model';
 import { SpecialProduct } from '../data/featured.data';
 
 
@@ -76,6 +76,9 @@ export class CatalogService {
   private toMenuItem(p: ProductResponse): MenuItem {
     const baseOptions: BaseOption[] | undefined = PRODUCT_BASES[p.name];
     const flavors = p.flavors?.map(f => f.name);
+    const additions: MenuAddition[] | undefined = p.additions?.length
+      ? p.additions.map(a => ({ id: a.id, name: a.additionName, effectivePrice: a.effectivePrice }))
+      : undefined;
     return {
       name: p.name,
       description: p.description,
@@ -84,6 +87,8 @@ export class CatalogService {
       image: p.imageUrl,
       ...(baseOptions ? { baseOptions } : {}),
       ...(flavors?.length ? { flavors } : {}),
+      ...(additions?.length ? { additions } : {}),
+      ...(p.comboDescription ? { comboDescription: p.comboDescription, comboPrice: p.comboPrice ?? 0 } : {}),
     };
   }
 
