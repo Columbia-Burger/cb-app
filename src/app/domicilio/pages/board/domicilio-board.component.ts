@@ -14,6 +14,11 @@ interface CartItem { product: CatalogProduct; flavor: string; additions: string;
 interface ZoneOption { name: string; price: number; }
 const PICKUP_OPTION: ZoneOption = { name: 'Recoger aquí', price: 0 };
 
+const COMBO_DRINKS: { label: string; flavors: string[] }[] = [
+  { label: 'Gaseosa Postobón 400ml', flavors: ['Manzana', 'Uva', 'Naranja', 'Colombiana', 'Bretaña', 'Maracuyá', 'Piña'] },
+  { label: 'Jugo Hit 500ml', flavors: ['Mango', 'Mora', 'Lulo', 'Naranja', 'Guanábana', 'Maracuyá', 'Uva'] },
+];
+
 @Component({
   selector: 'app-domicilio-board',
   standalone: true,
@@ -190,7 +195,7 @@ const PICKUP_OPTION: ZoneOption = { name: 'Recoger aquí', price: 0 };
                               <div class="item-combo-tag">🍟 {{ item.combo }}</div>
                             }
                           </div>
-                          <span class="item-price">{{ (item.product.price + item.additionsPrice + item.comboPrice) * item.quantity | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
+                          <span class="item-price">{{ (item.product.price + item.additionsPrice) * item.quantity | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
                         </div>
                         <div class="item-controls">
                           <button class="qty-btn" (click)="decreaseQty(item)">−</button>
@@ -258,15 +263,34 @@ const PICKUP_OPTION: ZoneOption = { name: 'Recoger aquí', price: 0 };
         <div class="flavor-overlay" (click)="pendingComboItem.set(null)">
           <div class="flavor-sheet" (click)="$event.stopPropagation()">
             <div class="flavor-header">{{ pendingComboItem()!.product.name }}</div>
-            <p class="flavor-prompt">
-              ¿La deseas en combo? ({{ pendingComboItem()!.product.comboDescription }})
-            </p>
-            <div class="flavor-options">
-              <button class="flavor-btn combo-yes-btn" (click)="confirmCombo(true)">
-                Sí, en combo
-                <span class="combo-price-tag">+{{ pendingComboItem()!.product.comboPrice! | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
-              </button>
-              <button class="flavor-btn" (click)="confirmCombo(false)">No, sin combo</button>
+            <p class="flavor-prompt">¿La deseas en combo? ({{ pendingComboItem()!.product.comboDescription }})</p>
+            <div class="combo-toggle">
+              <button class="combo-toggle-btn" [class.active]="comboAccepted() === true" (click)="comboAccepted.set(true)">Sí</button>
+              <button class="combo-toggle-btn" [class.active]="comboAccepted() === false" (click)="comboAccepted.set(false)">No</button>
+            </div>
+            @if (comboAccepted() === true) {
+              <p class="flavor-prompt" style="margin-top:0.75em">Bebida del combo:</p>
+              <select class="combo-select" [ngModel]="comboDrink()" (ngModelChange)="comboDrink.set($event); comboDrinkFlavor.set('')">
+                <option value="">Selecciona la bebida...</option>
+                @for (d of comboDrinks; track d.label) {
+                  <option [value]="d.label">{{ d.label }}</option>
+                }
+              </select>
+              @if (comboDrink()) {
+                <p class="flavor-prompt" style="margin-top:0.75em">Sabor de la bebida:</p>
+                <select class="combo-select" [ngModel]="comboDrinkFlavor()" (ngModelChange)="comboDrinkFlavor.set($event)">
+                  <option value="">Selecciona el sabor...</option>
+                  @for (f of selectedComboDrinkFlavors(); track f) {
+                    <option [value]="f">{{ f }}</option>
+                  }
+                </select>
+              }
+            }
+            <div class="flavor-options" style="margin-top:0.75em">
+              <button class="flavor-btn" style="background:#e94560;border-color:#e94560;color:#fff"
+                      [disabled]="!canConfirmCombo()"
+                      (click)="confirmCombo()">Confirmar</button>
+              <button class="flavor-cancel" (click)="pendingComboItem.set(null)">Cancelar</button>
             </div>
           </div>
         </div>
@@ -551,8 +575,19 @@ const PICKUP_OPTION: ZoneOption = { name: 'Recoger aquí', price: 0 };
     .item-flavor-tag { font-size: 0.75em; color: #8b949e; margin-top: 2px; }
     .item-additions-tag { font-size: 0.75em; color: #bc8cff; margin-top: 2px; }
     .item-combo-tag { font-size: 0.75em; color: #e3b341; margin-top: 2px; }
-    .combo-yes-btn { display: flex; justify-content: space-between; align-items: center; }
-    .combo-price-tag { color: #3fb950; font-size: 0.85em; font-weight: 700; }
+    .combo-toggle { display: flex; gap: 0.5em; margin-bottom: 0.5em; }
+    .combo-toggle-btn {
+      flex: 1; padding: 0.65em 1em;
+      background: #21262d; border: 1px solid #30363d;
+      border-radius: 8px; color: #e6edf3; font-size: 0.9em; cursor: pointer; transition: all 0.15s;
+    }
+    .combo-toggle-btn.active { background: rgba(233,69,96,0.15); border-color: #e94560; color: #e94560; }
+    .combo-select {
+      width: 100%; padding: 0.6em 0.75em;
+      background: #21262d; border: 1px solid #30363d; border-radius: 8px;
+      color: #e6edf3; font-size: 0.9em; outline: none; cursor: pointer; margin-bottom: 0.25em;
+    }
+    .combo-select:focus { border-color: #e94560; }
     .addition-option {
       display: flex; align-items: center; gap: 0.6em;
       padding: 0.6em 0.75em; background: #21262d; border-radius: 8px; cursor: pointer;
@@ -616,6 +651,19 @@ export class DomicilioBoardComponent implements OnInit, OnDestroy {
   pendingAdditionsItem = signal<{ product: CatalogProduct; flavor: string; additions: string; additionsPrice: number } | null>(null);
   selectedPendingAdditionIds = signal<Set<number>>(new Set());
   pendingComboItem = signal<{ product: CatalogProduct; flavor: string; additions: string; additionsPrice: number } | null>(null);
+  comboAccepted = signal<boolean | null>(null);
+  comboDrink = signal('');
+  comboDrinkFlavor = signal('');
+  readonly comboDrinks = COMBO_DRINKS;
+  selectedComboDrinkFlavors = computed(() =>
+    COMBO_DRINKS.find(d => d.label === this.comboDrink())?.flavors ?? []
+  );
+  canConfirmCombo = computed(() => {
+    const accepted = this.comboAccepted();
+    if (accepted === null) return false;
+    if (!accepted) return true;
+    return !!this.comboDrink() && !!this.comboDrinkFlavor();
+  });
   orderType = signal<'mesa' | 'llevar' | ''>('');
   tableNumber = '';
   selectedZoneName = signal('');
@@ -629,7 +677,7 @@ export class DomicilioBoardComponent implements OnInit, OnDestroy {
     this.categories().find(c => c.id === this.selectedCat())?.products ?? []
   );
   total = computed(() =>
-    this.cart().reduce((sum, item) => sum + (item.product.price + item.additionsPrice + item.comboPrice) * item.quantity, 0)
+    this.cart().reduce((sum, item) => sum + (item.product.price + item.additionsPrice) * item.quantity, 0)
   );
   grandTotal = computed(() =>
     this.total() + (this.selectedZone()?.price ?? 0)
@@ -752,19 +800,24 @@ export class DomicilioBoardComponent implements OnInit, OnDestroy {
 
   private confirmComboOrAdd(product: CatalogProduct, flavor: string, additions: string, additionsPrice: number): void {
     if (product.comboDescription) {
+      this.comboAccepted.set(null);
+      this.comboDrink.set('');
+      this.comboDrinkFlavor.set('');
       this.pendingComboItem.set({ product, flavor, additions, additionsPrice });
       return;
     }
     this.addProductToCart(product, flavor, additions, additionsPrice, '', 0);
   }
 
-  confirmCombo(accepted: boolean): void {
+  confirmCombo(): void {
     const item = this.pendingComboItem();
-    if (!item) return;
+    if (!item || !this.canConfirmCombo()) return;
     this.pendingComboItem.set(null);
-    const combo = accepted ? `Combo (${item.product.comboDescription})` : '';
-    const comboPrice = accepted ? (item.product.comboPrice ?? 0) : 0;
-    this.addProductToCart(item.product, item.flavor, item.additions, item.additionsPrice, combo, comboPrice);
+    const accepted = this.comboAccepted()!;
+    const combo = accepted
+      ? `Combo (${item.product.comboDescription}) — ${this.comboDrink()} ${this.comboDrinkFlavor()}`
+      : '';
+    this.addProductToCart(item.product, item.flavor, item.additions, item.additionsPrice, combo, 0);
   }
 
   private addProductToCart(product: CatalogProduct, flavor: string, additions: string, additionsPrice: number, combo: string, comboPrice: number): void {
@@ -817,7 +870,7 @@ export class DomicilioBoardComponent implements OnInit, OnDestroy {
         flavor: i.flavor || undefined,
         additions: allExtras || undefined,
         quantity: i.quantity,
-        unitPrice: i.product.price + i.additionsPrice + i.comboPrice,
+        unitPrice: i.product.price + i.additionsPrice,
         note: i.note || undefined
       };
     });

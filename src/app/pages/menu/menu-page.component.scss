@@ -610,3 +610,27 @@ $card-radius: 1.4rem;
   margin: 0 0 0.75rem;
   font-style: italic;
 }
+
+.combo-select {
+  width: 100%;
+  padding: 0.65rem 0.85rem;
+  background: #1a1a2e;
+  border: 1px solid #e0c882;
+  border-radius: 10px;
+  color: #f5e6c8;
+  font-size: 0.95rem;
+  outline: none;
+  cursor: pointer;
+  margin-bottom: 0.25rem;
+  appearance: none;
+
+  &:focus {
+    border-color: #c8a951;
+    box-shadow: 0 0 0 3px rgba(200, 169, 81, 0.15);
+  }
+
+  option {
+    background: #1a1a2e;
+    color: #f5e6c8;
+  }
+}

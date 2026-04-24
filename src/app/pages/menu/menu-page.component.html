@@ -181,17 +181,38 @@
             <p class="combo-desc">{{ selectedItem()!.comboDescription }}</p>
             <div class="flavor-pills">
               <button class="flavor-pill"
-                      [class.flavor-pill--active]="selectedCombo() === true"
-                      (click)="selectedCombo.set(true)">
-                Sí, en combo
-                <span class="flavor-pill__price">+ $ {{ selectedItem()!.comboPrice!.toLocaleString('es-CO') }}</span>
+                      [class.flavor-pill--active]="comboAccepted() === true"
+                      (click)="comboAccepted.set(true); comboDrink.set(''); comboDrinkFlavor.set('')">
+                Sí
               </button>
               <button class="flavor-pill"
-                      [class.flavor-pill--active]="selectedCombo() === false"
-                      (click)="selectedCombo.set(false)">
-                No, sin combo
+                      [class.flavor-pill--active]="comboAccepted() === false"
+                      (click)="comboAccepted.set(false); comboDrink.set(''); comboDrinkFlavor.set('')">
+                No
               </button>
             </div>
+            @if (comboAccepted() === true) {
+              <p class="detail-modal__flavors-label" style="margin-top:0.75em">Bebida del combo:</p>
+              <select class="combo-select"
+                      [value]="comboDrink()"
+                      (change)="comboDrink.set($any($event.target).value); comboDrinkFlavor.set('')">
+                <option value="">Selecciona la bebida...</option>
+                @for (d of comboDrinks; track d.label) {
+                  <option [value]="d.label">{{ d.label }}</option>
+                }
+              </select>
+              @if (comboDrink()) {
+                <p class="detail-modal__flavors-label" style="margin-top:0.75em">Sabor de la bebida:</p>
+                <select class="combo-select"
+                        [value]="comboDrinkFlavor()"
+                        (change)="comboDrinkFlavor.set($any($event.target).value)">
+                  <option value="">Selecciona el sabor...</option>
+                  @for (f of selectedComboDrinkFlavors(); track f) {
+                    <option [value]="f">{{ f }}</option>
+                  }
+                </select>
+              }
+            }
           </div>
         }
 
@@ -211,8 +232,12 @@
               Elige la base para continuar
             } @else if (selectedItem()!.flavors?.length && !selectedFlavor()) {
               Elige el sabor para continuar
-            } @else if (selectedItem()!.comboDescription && selectedCombo() === null) {
+            } @else if (selectedItem()!.comboDescription && comboAccepted() === null) {
               Elige si deseas el combo para continuar
+            } @else if (selectedItem()!.comboDescription && comboAccepted() === true && !comboDrink()) {
+              Elige la bebida del combo para continuar
+            } @else if (selectedItem()!.comboDescription && comboAccepted() === true && !comboDrinkFlavor()) {
+              Elige el sabor de la bebida para continuar
             }
           </p>
         }

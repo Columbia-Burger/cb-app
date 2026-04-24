@@ -1,5 +1,6 @@
 import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 import { HeaderComponent } from '../../components/header/header.component';
 import { FooterComponent } from '../../components/footer/footer.component';
 import { CartComponent } from '../../components/cart/cart.component';
@@ -10,7 +11,7 @@ import { MenuCategory, MenuItem, BaseOption, MenuAddition } from '../../models/m
 @Component({
   selector: 'app-menu-page',
   standalone: true,
-  imports: [RouterLink, HeaderComponent, FooterComponent, CartComponent],
+  imports: [RouterLink, FormsModule, HeaderComponent, FooterComponent, CartComponent],
   templateUrl: './menu-page.component.html',
   styleUrl: './menu-page.component.scss',
 })
@@ -25,18 +26,33 @@ export class MenuPageComponent implements OnInit {
   selectedFlavor = signal<string | null>(null);
   selectedBaseOption = signal<BaseOption | null>(null);
   selectedAdditionIds = signal<Set<number>>(new Set());
-  selectedCombo = signal<boolean | null>(null);
+  comboAccepted = signal<boolean | null>(null);
+  comboDrink = signal('');
+  comboDrinkFlavor = signal('');
+
+  readonly comboDrinks = [
+    { label: 'Gaseosa Postobón 400ml', flavors: ['Manzana', 'Uva', 'Naranja', 'Colombiana', 'Bretaña', 'Maracuyá', 'Piña'] },
+    { label: 'Jugo Hit 500ml', flavors: ['Mango', 'Mora', 'Lulo', 'Naranja', 'Guanábana', 'Maracuyá', 'Uva'] },
+  ];
+
+  selectedComboDrinkFlavors = computed(() =>
+    this.comboDrinks.find(d => d.label === this.comboDrink())?.flavors ?? []
+  );
 
   canAddToCart = computed(() => {
     const item = this.selectedItem();
     if (!item) return false;
     if (item.baseOptions?.length && !this.selectedBaseOption()) return false;
     if (item.flavors?.length && !this.selectedFlavor()) return false;
-    if (item.comboDescription && this.selectedCombo() === null) return false;
+    if (item.comboDescription) {
+      const accepted = this.comboAccepted();
+      if (accepted === null) return false;
+      if (accepted && (!this.comboDrink() || !this.comboDrinkFlavor())) return false;
+    }
     return true;
   });
 
-  // Precio activo en el modal: base + adiciones seleccionadas + combo si aplica
+  // Precio activo en el modal: base + adiciones seleccionadas (combo ya incluido en el precio)
   modalPriceValue = computed(() => {
     const item = this.selectedItem();
     if (!item) return 0;
@@ -44,8 +60,7 @@ export class MenuPageComponent implements OnInit {
     const additionsTotal = item.additions
       ?.filter(a => this.selectedAdditionIds().has(a.id))
       .reduce((s, a) => s + a.effectivePrice, 0) ?? 0;
-    const comboTotal = this.selectedCombo() ? (item.comboPrice ?? 0) : 0;
-    return base + additionsTotal + comboTotal;
+    return base + additionsTotal;
   });
 
   modalPrice = computed(() => {
@@ -68,7 +83,9 @@ export class MenuPageComponent implements OnInit {
     this.selectedFlavor.set(item.flavors?.[0] ?? null);
     this.selectedBaseOption.set(item.baseOptions?.[0] ?? null);
     this.selectedAdditionIds.set(new Set());
-    this.selectedCombo.set(item.comboDescription ? null : false);
+    this.comboAccepted.set(item.comboDescription ? null : false);
+    this.comboDrink.set('');
+    this.comboDrinkFlavor.set('');
     document.body.style.overflow = 'hidden';
   }
 
@@ -77,7 +94,9 @@ export class MenuPageComponent implements OnInit {
     this.selectedFlavor.set(null);
     this.selectedBaseOption.set(null);
     this.selectedAdditionIds.set(new Set());
-    this.selectedCombo.set(null);
+    this.comboAccepted.set(null);
+    this.comboDrink.set('');
+    this.comboDrinkFlavor.set('');
     document.body.style.overflow = '';
   }
 
@@ -116,14 +135,17 @@ export class MenuPageComponent implements OnInit {
     const base = this.selectedBaseOption();
     const flavor = this.selectedFlavor();
     const selectedAdditions = item.additions?.filter(a => this.selectedAdditionIds().has(a.id)) ?? [];
-    const comboAccepted = this.selectedCombo();
+    const accepted = this.comboAccepted();
+    const comboStr = accepted && item.comboDescription
+      ? `Combo (${item.comboDescription}) — ${this.comboDrink()} ${this.comboDrinkFlavor()}`
+      : null;
 
     const parts = [
       item.name,
       base?.name,
       flavor,
       selectedAdditions.length ? selectedAdditions.map(a => a.name).join(', ') : null,
-      comboAccepted && item.comboDescription ? `Combo (${item.comboDescription})` : null,
+      comboStr,
     ].filter(Boolean);
     const name = parts.join(' — ');
 
