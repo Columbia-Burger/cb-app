@@ -124,16 +124,7 @@ export class MenuPageComponent implements OnInit {
   }
 
   addToCart(item: MenuItem): void {
-    if (item.flavors?.length || item.baseOptions?.length) {
-      this.openDetail(item);
-      return;
-    }
-    this.cart.addItem({
-      name: item.name,
-      price: item.price,
-      priceValue: item.priceValue,
-      image: item.image,
-    });
+    this.openDetail(item);
   }
 
   addToCartFromDetail(item: MenuItem): void {

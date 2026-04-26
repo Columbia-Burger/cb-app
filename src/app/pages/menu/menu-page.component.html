@@ -214,13 +214,20 @@
             <p class="detail-modal__flavors-label">Adiciones (opcional):</p>
             <div class="additions-list">
               @for (a of selectedItem()!.additions!; track a.id) {
-                <label class="addition-row">
-                  <input type="checkbox"
-                         [checked]="selectedAdditionIds().has(a.id)"
-                         (change)="toggleAddition(a.id)" />
-                  <span class="addition-row__name">{{ a.name }}</span>
-                  <span class="addition-row__price">+ $ {{ a.effectivePrice.toLocaleString('es-CO') }}</span>
-                </label>
+                <button
+                  type="button"
+                  class="addition-chip"
+                  [class.addition-chip--active]="selectedAdditionIds().has(a.id)"
+                  (click)="toggleAddition(a.id)"
+                >
+                  <span class="addition-chip__check">
+                    @if (selectedAdditionIds().has(a.id)) {
+                      <i class="fas fa-check"></i>
+                    }
+                  </span>
+                  <span class="addition-chip__name">{{ a.name }}</span>
+                  <span class="addition-chip__price">+ $ {{ a.effectivePrice.toLocaleString('es-CO') }}</span>
+                </button>
               }
             </div>
           </div>

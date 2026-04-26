@@ -635,30 +635,72 @@ $card-radius: 1.4rem;
 .additions-list {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.6rem;
 }
 
-.addition-row {
+.addition-chip {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  padding: 0.65rem 1rem;
-  background: rgba(255,255,255,0.05);
-  border-radius: 0.75rem;
+  gap: 1rem;
+  width: 100%;
+  padding: 0.9rem 1.2rem;
+  background: rgba(255,255,255,0.04);
+  border: 1.5px solid rgba(255,255,255,0.1);
+  border-radius: 1rem;
   cursor: pointer;
-  font-size: 1.3rem;
-  color: #e6edf3;
+  text-align: left;
+  transition: background 0.2s, border-color 0.2s, transform 0.15s;
+  color: rgba(255,255,255,0.75);
 
-  input[type="checkbox"] {
-    width: 16px;
-    height: 16px;
-    accent-color: $brand-orange;
-    cursor: pointer;
-    flex-shrink: 0;
+  &:hover {
+    border-color: rgba(243,165,31,0.45);
+    background: rgba(243,165,31,0.06);
+    color: $brand-white;
+    transform: translateY(-1px);
   }
 
-  &__name { flex: 1; }
-  &__price { color: #3fb950; font-weight: 700; font-size: 1.1rem; white-space: nowrap; }
+  &--active {
+    border-color: $brand-orange;
+    background: rgba(243,165,31,0.12);
+    color: $brand-white;
+  }
+
+  &__check {
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    border: 2px solid rgba(255,255,255,0.22);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.95rem;
+    flex-shrink: 0;
+    transition: background 0.2s, border-color 0.2s;
+    color: $brand-dark;
+
+    .addition-chip--active & {
+      background: $brand-orange;
+      border-color: $brand-orange;
+    }
+  }
+
+  &__name {
+    flex: 1;
+    font-size: 1.3rem;
+    font-weight: 600;
+  }
+
+  &__price {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #4cba6a;
+    white-space: nowrap;
+    transition: color 0.2s;
+
+    .addition-chip--active & {
+      color: $brand-orange;
+    }
+  }
 }
 
 // ── Combo en modal ─────────────────────────────────────────────────────────────
