@@ -60,15 +60,17 @@ import { CatalogProduct, CatalogCategory, FlavorItem, AdditionItem, CategoryItem
                   <span class="product-price">{{ p.price | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
                 </div>
                 <div class="product-footer">
-                  <button
-                    class="toggle-btn"
-                    [ngClass]="p.available ? 'toggle-on' : 'toggle-off'"
-                    (click)="toggle(p)"
-                    [disabled]="toggling().has(p.id)"
-                  >
-                    <span class="toggle-dot"></span>
-                  </button>
-                  <span class="toggle-label">{{ p.available ? 'Disponible' : 'No disponible' }}</span>
+                  <div class="toggle-row">
+                    <button
+                      class="toggle-btn"
+                      [ngClass]="p.available ? 'toggle-on' : 'toggle-off'"
+                      (click)="toggle(p)"
+                      [disabled]="toggling().has(p.id)"
+                    >
+                      <span class="toggle-dot"></span>
+                    </button>
+                    <span class="toggle-label">{{ p.available ? 'Disponible' : 'No disponible' }}</span>
+                  </div>
                   <div class="action-btns">
                     @if (cat.name.toLowerCase().includes('bebida')) {
                       <button class="flavors-btn" (click)="openFlavorEditor(p); $event.stopPropagation()">
@@ -369,6 +371,11 @@ import { CatalogProduct, CatalogCategory, FlavorItem, AdditionItem, CategoryItem
     .product-footer {
       padding: 0.5em 0.75em 0.7em;
       display: flex;
+      flex-direction: column;
+      gap: 0.45em;
+    }
+    .toggle-row {
+      display: flex;
       align-items: center;
       gap: 0.6em;
     }
@@ -406,7 +413,6 @@ import { CatalogProduct, CatalogCategory, FlavorItem, AdditionItem, CategoryItem
     }
 
     .action-btns {
-      margin-left: auto;
       display: flex;
       align-items: center;
       gap: 0.35em;
