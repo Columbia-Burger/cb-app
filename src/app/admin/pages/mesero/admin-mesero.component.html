@@ -1,0 +1,213 @@
+
+    <div class="page">
+      <div class="page-header">
+        <h2 class="page-title">Tomar Pedido</h2>
+      </div>
+
+      @if (loading()) {
+        <div class="loading">Cargando menú...</div>
+      } @else {
+        <div class="layout">
+
+          <!-- Menú -->
+          <div class="menu-panel">
+            <div class="category-tabs">
+              @for (cat of categories(); track cat.id) {
+                <button
+                  class="tab-btn"
+                  [class.active]="selectedCat() === cat.id"
+                  (click)="selectedCat.set(cat.id)">
+                  {{ cat.name }}
+                </button>
+              }
+            </div>
+
+            <div class="products-grid">
+              @for (p of currentProducts(); track p.id) {
+                <div class="product-card" [class.unavailable]="!p.available" (click)="addToCart(p)">
+                  <div class="product-name">{{ p.name }}</div>
+                  <div class="product-price">{{ p.price | currency:'COP':'symbol-narrow':'1.0-0' }}</div>
+                </div>
+              }
+            </div>
+          </div>
+
+          <!-- Carrito -->
+          <div class="cart-panel">
+            <h3 class="cart-title">Pedido</h3>
+
+            <div class="customer-fields">
+              <div class="order-type-picker">
+                <button class="type-btn" [class.selected]="orderType() === 'mesa'" (click)="orderType.set('mesa')">🪑 Mesa</button>
+                <button class="type-btn" [class.selected]="orderType() === 'llevar'" (click)="orderType.set('llevar')">🥡 Para llevar</button>
+              </div>
+              @if (orderType() === 'mesa') {
+                <select [(ngModel)]="tableNumber">
+                  <option value="">Selecciona una mesa...</option>
+                  <option>Barra 1</option>
+                  <option>Barra 2</option>
+                  <option>Barra 3</option>
+                  <option>Barra 4</option>
+                  <option>Mesa 1</option>
+                  <option>Mesa 2</option>
+                </select>
+              }
+              @if (orderType() === 'llevar') {
+                <select [ngModel]="selectedZoneName()" (ngModelChange)="selectedZoneName.set($event)">
+                  <option value="">Selecciona ubicación...</option>
+                  @for (z of deliveryZones(); track z.name) {
+                    <option [value]="z.name">
+                      {{ z.name }}{{ z.price > 0 ? ' — ' + (z.price | currency:'COP':'symbol-narrow':'1.0-0') : '' }}
+                    </option>
+                  }
+                </select>
+              }
+            </div>
+
+            @if (cart().length === 0) {
+              <div class="empty-cart">Agrega productos al pedido</div>
+            } @else {
+              <div class="cart-items">
+                @for (item of cart(); track item.product.id + '-' + item.flavor + '-' + item.additions) {
+                  <div class="cart-item">
+                    <div class="item-info">
+                      <div>
+                        <span class="item-name">{{ item.product.name }}</span>
+                        @if (item.flavor) {
+                          <div class="item-flavor-tag">{{ item.flavor }}</div>
+                        }
+                        @if (item.additions) {
+                          <div class="item-additions-tag">+ {{ item.additions }}</div>
+                        }
+                        @if (item.combo) {
+                          <div class="item-combo-tag">🍟 {{ item.combo }}</div>
+                        }
+                      </div>
+                      <span class="item-price">{{ (item.product.price + item.additionsPrice) * item.quantity | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
+                    </div>
+                    <div class="item-controls">
+                      <button class="qty-btn" (click)="decreaseQty(item)">−</button>
+                      <span class="qty">{{ item.quantity }}</span>
+                      <button class="qty-btn" (click)="item.quantity = item.quantity + 1">+</button>
+                      <button class="remove-btn" (click)="removeFromCart(item)">✕</button>
+                    </div>
+                    <input
+                      class="note-input"
+                      type="text"
+                      placeholder="Nota (opcional)"
+                      [(ngModel)]="item.note"
+                    />
+                  </div>
+                }
+              </div>
+
+              @if (orderType() === 'llevar' && (selectedZone()?.price ?? 0) > 0) {
+                <div class="cart-subtotal">
+                  <span>Subtotal</span>
+                  <span>{{ total() | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
+                </div>
+                <div class="cart-delivery">
+                  <span>Domicilio ({{ selectedZone()!.name }})</span>
+                  <span>+ {{ selectedZone()!.price | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
+                </div>
+              }
+              <div class="cart-total">
+                <span>Total</span>
+                <span>{{ grandTotal() | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
+              </div>
+
+              <button
+                class="submit-btn"
+                [disabled]="submitting() || !orderType() || (orderType() === 'mesa' && !tableNumber) || (orderType() === 'llevar' && !selectedZoneName())"
+                (click)="submitOrder()">
+                @if (submitting()) { Enviando... } @else { Confirmar Pedido }
+              </button>
+            }
+
+            @if (successMsg()) {
+              <div class="success-msg">{{ successMsg() }}</div>
+            }
+            @if (errorMsg()) {
+              <div class="error-msg">{{ errorMsg() }}</div>
+            }
+          </div>
+
+        </div>
+      }
+
+      @if (pendingProduct()) {
+        <div class="flavor-overlay" (click)="pendingProduct.set(null)">
+          <div class="flavor-sheet" (click)="$event.stopPropagation()">
+            <div class="flavor-header">{{ pendingProduct()!.name }}</div>
+            <p class="flavor-prompt">Selecciona el sabor:</p>
+            <div class="flavor-options">
+              @for (f of pendingProduct()!.flavors!; track f.id) {
+                <button class="flavor-btn" (click)="pickFlavor(f.name)">{{ f.name }}</button>
+              }
+            </div>
+            <button class="flavor-cancel" (click)="pendingProduct.set(null)">Cancelar</button>
+          </div>
+        </div>
+      }
+
+      @if (pendingComboItem()) {
+        <div class="flavor-overlay" (click)="pendingComboItem.set(null)">
+          <div class="flavor-sheet" (click)="$event.stopPropagation()">
+            <div class="flavor-header">{{ pendingComboItem()!.product.name }}</div>
+            <p class="flavor-prompt">¿La deseas en combo? ({{ pendingComboItem()!.product.comboDescription }})</p>
+            <div class="combo-toggle">
+              <button class="combo-toggle-btn" [class.active]="comboAccepted() === true" (click)="comboAccepted.set(true)">Sí</button>
+              <button class="combo-toggle-btn" [class.active]="comboAccepted() === false" (click)="comboAccepted.set(false)">No</button>
+            </div>
+            @if (comboAccepted() === true) {
+              <p class="flavor-prompt" style="margin-top:0.75em">Bebida del combo:</p>
+              <select class="combo-select" [ngModel]="comboDrink()" (ngModelChange)="comboDrink.set($event); comboDrinkFlavor.set('')">
+                <option value="">Selecciona la bebida...</option>
+                @for (d of comboDrinks(); track d.label) {
+                  <option [value]="d.label">{{ d.label }}</option>
+                }
+              </select>
+              @if (comboDrink()) {
+                <p class="flavor-prompt" style="margin-top:0.75em">Sabor de la bebida:</p>
+                <select class="combo-select" [ngModel]="comboDrinkFlavor()" (ngModelChange)="comboDrinkFlavor.set($event)">
+                  <option value="">Selecciona el sabor...</option>
+                  @for (f of selectedComboDrinkFlavors(); track f) {
+                    <option [value]="f">{{ f }}</option>
+                  }
+                </select>
+              }
+            }
+            <div class="flavor-options" style="margin-top:0.75em">
+              <button class="flavor-btn" style="background:#e94560;border-color:#e94560;color:#fff"
+                      [disabled]="!canConfirmCombo()"
+                      (click)="confirmCombo()">Confirmar</button>
+              <button class="flavor-cancel" (click)="pendingComboItem.set(null)">Cancelar</button>
+            </div>
+          </div>
+        </div>
+      }
+
+      @if (pendingAdditionsItem()) {
+        <div class="flavor-overlay" (click)="pendingAdditionsItem.set(null)">
+          <div class="flavor-sheet" (click)="$event.stopPropagation()">
+            <div class="flavor-header">{{ pendingAdditionsItem()!.product.name }}</div>
+            <p class="flavor-prompt">Adiciones (opcional):</p>
+            <div class="flavor-options">
+              @for (a of pendingAdditionsItem()!.product.additions!; track a.id) {
+                <label class="addition-option">
+                  <input type="checkbox"
+                         [checked]="selectedPendingAdditionIds().has(a.id)"
+                         (change)="togglePendingAdditionId(a.id)" />
+                  <span class="addition-name">{{ a.name }}</span>
+                  <span class="addition-price">+{{ a.effectivePrice | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
+                </label>
+              }
+            </div>
+            <div class="flavor-options" style="margin-top:0.75em">
+              <button class="flavor-btn" style="background:#e94560;border-color:#e94560;color:#fff" (click)="confirmAdditions()">Confirmar</button>
+              <button class="flavor-cancel" (click)="pendingAdditionsItem.set(null)">Cancelar</button>
+            </div>
+          </div>
+        </div>
+      }
+    </div>

@@ -1,0 +1,27 @@
+
+    <div class="page">
+      <div class="card">
+        <img src="assets/logo.png" alt="Columbia Burger" class="logo" />
+        <h1 class="title">Cocina</h1>
+        <p class="sub">Columbia Burger</p>
+
+        <form (ngSubmit)="login()" class="form">
+          <div class="field">
+            <label>Usuario</label>
+            <input type="email" [(ngModel)]="email" name="email" placeholder="correo@ejemplo.com" autocomplete="username" />
+          </div>
+          <div class="field">
+            <label>Contraseña</label>
+            <input type="password" [(ngModel)]="password" name="password" placeholder="••••••••" autocomplete="current-password" />
+          </div>
+
+          @if (error()) {
+            <p class="error">{{ error() }}</p>
+          }
+
+          <button type="submit" class="btn" [disabled]="loading()">
+            {{ loading() ? 'Entrando...' : 'Entrar' }}
+          </button>
+        </form>
+      </div>
+    </div>

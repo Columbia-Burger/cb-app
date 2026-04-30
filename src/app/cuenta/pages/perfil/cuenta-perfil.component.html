@@ -1,0 +1,59 @@
+
+    <div class="shell">
+      <!-- Header -->
+      <header class="topbar">
+        <div class="brand">
+          <img src="assets/logo.png" alt="CB" class="topbar-logo" />
+          <span>Columbia Burger</span>
+        </div>
+        <div class="nav-links">
+          <a (click)="goTo('dashboard')" class="nav-link">Mis pedidos</a>
+          <a (click)="goTo('perfil')" class="nav-link active">Mi perfil</a>
+          <button class="btn-logout" (click)="logout()">Salir</button>
+        </div>
+      </header>
+
+      <main class="content">
+        <h2 class="page-title">Mi perfil</h2>
+
+        @if (loading()) {
+          <div class="loading-wrap">
+            <div class="spinner"></div>
+          </div>
+        }
+
+        @if (error()) {
+          <p class="error">{{ error() }}</p>
+        }
+
+        @if (profile()) {
+          <div class="profile-card">
+            <div class="avatar">{{ initials() }}</div>
+            <div class="profile-fields">
+              <div class="field">
+                <span class="field-label">Nombre</span>
+                <span class="field-value">{{ profile()!.name || '—' }}</span>
+              </div>
+              <div class="field">
+                <span class="field-label">WhatsApp</span>
+                <span class="field-value">+{{ profile()!.whatsapp }}</span>
+              </div>
+              <div class="field">
+                <span class="field-label">Barrio</span>
+                <span class="field-value">{{ profile()!.neighborhood || '—' }}</span>
+              </div>
+              <div class="field">
+                <span class="field-label">Dirección</span>
+                <span class="field-value">{{ profile()!.address || '—' }}</span>
+              </div>
+              <div class="field">
+                <span class="field-label">Cliente desde</span>
+                <span class="field-value">{{ profile()!.createdAt | date:'MMM yyyy' }}</span>
+              </div>
+            </div>
+          </div>
+
+          <p class="hint">Para actualizar tus datos escríbenos por WhatsApp.</p>
+        }
+      </main>
+    </div>

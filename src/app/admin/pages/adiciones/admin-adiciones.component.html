@@ -1,0 +1,84 @@
+
+    <div class="page">
+      <div class="page-header">
+        <div>
+          <h2 class="page-title">Adiciones</h2>
+          <p class="page-sub">Extras que se pueden agregar a los productos al tomar un pedido</p>
+        </div>
+        <button class="create-btn" (click)="openModal()">+ Nueva adición</button>
+      </div>
+
+      @if (loading()) {
+        <div class="loading"><div class="spinner"></div> Cargando...</div>
+      } @else if (additions().length === 0) {
+        <p class="empty">No hay adiciones registradas.</p>
+      } @else {
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Nombre</th>
+                <th>Descripción</th>
+                <th>Precio base</th>
+                <th>Estado</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (a of additions(); track a.id) {
+                <tr [class.inactive-row]="a.active === false">
+                  <td class="name-cell">{{ a.name }}</td>
+                  <td class="desc-cell">{{ a.description ?? '—' }}</td>
+                  <td class="price-cell">{{ a.basePrice | currency:'COP':'symbol-narrow':'1.0-0' }}</td>
+                  <td>
+                    <span class="badge" [ngClass]="a.active === false ? 'badge-off' : 'badge-on'">
+                      {{ a.active === false ? 'Inactiva' : 'Activa' }}
+                    </span>
+                  </td>
+                  <td class="actions-cell">
+                    <button class="action-btn" (click)="openModal(a)">✏️</button>
+                    <button class="action-btn toggle-action"
+                            [class.deactivate]="a.active !== false"
+                            (click)="toggleActive(a)"
+                            [disabled]="toggling().has(a.id)">
+                      {{ a.active === false ? 'Activar' : 'Desactivar' }}
+                    </button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+
+      @if (showModal()) {
+        <div class="overlay" (click)="closeModal()">
+          <div class="sheet" (click)="$event.stopPropagation()">
+            <div class="sheet-title">{{ editingId() ? 'Editar adición' : 'Nueva adición' }}</div>
+            <div class="form">
+              <label class="field">
+                <span class="label">Nombre *</span>
+                <input type="text" [(ngModel)]="form.name" placeholder="Ej: Queso extra" />
+              </label>
+              <label class="field">
+                <span class="label">Descripción</span>
+                <input type="text" [(ngModel)]="form.description" placeholder="Opcional" />
+              </label>
+              <label class="field">
+                <span class="label">Precio base (COP) *</span>
+                <input type="number" [(ngModel)]="form.basePrice" placeholder="0" min="0" />
+              </label>
+              @if (formError()) {
+                <p class="form-error">⚠️ {{ formError() }}</p>
+              }
+            </div>
+            <div class="sheet-actions">
+              <button class="btn-save" [disabled]="saving()" (click)="submit()">
+                {{ saving() ? 'Guardando...' : (editingId() ? 'Guardar cambios' : 'Crear') }}
+              </button>
+              <button class="btn-cancel" (click)="closeModal()">Cancelar</button>
+            </div>
+          </div>
+        </div>
+      }
+    </div>

@@ -1,0 +1,117 @@
+
+    <div class="page">
+      <div class="page-header">
+        <h2 class="page-title">Pedidos</h2>
+        <div class="header-actions">
+          <button class="refresh-btn" (click)="load()" [disabled]="loading()">
+            🔄 Actualizar
+          </button>
+          <button class="export-btn" (click)="exportCsv()" [disabled]="loading()">
+            ⬇ Exportar CSV
+          </button>
+        </div>
+      </div>
+
+      @if (newOrderAlert()) {
+        <div class="new-order-toast">🔔 ¡Nuevo pedido recibido!</div>
+      }
+
+      @if (loading()) {
+        <div class="loading">Cargando pedidos...</div>
+      } @else {
+        <div class="kanban">
+          @for (col of columns(); track col.status) {
+            <div class="column" [class.col-empty]="col.orders.length === 0">
+              <div class="column-header" [style.border-color]="col.color">
+                <span class="col-label">{{ col.label }}</span>
+                <span class="col-count" [style.background]="col.color">{{ col.orders.length }}</span>
+              </div>
+
+              <div class="cards">
+                @for (order of col.orders; track order.id) {
+                  <div class="order-card" (click)="selectOrder(order)">
+                    <div class="order-top">
+                      <span class="order-id">#{{ order.id }}</span>
+                      <span class="order-total">{{ order.total | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
+                    </div>
+                    <div class="order-customer">{{ order.customerName }}</div>
+                    <div class="order-meta">
+                      @if (order.deliveryZone) {
+                        <span class="tag">📍 {{ order.deliveryZone }}</span>
+                      }
+                      <span class="time">{{ order.createdAt | date:'HH:mm' }}</span>
+                    </div>
+                    <div class="order-actions">
+                      @for (next of getNextStatuses(order.status); track next.status) {
+                        <button
+                          class="action-btn"
+                          [style.border-color]="next.color"
+                          [style.color]="next.color"
+                          (click)="changeStatus($event, order, next.status)">
+                          {{ next.label }}
+                        </button>
+                      }
+                    </div>
+                  </div>
+                } @empty {
+                  <div class="empty-col">Sin pedidos</div>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      }
+
+    </div>
+
+    <!-- Modal detalle — se mueve a document.body en AfterViewInit -->
+    <div #modalOverlay
+         style="position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.72);align-items:center;justify-content:center;"
+         [style.display]="selectedOrder() ? 'flex' : 'none'"
+         (click)="closeDialog()">
+      <div style="background:#161b22;border:1px solid #30363d;border-radius:16px;color:#c9d1d9;width:480px;max-width:90vw;max-height:80vh;overflow-y:auto;" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h3>Pedido #{{ selectedOrder()?.id }}</h3>
+          <button class="close-btn" (click)="closeDialog()">✕</button>
+        </div>
+        <div class="modal-body">
+          <p><strong>Cliente:</strong> {{ selectedOrder()?.customerName }}</p>
+          <p><strong>WhatsApp:</strong> {{ selectedOrder()?.customerWhatsapp }}</p>
+          @if (selectedOrder()?.deliveryZone) {
+            <p><strong>Zona:</strong> {{ selectedOrder()!.deliveryZone }}</p>
+          }
+          @if (selectedOrder()?.notes) {
+            <p><strong>Notas:</strong> {{ selectedOrder()!.notes }}</p>
+          }
+          @if (selectedOrder()?.customerLatitude && selectedOrder()?.customerLongitude) {
+            <a class="maps-link"
+               [href]="'https://www.google.com/maps?q=' + selectedOrder()!.customerLatitude + ',' + selectedOrder()!.customerLongitude"
+               target="_blank" rel="noopener">
+              📍 Ver ubicación en Maps
+            </a>
+          }
+          <div class="items-list">
+            @for (item of (selectedOrder()?.items ?? []); track item.id) {
+              <div class="item-row">
+                <span class="item-qty">{{ item.quantity }}x</span>
+                <span class="item-name">
+                  {{ item.productName }}
+                  @if (item.flavor) { — {{ item.flavor }} }
+                </span>
+                <span class="item-price">{{ item.subtotal | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
+              </div>
+            }
+          </div>
+          @if ((selectedOrder()?.deliveryFee ?? 0) > 0) {
+            <div class="total-row">
+              <span>Domicilio</span>
+              <span>{{ selectedOrder()!.deliveryFee | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
+            </div>
+          }
+          <div class="total-row total-final">
+            <span>Total</span>
+            <span>{{ selectedOrder()?.total | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
+          </div>
+        </div>
+      </div>
+    </div>

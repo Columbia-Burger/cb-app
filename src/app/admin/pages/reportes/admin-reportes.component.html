@@ -1,0 +1,87 @@
+
+    <div class="page">
+      <div class="page-header">
+        <div>
+          <h2 class="page-title">Reportes</h2>
+          <p class="page-sub">Análisis de ventas y comportamiento</p>
+        </div>
+        <div class="period-btns">
+          @for (opt of periodOptions; track opt.days) {
+            <button class="period-btn" [class.active]="period() === opt.days" (click)="setPeriod(opt.days)">
+              {{ opt.label }}
+            </button>
+          }
+        </div>
+      </div>
+
+      @if (loading()) {
+        <div class="loading"><div class="spinner"></div> Cargando reportes...</div>
+      }
+
+      <!-- KPIs -->
+      @if (!loading()) {
+        <div class="kpi-grid">
+          <div class="kpi-card accent">
+            <div class="kpi-label">Pedidos en período</div>
+            <div class="kpi-value">{{ totalOrders() }}</div>
+          </div>
+          <div class="kpi-card green">
+            <div class="kpi-label">Ingresos en período</div>
+            <div class="kpi-value">{{ totalRevenue() | currency:'COP':'symbol-narrow':'1.0-0' }}</div>
+          </div>
+          <div class="kpi-card yellow">
+            <div class="kpi-label">Ticket promedio</div>
+            <div class="kpi-value">{{ avgTicket() | currency:'COP':'symbol-narrow':'1.0-0' }}</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">Día más activo</div>
+            <div class="kpi-value small">{{ bestDay() }}</div>
+          </div>
+        </div>
+
+        <!-- Gráficas fila 1 -->
+        <div class="charts-row">
+          <div class="chart-card wide">
+            <h3 class="chart-title">Ventas por día</h3>
+            <canvas #salesChart></canvas>
+          </div>
+          <div class="chart-card">
+            <h3 class="chart-title">Pedidos por canal</h3>
+            <canvas #sourceChart></canvas>
+            <div class="source-legend">
+              @for (s of sourceStats(); track s.source) {
+                <div class="legend-item">
+                  <span class="legend-dot" [style.background]="sourceColor(s.source)"></span>
+                  <span class="legend-label">{{ sourceLabel(s.source) }}</span>
+                  <span class="legend-val">{{ s.orders }}</span>
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+
+        <!-- Gráficas fila 2 -->
+        <div class="charts-row">
+          <div class="chart-card wide">
+            <h3 class="chart-title">Pedidos por hora del día</h3>
+            <canvas #hourChart></canvas>
+          </div>
+          <div class="chart-card">
+            <h3 class="chart-title">🏆 Productos más vendidos</h3>
+            <div class="top-list">
+              @if (topProducts().length === 0) {
+                <p class="empty">Sin datos aún.</p>
+              }
+              @for (p of topProducts(); track p.productName; let i = $index) {
+                <div class="top-row">
+                  <span class="top-rank">#{{ i + 1 }}</span>
+                  <span class="top-name">{{ p.productName }}</span>
+                  <span class="top-qty">{{ p.totalQuantity }} uds</span>
+                  <span class="top-rev">{{ p.totalRevenue | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+      }
+    </div>

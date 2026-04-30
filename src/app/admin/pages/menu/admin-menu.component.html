@@ -1,0 +1,233 @@
+
+    <div class="page">
+      <div class="page-header">
+        <div>
+          <h2 class="page-title">Menú</h2>
+          <p class="page-sub">Activa o desactiva productos para el agente y el menú público</p>
+        </div>
+        <div class="header-right">
+          <div class="header-stats">
+            <span class="stat active">{{ activeCount() }} activos</span>
+            <span class="stat inactive">{{ inactiveCount() }} inactivos</span>
+          </div>
+          <button class="create-btn" (click)="openCreateModal()">+ Nuevo producto</button>
+        </div>
+      </div>
+
+      <div class="search-bar">
+        <input
+          type="text"
+          placeholder="Buscar producto..."
+          [ngModel]="search()"
+          (ngModelChange)="search.set($event)"
+        />
+      </div>
+
+      @if (loading()) {
+        <div class="loading">
+          <div class="spinner"></div>
+          Cargando menú...
+        </div>
+      }
+
+      @for (cat of filteredCategories(); track cat.id) {
+        <div class="category-block">
+          <div class="category-header">
+            <h3 class="category-name">{{ cat.name }}</h3>
+            <span class="category-count">{{ cat.products.length }} productos</span>
+          </div>
+          <div class="products-grid">
+            @for (p of cat.products; track p.id) {
+              <div class="product-card" [class.inactive]="!p.available">
+                <div class="product-img-wrap">
+                  <img [src]="p.imageUrl" [alt]="p.name" class="product-img" loading="lazy" />
+                  @if (!p.available) {
+                    <div class="unavailable-overlay">Inactivo</div>
+                  }
+                </div>
+                <div class="product-info">
+                  <span class="product-name">{{ p.name }}</span>
+                  <span class="product-price">{{ p.price | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
+                </div>
+                <div class="product-footer">
+                  <div class="toggle-row">
+                    <button
+                      class="toggle-btn"
+                      [ngClass]="p.available ? 'toggle-on' : 'toggle-off'"
+                      (click)="toggle(p)"
+                      [disabled]="toggling().has(p.id)"
+                    >
+                      <span class="toggle-dot"></span>
+                    </button>
+                    <span class="toggle-label">{{ p.available ? 'Disponible' : 'No disponible' }}</span>
+                  </div>
+                  <div class="action-btns">
+                    @if (cat.name.toLowerCase().includes('bebida')) {
+                      <button class="flavors-btn" (click)="openFlavorEditor(p); $event.stopPropagation()">
+                        🏷️{{ p.flavors?.length ? ' ' + p.flavors!.length : '' }}
+                      </button>
+                    }
+                    <button class="additions-btn" (click)="openAdditionEditor(p); $event.stopPropagation()">
+                      🧩{{ p.additions?.length ? ' ' + p.additions!.length : '' }}
+                    </button>
+                    <button class="combo-btn" [class.combo-active]="p.comboDescription" (click)="openComboEditor(p); $event.stopPropagation()">
+                      🍟
+                    </button>
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      }
+
+      @if (toggleError()) {
+        <div class="toggle-error">⚠️ {{ toggleError() }}</div>
+      }
+
+      @if (!loading() && filteredCategories().length === 0) {
+        <p class="empty">No se encontraron productos.</p>
+      }
+
+      <!-- Combo editor modal -->
+      @if (editingProductCombo()) {
+        <div class="fl-overlay" (click)="editingProductCombo.set(null)">
+          <div class="fl-sheet" (click)="$event.stopPropagation()">
+            <div class="fl-title">Combo — {{ editingProductCombo()!.name }}</div>
+            @if (editingProductCombo()!.comboDescription) {
+              <p class="combo-current">
+                Actual: <strong>{{ editingProductCombo()!.comboDescription }}</strong>
+                (+{{ editingProductCombo()!.comboPrice! | currency:'COP':'symbol-narrow':'1.0-0' }})
+              </p>
+            }
+            <div class="combo-form">
+              <label class="combo-field">
+                <span class="combo-label">Descripción (ej: papas + gaseosa personal)</span>
+                <input type="text" [(ngModel)]="comboForm.description" placeholder="papas + gaseosa personal" />
+              </label>
+              <label class="combo-field">
+                <span class="combo-label">Precio adicional (COP)</span>
+                <input type="number" [(ngModel)]="comboForm.price" min="0" placeholder="0" />
+              </label>
+            </div>
+            <div class="fl-actions">
+              <button class="fl-save" [disabled]="savingCombo()" (click)="saveCombo()">
+                {{ savingCombo() ? 'Guardando...' : 'Asignar combo' }}
+              </button>
+              @if (editingProductCombo()!.comboDescription) {
+                <button class="fl-remove" [disabled]="savingCombo()" (click)="removeCombo()">Quitar</button>
+              }
+              <button class="fl-cancel" (click)="editingProductCombo.set(null)">Cancelar</button>
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- Additions editor modal -->
+      @if (editingProductAdditions()) {
+        <div class="fl-overlay" (click)="editingProductAdditions.set(null)">
+          <div class="fl-sheet" (click)="$event.stopPropagation()">
+            <div class="fl-title">Adiciones — {{ editingProductAdditions()!.name }}</div>
+            @if (loadingAdditions()) {
+              <p class="fl-loading">Cargando...</p>
+            } @else {
+              <div class="fl-options">
+                @for (a of allAdditions(); track a.id) {
+                  <label class="fl-option">
+                    <input type="checkbox"
+                           [checked]="selectedAdditionIds().has(a.id)"
+                           (change)="toggleAdditionId(a.id)" />
+                    <span class="fl-option-name">{{ a.name }}</span>
+                    <span class="fl-option-price">{{ a.basePrice | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
+                  </label>
+                }
+              </div>
+              <div class="fl-actions">
+                <button class="fl-save" [disabled]="savingAdditions()" (click)="saveAdditions()">
+                  {{ savingAdditions() ? 'Guardando...' : 'Guardar' }}
+                </button>
+                <button class="fl-cancel" (click)="editingProductAdditions.set(null)">Cancelar</button>
+              </div>
+            }
+          </div>
+        </div>
+      }
+
+      <!-- Flavor editor modal -->
+      @if (editingProduct()) {
+        <div class="fl-overlay" (click)="editingProduct.set(null)">
+          <div class="fl-sheet" (click)="$event.stopPropagation()">
+            <div class="fl-title">Sabores — {{ editingProduct()!.name }}</div>
+            @if (loadingFlavors()) {
+              <p class="fl-loading">Cargando...</p>
+            } @else {
+              <div class="fl-options">
+                @for (f of allFlavors(); track f.id) {
+                  <label class="fl-option">
+                    <input type="checkbox"
+                           [checked]="selectedFlavorIds().has(f.id)"
+                           (change)="toggleFlavorId(f.id)" />
+                    <span>{{ f.name }}</span>
+                  </label>
+                }
+              </div>
+              <div class="fl-actions">
+                <button class="fl-save" [disabled]="savingFlavors()" (click)="saveFlavors()">
+                  {{ savingFlavors() ? 'Guardando...' : 'Guardar' }}
+                </button>
+                <button class="fl-cancel" (click)="editingProduct.set(null)">Cancelar</button>
+              </div>
+            }
+          </div>
+        </div>
+      }
+
+      <!-- Create product modal -->
+      @if (showCreateModal()) {
+        <div class="fl-overlay" (click)="closeCreateModal()">
+          <div class="create-sheet" (click)="$event.stopPropagation()">
+            <div class="fl-title">Nuevo producto</div>
+            <div class="create-form">
+              <label class="form-field">
+                <span class="form-label">Nombre *</span>
+                <input type="text" [(ngModel)]="newProduct.name" placeholder="Nombre del producto" />
+              </label>
+              <label class="form-field">
+                <span class="form-label">Descripción</span>
+                <textarea [(ngModel)]="newProduct.description" placeholder="Descripción (opcional)" rows="2"></textarea>
+              </label>
+              <label class="form-field">
+                <span class="form-label">Precio (COP) *</span>
+                <input type="number" [(ngModel)]="newProduct.price" placeholder="0" min="0" />
+              </label>
+              <label class="form-field">
+                <span class="form-label">URL de imagen</span>
+                <input type="text" [(ngModel)]="newProduct.imageUrl" placeholder="https://..." />
+              </label>
+              <label class="form-field">
+                <span class="form-label">Categoría *</span>
+                @if (loadingCategories()) {
+                  <p class="fl-loading">Cargando categorías...</p>
+                } @else {
+                  <select [(ngModel)]="newProduct.categoryId">
+                    <option [value]="0" disabled>Seleccionar categoría</option>
+                    @for (cat of allCategories(); track cat.id) {
+                      <option [value]="cat.id">{{ cat.name }}</option>
+                    }
+                  </select>
+                }
+              </label>
+              @if (createError()) {
+                <p class="create-error">⚠️ {{ createError() }}</p>
+              }
+            </div>
+            <div class="fl-actions">
+              <button class="fl-save" [disabled]="creatingProduct()" (click)="submitCreateProduct()">
+                {{ creatingProduct() ? 'Creando...' : 'Crear producto' }}
+              </button>
+              <button class="fl-cancel" (click)="closeCreateModal()">Cancelar</button>
+            </div>
+          </div>
+        </div>
+      }
+    </div>

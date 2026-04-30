@@ -1,0 +1,94 @@
+
+    <div class="page">
+      <header class="header">
+        <img src="assets/logo.png" alt="Columbia Burger" class="logo" />
+        <div class="brand-text">
+          <span class="brand-name">Columbia Burger</span>
+          <span class="brand-sub">Seguimiento de pedido</span>
+        </div>
+      </header>
+
+      @if (loading()) {
+        <div class="centered">
+          <div class="spinner"></div>
+          <span>Cargando...</span>
+        </div>
+      } @else if (error()) {
+        <div class="centered error-box">
+          <span class="error-icon">⚠️</span>
+          <p>{{ error() }}</p>
+        </div>
+      } @else if (order()) {
+        <div class="card">
+          <!-- Order header -->
+          <div class="order-header">
+            <div>
+              <p class="order-greeting">Hola, <strong>{{ order()!.customerFirstName }}</strong></p>
+              <p class="order-id">Pedido #{{ order()!.id }}</p>
+            </div>
+            <div class="order-time">
+              {{ order()!.createdAt | date:'d MMM, h:mm a' }}
+            </div>
+          </div>
+
+          @if (order()!.status === 'CANCELLED') {
+            <div class="cancelled-banner">
+              ❌ Este pedido fue cancelado
+            </div>
+          } @else {
+            <!-- Timeline -->
+            <div class="timeline">
+              @for (step of steps; track step.status; let i = $index) {
+                <div class="timeline-step" [class.done]="isDone(step.status)" [class.active]="isActive(step.status)">
+                  <div class="step-icon-wrap">
+                    <div class="step-icon">{{ step.icon }}</div>
+                    @if (i < steps.length - 1) {
+                      <div class="step-line" [class.done]="isDone(steps[i + 1].status) || isActive(steps[i + 1].status)"></div>
+                    }
+                  </div>
+                  <div class="step-label">{{ step.label }}</div>
+                </div>
+              }
+            </div>
+
+            <div class="status-pill" [class]="'status-' + order()!.status.toLowerCase()">
+              {{ statusLabel(order()!.status) }}
+            </div>
+          }
+
+          <!-- Items -->
+          <div class="section">
+            <h3 class="section-title">Productos</h3>
+            <ul class="items-list">
+              @for (item of order()!.items; track $index) {
+                <li class="item-row">
+                  <span class="item-qty">{{ item.quantity }}×</span>
+                  <span class="item-name">{{ item.productName }}</span>
+                  @if (item.flavor) {
+                    <span class="item-flavor">{{ item.flavor }}</span>
+                  }
+                </li>
+              }
+            </ul>
+          </div>
+
+          <!-- Totals -->
+          <div class="section totals">
+            @if (order()!.deliveryFee > 0) {
+              <div class="total-row">
+                <span>Domicilio</span>
+                <span>{{ order()!.deliveryFee | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
+              </div>
+            }
+            <div class="total-row grand">
+              <span>Total</span>
+              <span>{{ order()!.total | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
+            </div>
+          </div>
+
+          @if (order()!.deliveryZone) {
+            <p class="delivery-zone">📍 {{ order()!.deliveryZone }}</p>
+          }
+        </div>
+      }
+    </div>
