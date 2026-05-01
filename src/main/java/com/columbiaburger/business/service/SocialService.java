@@ -16,6 +16,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -37,10 +39,16 @@ public class SocialService {
     @Value("${instagram.access-token:}")
     private String igAccessToken;
 
+    @Value("${cloudinary.cloud-name:diaymnuut}")
+    private String cloudinaryCloudName;
+
+    @Value("${cloudinary.logo-public-id:logo_z4ylms}")
+    private String cloudinaryLogoPublicId;
+
     private static final String ANTHROPIC_API_URL = "https://api.anthropic.com/v1/messages";
     private static final String GRAPH_API_BASE = "https://graph.facebook.com/v19.0";
 
-    // ─── A) Generate caption with Claude API ──────────────────────────────────
+    // ─── A) Generate caption + optional campaign image ────────────────────────
 
     @Transactional
     public SocialPostResponse generatePost(GeneratePostRequest request) {
@@ -81,19 +89,21 @@ public class SocialService {
 
         String responseText = extractClaudeText(claudeResponse);
         String[] parsed = parseCaptionAndHashtags(responseText);
-        String caption = parsed[0];
-        String hashtags = parsed[1];
+
+        // If no image provided, generate a branded campaign card via Cloudinary transforms
+        String imageUrl = (request.getImageUrl() != null && !request.getImageUrl().isBlank())
+                ? request.getImageUrl()
+                : buildCampaignImageUrl(request.getTopic());
 
         SocialPost post = SocialPost.builder()
                 .topic(request.getTopic())
-                .caption(caption)
-                .hashtags(hashtags)
-                .imageUrl(request.getImageUrl())
+                .caption(parsed[0])
+                .hashtags(parsed[1])
+                .imageUrl(imageUrl)
                 .status(PostStatus.DRAFT)
                 .build();
 
-        SocialPost saved = socialPostRepository.save(post);
-        return toResponse(saved);
+        return toResponse(socialPostRepository.save(post));
     }
 
     // ─── B) List posts ────────────────────────────────────────────────────────
@@ -133,7 +143,7 @@ public class SocialService {
         return toResponse(socialPostRepository.save(post));
     }
 
-    // ─── Delete post ──────────────────────────────────────────────────────────
+    // ─── D) Delete post ───────────────────────────────────────────────────────
 
     @Transactional
     public void deletePost(Long id) {
@@ -143,27 +153,31 @@ public class SocialService {
         socialPostRepository.deleteById(id);
     }
 
-    // ─── D) Publish to Instagram ──────────────────────────────────────────────
+    // ─── E) Publish to Instagram ──────────────────────────────────────────────
 
     @Transactional
     public SocialPostResponse publishToInstagram(Long id) {
         SocialPost post = socialPostRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Post no encontrado"));
 
+        if (post.getImageUrl() == null || post.getImageUrl().isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El post no tiene imagen para publicar en Instagram");
+        }
+
         RestClient restClient = RestClient.create();
         String fullCaption = buildFullCaption(post);
 
         try {
             // Step 1: Create media container
-            String step1Url = GRAPH_API_BASE + "/" + igAccountId + "/media";
             Map<String, Object> step1Body = new java.util.HashMap<>();
             step1Body.put("image_url", post.getImageUrl());
+            step1Body.put("media_type", "IMAGE");
             step1Body.put("caption", fullCaption);
             step1Body.put("access_token", igAccessToken);
 
             @SuppressWarnings("unchecked")
             Map<String, Object> containerResponse = restClient.post()
-                    .uri(step1Url)
+                    .uri(GRAPH_API_BASE + "/" + igAccountId + "/media")
                     .contentType(MediaType.APPLICATION_JSON)
                     .body(step1Body)
                     .retrieve()
@@ -175,24 +189,21 @@ public class SocialService {
             }
 
             // Step 2: Publish the container
-            String step2Url = GRAPH_API_BASE + "/" + igAccountId + "/media_publish";
             Map<String, Object> step2Body = new java.util.HashMap<>();
             step2Body.put("creation_id", containerId);
             step2Body.put("access_token", igAccessToken);
 
             @SuppressWarnings("unchecked")
             Map<String, Object> publishResponse = restClient.post()
-                    .uri(step2Url)
+                    .uri(GRAPH_API_BASE + "/" + igAccountId + "/media_publish")
                     .contentType(MediaType.APPLICATION_JSON)
                     .body(step2Body)
                     .retrieve()
                     .body(Map.class);
 
-            String instagramPostId = (String) publishResponse.get("id");
-
             post.setStatus(PostStatus.PUBLISHED);
             post.setPublishedAt(LocalDateTime.now());
-            post.setInstagramPostId(instagramPostId);
+            post.setInstagramPostId((String) publishResponse.get("id"));
             post.setErrorMessage(null);
 
         } catch (Exception e) {
@@ -206,6 +217,28 @@ public class SocialService {
     }
 
     // ─── Helpers ──────────────────────────────────────────────────────────────
+
+    /**
+     * Builds a Cloudinary transformation URL that generates a 1080x1080 campaign card:
+     * brand-gold background, logo anchored top-center, bold white title, brand name footer.
+     */
+    private String buildCampaignImageUrl(String topic) {
+        try {
+            // Sanitize: remove chars that break Cloudinary URL path segments
+            String safe = topic.replaceAll("[,/\\\\%#&?]", " ").trim();
+            if (safe.length() > 55) safe = safe.substring(0, 55).trim();
+            String encoded = URLEncoder.encode(safe, StandardCharsets.UTF_8).replace("+", "%20");
+
+            return "https://res.cloudinary.com/" + cloudinaryCloudName + "/image/upload/" +
+                   "c_pad,b_rgb:ba8125,w_1080,h_1080,g_north,y_120/" +
+                   "l_text:Arial_66_bold:" + encoded + ",co_white,c_fit,w_860,g_south,y_150/fl_layer_apply/" +
+                   "l_text:Arial_38:Columbia%20Burger,co_white,g_south,y_65/fl_layer_apply/" +
+                   cloudinaryLogoPublicId;
+        } catch (Exception e) {
+            log.warn("Error construyendo URL de imagen de campaña: {}", e.getMessage());
+            return null;
+        }
+    }
 
     @SuppressWarnings("unchecked")
     private String extractClaudeText(Map<String, Object> response) {
@@ -225,12 +258,9 @@ public class SocialService {
         String caption = "";
         String hashtags = "";
 
-        if (text == null || text.isBlank()) {
-            return new String[]{caption, hashtags};
-        }
+        if (text == null || text.isBlank()) return new String[]{caption, hashtags};
 
         List<String> hashtagParts = new ArrayList<>();
-        StringBuilder captionBuilder = new StringBuilder();
 
         for (String line : text.split("\n")) {
             String trimmed = line.trim();
@@ -243,13 +273,8 @@ public class SocialService {
             }
         }
 
-        if (caption.isEmpty()) {
-            // Fallback: use full text as caption if parsing failed
-            caption = text.length() > 150 ? text.substring(0, 150) : text;
-        }
-        if (hashtags.isEmpty() && !hashtagParts.isEmpty()) {
-            hashtags = String.join(" ", hashtagParts);
-        }
+        if (caption.isEmpty()) caption = text.length() > 150 ? text.substring(0, 150) : text;
+        if (hashtags.isEmpty() && !hashtagParts.isEmpty()) hashtags = String.join(" ", hashtagParts);
 
         return new String[]{caption, hashtags};
     }
