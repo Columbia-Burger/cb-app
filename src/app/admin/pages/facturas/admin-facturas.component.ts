@@ -1,5 +1,6 @@
 import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { CurrencyPipe, DatePipe } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { AdminService } from '../../services/admin.service';
 import { OrderResponse, InvoiceStatus } from '../../models/admin.model';
 import { EditOrderModalComponent } from '../../components/edit-order-modal/edit-order-modal.component';
@@ -10,13 +11,13 @@ type FilterTab = 'ALL' | 'PENDING' | 'INVOICED' | 'VOID';
 @Component({
   selector: 'app-admin-facturas',
   standalone: true,
-  imports: [CurrencyPipe, DatePipe, EditOrderModalComponent],
+  imports: [CurrencyPipe, DatePipe, EditOrderModalComponent, FormsModule],
   templateUrl: './admin-facturas.component.html',
   styleUrl: './admin-facturas.component.scss',
 })
 export class AdminFacturasComponent implements OnInit {
   private svc = inject(AdminService);
-  private printer = inject(PrintService);
+  protected printer = inject(PrintService);
 
   orders = signal<OrderResponse[]>([]);
   loading = signal(true);
@@ -26,6 +27,10 @@ export class AdminFacturasComponent implements OnInit {
   editingOrder = signal<OrderResponse | null>(null);
   printingId = signal<number | null>(null);
   error = signal('');
+
+  printers = signal<string[]>([]);
+  selectedPrinter = this.printer.getSavedPrinter() ?? '';
+  loadingPrinters = signal(false);
 
   filtered = computed(() => {
     const tab = this.activeTab();
@@ -80,10 +85,37 @@ export class AdminFacturasComponent implements OnInit {
     });
   }
 
+  async loadPrinters(): Promise<void> {
+    this.loadingPrinters.set(true);
+    try {
+      const list = await this.printer.listPrinters();
+      this.printers.set(list);
+      if (!this.selectedPrinter && list.length > 0) {
+        this.selectedPrinter = list[0];
+      }
+    } catch (e) {
+      this.error.set('No se pudo conectar con QZ Tray. Asegúrate de que esté abierto.');
+    } finally {
+      this.loadingPrinters.set(false);
+    }
+  }
+
+  savePrinter(): void {
+    this.printer.savePrinter(this.selectedPrinter);
+  }
+
   async print(order: OrderResponse): Promise<void> {
+    if (!this.printer.getSavedPrinter() && !this.selectedPrinter) {
+      this.error.set('Selecciona una impresora primero.');
+      return;
+    }
+    if (this.selectedPrinter) this.printer.savePrinter(this.selectedPrinter);
     this.printingId.set(order.id);
+    this.error.set('');
     try {
       await this.printer.printTicket(order);
+    } catch (e: any) {
+      this.error.set(e?.message ?? 'Error al imprimir');
     } finally {
       this.printingId.set(null);
     }

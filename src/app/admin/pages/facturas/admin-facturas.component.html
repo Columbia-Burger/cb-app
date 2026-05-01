@@ -4,7 +4,26 @@
       <h2 class="page-title">Facturas</h2>
       <p class="page-sub">Genera y gestiona órdenes de compra de los pedidos</p>
     </div>
-    <button class="refresh-btn" (click)="load()">↻ Actualizar</button>
+    <div class="header-actions">
+      <div class="printer-row">
+        @if (printers().length === 0) {
+          <button class="printer-detect-btn" [disabled]="loadingPrinters()" (click)="loadPrinters()">
+            🖨️ {{ loadingPrinters() ? 'Buscando...' : 'Detectar impresora' }}
+          </button>
+        } @else {
+          <select class="printer-select" [(ngModel)]="selectedPrinter">
+            @for (p of printers(); track p) {
+              <option [value]="p">{{ p }}</option>
+            }
+          </select>
+          <button class="printer-save-btn" (click)="savePrinter()" title="Guardar impresora">✓</button>
+        }
+        @if (printer.getSavedPrinter()) {
+          <span class="printer-saved">🖨️ {{ printer.getSavedPrinter() }}</span>
+        }
+      </div>
+      <button class="refresh-btn" (click)="load()">↻ Actualizar</button>
+    </div>
   </div>
 
   @if (error()) {

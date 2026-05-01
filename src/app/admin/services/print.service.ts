@@ -6,16 +6,40 @@ declare const qz: any;
 
 const COLS = 32; // 57mm paper ≈ 32 chars at standard font
 
+const PRINTER_KEY = 'cb_printer_name';
+
 @Injectable({ providedIn: 'root' })
 export class PrintService {
 
   private connected = false;
 
+  async listPrinters(): Promise<string[]> {
+    await this.ensureConnected();
+    const result = await qz.printers.find();
+    return Array.isArray(result) ? result : [result];
+  }
+
+  getSavedPrinter(): string | null {
+    return localStorage.getItem(PRINTER_KEY);
+  }
+
+  savePrinter(name: string): void {
+    localStorage.setItem(PRINTER_KEY, name);
+  }
+
   async printTicket(order: OrderResponse): Promise<void> {
     await this.ensureConnected();
-    const config = qz.configs.create(null); // uses default printer
+    const printer = await this.resolvePrinter();
+    const config = qz.configs.create(printer);
     const data = this.buildEscPos(order);
     await qz.print(config, data);
+  }
+
+  private async resolvePrinter(): Promise<string> {
+    const saved = this.getSavedPrinter();
+    if (saved) return saved;
+    const defaultPrinter: string = await qz.printers.getDefault();
+    return defaultPrinter;
   }
 
   private async ensureConnected(): Promise<void> {
