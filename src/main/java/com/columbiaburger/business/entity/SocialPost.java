@@ -20,10 +20,10 @@ public class SocialPost {
     @Column(length = 500)
     private String hashtags;
 
-    @Column(name = "image_url", length = 500)
+    @Column(name = "image_url", columnDefinition = "TEXT")
     private String imageUrl;
 
-    @Column(length = 200)
+    @Column(columnDefinition = "TEXT")
     private String topic;
 
     @Builder.Default
