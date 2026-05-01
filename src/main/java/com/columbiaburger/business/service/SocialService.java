@@ -46,6 +46,9 @@ public class SocialService {
     @Value("${cloudinary.logo-public-id:logo_z4ylms}")
     private String cloudinaryLogoPublicId;
 
+    @Value("${cloudinary.template-public-id:ChatGPT_Image_1_may_2026_18_53_54_kpc8aw}")
+    private String cloudinaryTemplatePublicId;
+
     private static final String ANTHROPIC_API_URL = "https://api.anthropic.com/v1/messages";
     private static final String GRAPH_API_BASE = "https://graph.facebook.com/v19.0";
 
@@ -272,14 +275,9 @@ public class SocialService {
             if (safe.length() > 90) safe = safe.substring(0, 90).trim();
             String encoded = URLEncoder.encode(safe, StandardCharsets.UTF_8).replace("+", "%20");
 
-            // c_scale,w_1,h_1 shrinks to 1×1px → b_rgb fills the entire 1080x1080 canvas
-            // logo overlay: scale in its own segment, position in fl_layer_apply
             return "https://res.cloudinary.com/" + cloudinaryCloudName + "/image/upload/" +
-                   "c_scale,w_1,h_1/" +
-                   "c_pad,b_rgb:ffffff,w_1080,h_1080/" +
-                   "l_text:Arial_80_bold:" + encoded + ",co_rgb:1c1208,c_fit,w_820,g_center/fl_layer_apply/" +
-                   "l_" + cloudinaryLogoPublicId + "/c_scale,w_150/fl_layer_apply,g_south_east,x_45,y_45/" +
-                   cloudinaryLogoPublicId;
+                   "l_text:Arial_80_bold:" + encoded + ",co_rgb:1c1208,c_fit,w_750,g_west,x_80/fl_layer_apply/" +
+                   cloudinaryTemplatePublicId;
         } catch (Exception e) {
             log.warn("Error construyendo URL de imagen de campaña: {}", e.getMessage());
             return null;
