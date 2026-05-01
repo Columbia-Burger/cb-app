@@ -51,7 +51,7 @@ export class PrintService {
   private buildEscPos(order: OrderResponse): object[] {
     const lines: object[] = [];
 
-    const esc = (hex: string) => ({ type: 'raw', format: 'hex', data: hex });
+    const esc = (hex: string) => ({ type: 'raw', format: 'hex', data: hex.replace(/ /g, '') });
     const text = (t: string) => ({ type: 'raw', format: 'plain', data: t + '\n' });
     const cut = () => esc('1b 69');           // full cut
     const boldOn = () => esc('1b 45 01');
