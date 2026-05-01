@@ -8,7 +8,7 @@ import {
   CustomerResponse, DashboardStats, TopProduct,
   CreateOrderRequest, UpdateOrderRequest, CatalogProduct, FlavorItem, AdditionItem, ShiftResponse, DailyStatResponse,
   SourceStatResponse, HourlyStatResponse, CategoryItem, CreateProductRequest, CreateAdditionRequest,
-  DeliveryZone, CreateDeliveryZoneRequest
+  DeliveryZone, CreateDeliveryZoneRequest, SocialPost, GeneratePostRequest, UpdatePostRequest, PostStatus
 } from '../models/admin.model';
 import { ProductResponse } from '../../models/api.model';
 
@@ -301,5 +301,27 @@ export class AdminService {
       `${this.base}/api/admin/catalog/delivery-zones/${id}/toggle-active`, null,
       { headers: this.authHeaders() }
     );
+  }
+
+  // ── Social Media ─────────────────────────────────────────────
+  generatePost(request: GeneratePostRequest): Observable<SocialPost> {
+    return this.http.post<SocialPost>(`${this.base}/api/social/generate`, request, { headers: this.authHeaders() });
+  }
+
+  getSocialPosts(status?: PostStatus): Observable<SocialPost[]> {
+    const url = status ? `${this.base}/api/social/posts?status=${status}` : `${this.base}/api/social/posts`;
+    return this.http.get<SocialPost[]>(url, { headers: this.authHeaders() });
+  }
+
+  updateSocialPost(id: number, request: UpdatePostRequest): Observable<SocialPost> {
+    return this.http.put<SocialPost>(`${this.base}/api/social/posts/${id}`, request, { headers: this.authHeaders() });
+  }
+
+  deleteSocialPost(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.base}/api/social/posts/${id}`, { headers: this.authHeaders() });
+  }
+
+  publishSocialPost(id: number): Observable<SocialPost> {
+    return this.http.post<SocialPost>(`${this.base}/api/social/posts/${id}/publish`, {}, { headers: this.authHeaders() });
   }
 }

@@ -10,6 +10,34 @@ export interface LoginResponse {
 
 export type OrderStatus = 'RECEIVED' | 'PREPARING' | 'ON_THE_WAY' | 'DELIVERED' | 'CANCELLED';
 export type InvoiceStatus = 'PENDING' | 'INVOICED' | 'VOID';
+export type PostStatus = 'DRAFT' | 'APPROVED' | 'PUBLISHED' | 'FAILED';
+
+export interface SocialPost {
+  id: number;
+  caption: string;
+  hashtags: string;
+  imageUrl: string | null;
+  topic: string;
+  status: PostStatus;
+  scheduledAt: string | null;
+  publishedAt: string | null;
+  instagramPostId: string | null;
+  errorMessage: string | null;
+  createdAt: string;
+}
+
+export interface GeneratePostRequest {
+  topic: string;
+  imageUrl?: string;
+  tone?: string;
+}
+
+export interface UpdatePostRequest {
+  caption?: string;
+  hashtags?: string;
+  imageUrl?: string;
+  status?: PostStatus;
+}
 
 export interface OrderItemResponse {
   id: number;

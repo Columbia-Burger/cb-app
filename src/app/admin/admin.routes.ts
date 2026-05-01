@@ -58,6 +58,11 @@ export const adminRoutes: Routes = [
         path: 'facturas',
         loadComponent: () =>
           import('./pages/facturas/admin-facturas.component').then(m => m.AdminFacturasComponent)
+      },
+      {
+        path: 'social',
+        loadComponent: () =>
+          import('./pages/social/admin-social.component').then(m => m.AdminSocialComponent)
       }
     ]
   }
