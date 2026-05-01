@@ -93,15 +93,22 @@ public class SocialService {
 
         RestClient restClient = RestClient.create();
 
-        @SuppressWarnings("unchecked")
-        Map<String, Object> claudeResponse = restClient.post()
-                .uri(ANTHROPIC_API_URL)
-                .header("x-api-key", anthropicApiKey)
-                .header("anthropic-version", "2023-06-01")
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(requestBody)
-                .retrieve()
-                .body(Map.class);
+        Map<String, Object> claudeResponse;
+        try {
+            //noinspection unchecked
+            claudeResponse = restClient.post()
+                    .uri(ANTHROPIC_API_URL)
+                    .header("x-api-key", anthropicApiKey)
+                    .header("anthropic-version", "2023-06-01")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(requestBody)
+                    .retrieve()
+                    .body(Map.class);
+        } catch (Exception e) {
+            log.error("Error llamando a la API de Claude: {}", e.getMessage(), e);
+            throw new ResponseStatusException(HttpStatus.BAD_GATEWAY,
+                    "Error al conectar con la IA: " + e.getMessage());
+        }
 
         String responseText = extractClaudeText(claudeResponse);
         String[] parsed = parseCaptionAndHashtags(responseText);
