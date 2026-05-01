@@ -76,7 +76,7 @@ public class SecurityConfig {
                 .requestMatchers("/api/orders/delivery").hasAnyRole("ADMIN", "DELIVERY")
                 .requestMatchers(HttpMethod.PATCH, "/api/orders/*/status").hasAnyRole("ADMIN", "KITCHEN", "DELIVERY")
                 .requestMatchers(HttpMethod.PUT, "/api/orders/*").hasRole("ADMIN")
-                .requestMatchers("/api/invoices/**").hasRole("ADMIN")
+                .requestMatchers("/api/invoices", "/api/invoices/**").hasRole("ADMIN")
                 .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").hasRole("ADMIN")
                 .anyRequest().authenticated()
             )

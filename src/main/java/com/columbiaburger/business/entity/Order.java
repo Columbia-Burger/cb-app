@@ -53,7 +53,7 @@ public class Order {
 
     @Builder.Default
     @Enumerated(EnumType.STRING)
-    @Column(name = "invoice_status", length = 20, nullable = false)
+    @Column(name = "invoice_status", length = 20, columnDefinition = "VARCHAR(20) DEFAULT 'PENDING'")
     private InvoiceStatus invoiceStatus = InvoiceStatus.PENDING;
 
     @Column(name = "invoice_number", length = 30, unique = true)
