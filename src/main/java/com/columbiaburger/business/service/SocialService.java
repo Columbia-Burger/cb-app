@@ -272,12 +272,12 @@ public class SocialService {
             if (safe.length() > 90) safe = safe.substring(0, 90).trim();
             String encoded = URLEncoder.encode(safe, StandardCharsets.UTF_8).replace("+", "%20");
 
-            // Scale logo to 2px (invisible), pad to cream 1080x1080 canvas, then overlay text + logo
+            // e_colorize:100 paints every pixel with co_rgb → solid canvas regardless of source image
             return "https://res.cloudinary.com/" + cloudinaryCloudName + "/image/upload/" +
-                   "c_scale,w_2/" +
-                   "c_pad,b_rgb:faf7f2,w_1080,h_1080/" +
-                   "l_text:Arial_82_bold:" + encoded + ",co_rgb:1c1208,c_fit,w_820,g_center/fl_layer_apply/" +
-                   "l_" + cloudinaryLogoPublicId + ",w_150,g_south_east,x_45,y_45/fl_layer_apply/" +
+                   "c_fill,w_1080,h_1080/" +
+                   "e_colorize:100,co_rgb:1c1208/" +
+                   "l_text:Arial_80_bold:" + encoded + ",co_rgb:ffffff,c_fit,w_820,g_center/fl_layer_apply/" +
+                   "l_" + cloudinaryLogoPublicId + ",w_160,g_south_east,x_45,y_45/fl_layer_apply/" +
                    cloudinaryLogoPublicId;
         } catch (Exception e) {
             log.warn("Error construyendo URL de imagen de campaña: {}", e.getMessage());
