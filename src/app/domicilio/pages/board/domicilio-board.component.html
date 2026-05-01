@@ -56,7 +56,7 @@
                           📞 Llamar
                         </a>
                         <a class="contact-btn contact-btn--wa"
-                           [href]="'https://wa.me/57' + order.customerWhatsapp.replace(/\D/g, '')"
+                           [href]="waLink(order.customerWhatsapp)"
                            target="_blank" rel="noopener"
                            title="WhatsApp">
                           💬 WhatsApp

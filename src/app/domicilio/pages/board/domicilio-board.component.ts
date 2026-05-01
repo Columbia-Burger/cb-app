@@ -302,6 +302,10 @@ export class DomicilioBoardComponent implements OnInit, OnDestroy {
     });
   }
 
+  waLink(whatsapp: string): string {
+    return 'https://wa.me/57' + whatsapp.replace(/\D/g, '');
+  }
+
   logout(): void {
     this.svc.logout();
     this.router.navigate(['/domicilio/login']);
