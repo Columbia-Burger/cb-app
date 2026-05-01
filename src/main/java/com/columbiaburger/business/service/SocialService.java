@@ -203,6 +203,9 @@ public class SocialService {
                 throw new RuntimeException("No se recibió container_id de Instagram");
             }
 
+            // Wait for Instagram to finish processing the image (up to 30 s)
+            waitForContainer(containerId);
+
             // Step 2: Publish the container
             Map<String, Object> step2Body = new java.util.HashMap<>();
             step2Body.put("creation_id", containerId);
@@ -232,6 +235,25 @@ public class SocialService {
     }
 
     // ─── Helpers ──────────────────────────────────────────────────────────────
+
+    /** Polls the container status until FINISHED or throws after 15 attempts (30 s). */
+    private void waitForContainer(String containerId) throws InterruptedException {
+        for (int i = 0; i < 15; i++) {
+            Thread.sleep(2000);
+            @SuppressWarnings("unchecked")
+            Map<String, Object> statusResp = GRAPH_CLIENT.get()
+                    .uri(GRAPH_API_BASE + "/" + containerId
+                            + "?fields=status_code&access_token=" + igAccessToken)
+                    .retrieve()
+                    .body(Map.class);
+            String statusCode = (String) statusResp.get("status_code");
+            if ("FINISHED".equals(statusCode)) return;
+            if ("ERROR".equals(statusCode) || "EXPIRED".equals(statusCode)) {
+                throw new RuntimeException("Instagram rechazó el media container: " + statusCode);
+            }
+        }
+        throw new RuntimeException("Instagram no procesó el media container en 30 segundos");
+    }
 
     /**
      * Builds a Cloudinary transformation URL that generates a 1080x1080 campaign card:
