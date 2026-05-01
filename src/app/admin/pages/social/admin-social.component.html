@@ -24,38 +24,59 @@
       <div class="gen-card">
         <h3 class="gen-card__title">Nuevo contenido</h3>
 
-        @if (menuProducts().length > 0) {
+        <!-- Mode toggle -->
+        <div class="mode-toggle">
+          <button class="mode-btn" [class.mode-btn--active]="postMode() === 'phrase'" (click)="switchMode('phrase')">
+            📝 Frase
+          </button>
+          <button class="mode-btn" [class.mode-btn--active]="postMode() === 'product'" (click)="switchMode('product')">
+            🍔 Producto
+          </button>
+        </div>
+
+        <!-- PHRASE MODE -->
+        @if (postMode() === 'phrase') {
           <div class="form-field">
-            <label>Seleccionar del menú</label>
-            <select class="input" (change)="selectProduct(menuProducts()[$any($event.target).value])" >
-              <option value="" disabled selected>— Elige un plato (opcional) —</option>
-              @for (p of menuProducts(); track p.id; let i = $index) {
-                <option [value]="i">{{ p.categoryName }} · {{ p.name }}</option>
+            <label>Frase para el card *</label>
+            <input type="text" class="input" placeholder="ej. El amor entra por el estómago 🍔" [value]="topic()" (input)="topic.set($any($event.target).value)" />
+            <span class="field-hint">Esta frase aparecerá en la imagen del post.</span>
+          </div>
+        }
+
+        <!-- PRODUCT MODE -->
+        @if (postMode() === 'product') {
+          @if (menuProducts().length > 0) {
+            <div class="form-field">
+              <label>Seleccionar del menú</label>
+              <select class="input" (change)="selectProduct(menuProducts()[$any($event.target).value])">
+                <option value="" disabled selected>— Elige un plato —</option>
+                @for (p of menuProducts(); track p.id; let i = $index) {
+                  <option [value]="i">{{ p.categoryName }} · {{ p.name }}</option>
+                }
+              </select>
+            </div>
+          }
+
+          <div class="form-field">
+            <label>Tema o frase adicional *</label>
+            <input type="text" class="input" placeholder="ej. Hamburguesa BBQ doble, promo 2x1..." [value]="topic()" (input)="topic.set($any($event.target).value)" />
+          </div>
+
+          <div class="form-field">
+            <label>URL de imagen (opcional)</label>
+            <input type="url" class="input" placeholder="https://res.cloudinary.com/..." [value]="imageUrl()" (input)="imageUrl.set($any($event.target).value)" />
+            <span class="field-hint">Si no pones URL, se genera un card automático.</span>
+          </div>
+
+          <div class="form-field">
+            <label>Tono</label>
+            <select class="input" [value]="tone()" (change)="tone.set($any($event.target).value)">
+              @for (t of toneOptions; track t) {
+                <option [value]="t">{{ t }}</option>
               }
             </select>
           </div>
-          <div class="form-divider"><span>o escribe un tema libre</span></div>
         }
-
-        <div class="form-field">
-          <label>Frase o tema *</label>
-          <input type="text" class="input" placeholder="ej. El amor entra por el estómago 🍔" [value]="topic()" (input)="topic.set($any($event.target).value)" />
-          <span class="field-hint">Si no subes imagen, esta frase aparecerá en el card.</span>
-        </div>
-
-        <div class="form-field">
-          <label>URL de imagen (opcional)</label>
-          <input type="url" class="input" placeholder="https://res.cloudinary.com/..." [value]="imageUrl()" (input)="imageUrl.set($any($event.target).value)" />
-        </div>
-
-        <div class="form-field">
-          <label>Tono</label>
-          <select class="input" [value]="tone()" (change)="tone.set($any($event.target).value)">
-            @for (t of toneOptions; track t) {
-              <option [value]="t">{{ t }}</option>
-            }
-          </select>
-        </div>
 
         @if (generateError()) {
           <div class="alert-error">⚠️ {{ generateError() }}</div>

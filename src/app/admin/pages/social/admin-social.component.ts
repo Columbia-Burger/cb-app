@@ -5,6 +5,7 @@ import { AdminService } from '../../services/admin.service';
 import { SocialPost, PostStatus, CatalogProduct } from '../../models/admin.model';
 
 type ActiveTab = 'generator' | 'posts';
+type PostMode = 'phrase' | 'product';
 
 @Component({
   selector: 'app-admin-social',
@@ -17,6 +18,7 @@ export class AdminSocialComponent implements OnInit {
   private svc = inject(AdminService);
 
   activeTab = signal<ActiveTab>('generator');
+  postMode = signal<PostMode>('phrase');
 
   // Generator
   topic = signal('');
@@ -56,6 +58,14 @@ export class AdminSocialComponent implements OnInit {
       next: products => this.menuProducts.set(products),
       error: () => {},   // non-critical, don't propagate to auth interceptor
     });
+  }
+
+  switchMode(mode: PostMode): void {
+    this.postMode.set(mode);
+    this.topic.set('');
+    this.imageUrl.set('');
+    this.generateError.set('');
+    this.generatedPost.set(null);
   }
 
   selectProduct(product: CatalogProduct): void {
