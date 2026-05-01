@@ -1,5 +1,6 @@
 package com.columbiaburger.business.dto.response;
 
+import com.columbiaburger.business.entity.InvoiceStatus;
 import com.columbiaburger.business.entity.OrderSource;
 import com.columbiaburger.business.entity.OrderStatus;
 import lombok.Builder;
@@ -25,4 +26,7 @@ public class OrderResponse {
     private Double customerLongitude;
     private LocalDateTime createdAt;
     private List<OrderItemResponse> items;
+    private InvoiceStatus invoiceStatus;
+    private String invoiceNumber;
+    private LocalDateTime invoicedAt;
 }

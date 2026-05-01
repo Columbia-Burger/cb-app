@@ -1,6 +1,7 @@
 package com.columbiaburger.business.controller;
 
 import com.columbiaburger.business.dto.request.CreateOrderRequest;
+import com.columbiaburger.business.dto.request.UpdateOrderRequest;
 import com.columbiaburger.business.dto.request.UpdateOrderStatusRequest;
 import com.columbiaburger.business.dto.response.OrderResponse;
 import com.columbiaburger.business.dto.response.OrderTrackingResponse;
@@ -85,5 +86,12 @@ public class OrderController {
             @PathVariable Long id,
             @Valid @RequestBody UpdateOrderStatusRequest request) {
         return ResponseEntity.ok(orderService.updateStatus(id, request.getStatus()));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<OrderResponse> updateOrder(
+            @PathVariable Long id,
+            @Valid @RequestBody UpdateOrderRequest request) {
+        return ResponseEntity.ok(orderService.updateOrder(id, request));
     }
 }

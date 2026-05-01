@@ -51,6 +51,17 @@ public class Order {
         if (createdAt == null) createdAt = LocalDateTime.now();
     }
 
-    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @Builder.Default
+    @Enumerated(EnumType.STRING)
+    @Column(name = "invoice_status", length = 20, nullable = false)
+    private InvoiceStatus invoiceStatus = InvoiceStatus.PENDING;
+
+    @Column(name = "invoice_number", length = 30, unique = true)
+    private String invoiceNumber;
+
+    @Column(name = "invoiced_at")
+    private LocalDateTime invoicedAt;
+
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<OrderItem> items;
 }

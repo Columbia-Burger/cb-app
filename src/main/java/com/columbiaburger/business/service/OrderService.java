@@ -2,12 +2,14 @@ package com.columbiaburger.business.service;
 
 import com.columbiaburger.business.dto.request.CreateOrderRequest;
 import com.columbiaburger.business.dto.request.OrderItemRequest;
+import com.columbiaburger.business.dto.request.UpdateOrderRequest;
 import com.columbiaburger.business.dto.response.OrderItemResponse;
 import com.columbiaburger.business.dto.response.OrderResponse;
 import com.columbiaburger.business.dto.response.OrderTrackingResponse;
 import com.columbiaburger.business.entity.*;
 import com.columbiaburger.business.entity.OrderSource;
 import com.columbiaburger.business.repository.CustomerRepository;
+import com.columbiaburger.business.repository.OrderItemRepository;
 import com.columbiaburger.business.repository.OrderRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -23,6 +25,7 @@ import java.util.List;
 public class OrderService {
 
     private final OrderRepository orderRepository;
+    private final OrderItemRepository orderItemRepository;
     private final CustomerRepository customerRepository;
     private final OrderEventService orderEventService;
 
@@ -178,6 +181,38 @@ public class OrderService {
         return response;
     }
 
+    @Transactional
+    public OrderResponse updateOrder(Long id, UpdateOrderRequest request) {
+        Order order = orderRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Pedido no encontrado"));
+
+        if (request.getNotes() != null) order.setNotes(request.getNotes());
+        if (request.getDeliveryZone() != null) order.setDeliveryZone(request.getDeliveryZone());
+        if (request.getDeliveryFee() != null) order.setDeliveryFee(request.getDeliveryFee());
+
+        if (request.getItems() != null && !request.getItems().isEmpty()) {
+            order.getItems().clear();
+            List<OrderItem> newItems = request.getItems().stream().map(this::toOrderItem).toList();
+            newItems.forEach(item -> item.setOrder(order));
+            order.getItems().addAll(newItems);
+
+            BigDecimal fee = order.getDeliveryFee() != null ? order.getDeliveryFee() : BigDecimal.ZERO;
+            BigDecimal itemsTotal = newItems.stream()
+                    .map(i -> i.getUnitPrice().multiply(BigDecimal.valueOf(i.getQuantity())))
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+            order.setTotal(itemsTotal.add(fee));
+        } else if (request.getDeliveryFee() != null && order.getItems() != null) {
+            BigDecimal itemsTotal = order.getItems().stream()
+                    .map(i -> i.getUnitPrice().multiply(BigDecimal.valueOf(i.getQuantity())))
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+            order.setTotal(itemsTotal.add(request.getDeliveryFee()));
+        }
+
+        OrderResponse response = toResponse(orderRepository.save(order));
+        orderEventService.publishUpdated(response);
+        return response;
+    }
+
     private OrderItem toOrderItem(OrderItemRequest req) {
         return OrderItem.builder()
                 .productId(req.getProductId())
@@ -190,7 +225,7 @@ public class OrderService {
                 .build();
     }
 
-    private OrderResponse toResponse(Order o) {
+    public OrderResponse toResponse(Order o) {
         List<OrderItemResponse> items = o.getItems() == null ? List.of() :
                 o.getItems().stream().map(this::toItemResponse).toList();
 
@@ -209,6 +244,9 @@ public class OrderService {
                 .source(o.getSource())
                 .createdAt(o.getCreatedAt())
                 .items(items)
+                .invoiceStatus(o.getInvoiceStatus())
+                .invoiceNumber(o.getInvoiceNumber())
+                .invoicedAt(o.getInvoicedAt())
                 .build();
     }
 
