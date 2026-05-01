@@ -303,7 +303,9 @@ export class DomicilioBoardComponent implements OnInit, OnDestroy {
   }
 
   waLink(whatsapp: string): string {
-    return 'https://wa.me/57' + whatsapp.replace(/\D/g, '');
+    const digits = whatsapp.replace(/\D/g, '');
+    const number = digits.startsWith('57') ? digits : '57' + digits;
+    return 'https://wa.me/' + number;
   }
 
   logout(): void {
