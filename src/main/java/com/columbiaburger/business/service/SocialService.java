@@ -11,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestClient;
@@ -47,6 +48,21 @@ public class SocialService {
 
     private static final String ANTHROPIC_API_URL = "https://api.anthropic.com/v1/messages";
     private static final String GRAPH_API_BASE = "https://graph.facebook.com/v19.0";
+
+    // Instagram Graph API returns text/javascript instead of application/json
+    private static final RestClient GRAPH_CLIENT = buildGraphClient();
+
+    private static RestClient buildGraphClient() {
+        MappingJackson2HttpMessageConverter converter = new MappingJackson2HttpMessageConverter();
+        converter.setSupportedMediaTypes(List.of(
+                MediaType.APPLICATION_JSON,
+                new MediaType("text", "javascript"),
+                MediaType.TEXT_HTML
+        ));
+        return RestClient.builder()
+                .messageConverters(c -> { c.clear(); c.add(converter); })
+                .build();
+    }
 
     // ─── A) Generate caption + optional campaign image ────────────────────────
 
@@ -164,7 +180,6 @@ public class SocialService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El post no tiene imagen para publicar en Instagram");
         }
 
-        RestClient restClient = RestClient.create();
         String fullCaption = buildFullCaption(post);
 
         try {
@@ -176,7 +191,7 @@ public class SocialService {
             step1Body.put("access_token", igAccessToken);
 
             @SuppressWarnings("unchecked")
-            Map<String, Object> containerResponse = restClient.post()
+            Map<String, Object> containerResponse = GRAPH_CLIENT.post()
                     .uri(GRAPH_API_BASE + "/" + igAccountId + "/media")
                     .contentType(MediaType.APPLICATION_JSON)
                     .body(step1Body)
@@ -194,7 +209,7 @@ public class SocialService {
             step2Body.put("access_token", igAccessToken);
 
             @SuppressWarnings("unchecked")
-            Map<String, Object> publishResponse = restClient.post()
+            Map<String, Object> publishResponse = GRAPH_CLIENT.post()
                     .uri(GRAPH_API_BASE + "/" + igAccountId + "/media_publish")
                     .contentType(MediaType.APPLICATION_JSON)
                     .body(step2Body)
