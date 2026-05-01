@@ -46,6 +46,25 @@
 
                   <div class="card-customer">{{ order.customerName }}</div>
 
+                  @if (order.customerWhatsapp) {
+                    <div class="card-contact">
+                      <span class="contact-number">📱 {{ order.customerWhatsapp }}</span>
+                      <div class="contact-btns">
+                        <a class="contact-btn contact-btn--call"
+                           [href]="'tel:' + order.customerWhatsapp"
+                           title="Llamar">
+                          📞 Llamar
+                        </a>
+                        <a class="contact-btn contact-btn--wa"
+                           [href]="'https://wa.me/57' + order.customerWhatsapp.replace(/\D/g, '')"
+                           target="_blank" rel="noopener"
+                           title="WhatsApp">
+                          💬 WhatsApp
+                        </a>
+                      </div>
+                    </div>
+                  }
+
                   @if (order.deliveryZone) {
                     <div class="card-address">
                       <span>📍</span>
