@@ -268,16 +268,14 @@ public class SocialService {
      */
     private String buildCampaignImageUrl(String topic) {
         try {
-            // Sanitize: remove chars that break Cloudinary URL path segments
             String safe = topic.replaceAll("[,/\\\\%#&?]", " ").trim();
-            if (safe.length() > 55) safe = safe.substring(0, 55).trim();
+            if (safe.length() > 90) safe = safe.substring(0, 90).trim();
             String encoded = URLEncoder.encode(safe, StandardCharsets.UTF_8).replace("+", "%20");
 
             return "https://res.cloudinary.com/" + cloudinaryCloudName + "/image/upload/" +
-                   "c_pad,b_rgb:ba8125,w_1080,h_1080,g_north,y_120/" +
-                   "l_text:Arial_66_bold:" + encoded + ",co_white,c_fit,w_860,g_south,y_150/fl_layer_apply/" +
-                   "l_text:Arial_38:Columbia%20Burger,co_white,g_south,y_65/fl_layer_apply/" +
-                   cloudinaryLogoPublicId;
+                   "c_pad,b_rgb:faf7f2,w_1080,h_1080/" +
+                   "l_text:Arial_82_bold:" + encoded + ",co_rgb:1c1208,c_fit,w_820,g_center/fl_layer_apply/" +
+                   "l_" + cloudinaryLogoPublicId + ",w_150,g_south_east,x_45,y_45/fl_layer_apply";
         } catch (Exception e) {
             log.warn("Error construyendo URL de imagen de campaña: {}", e.getMessage());
             return null;
