@@ -98,6 +98,23 @@
   }
 }
 
+/* ── Product picker divider ── */
+.form-divider {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 0.25rem 0 1rem;
+  color: #9ca3af;
+  font-size: 0.78rem;
+
+  &::before, &::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: #e5e7eb;
+  }
+}
+
 /* ── Form fields ── */
 .form-field {
   margin-bottom: 1rem;

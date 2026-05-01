@@ -2,7 +2,7 @@ import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { DatePipe } from '@angular/common';
 import { AdminService } from '../../services/admin.service';
-import { SocialPost, PostStatus } from '../../models/admin.model';
+import { SocialPost, PostStatus, CatalogProduct } from '../../models/admin.model';
 
 type ActiveTab = 'generator' | 'posts';
 
@@ -45,10 +45,21 @@ export class AdminSocialComponent implements OnInit {
     return f === 'ALL' ? this.posts() : this.posts().filter(p => p.status === f);
   });
 
+  // Product picker
+  menuProducts = signal<CatalogProduct[]>([]);
+
   toneOptions = ['casual y apetitoso', 'divertido y juvenil', 'profesional', 'promocional'];
 
   ngOnInit(): void {
     this.loadPosts();
+    this.svc.getAdminProducts().subscribe({
+      next: products => this.menuProducts.set(products),
+    });
+  }
+
+  selectProduct(product: CatalogProduct): void {
+    this.topic.set(product.name);
+    this.imageUrl.set(product.imageUrl ?? '');
   }
 
   loadPosts(): void {

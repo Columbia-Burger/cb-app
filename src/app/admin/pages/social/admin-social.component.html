@@ -24,6 +24,19 @@
       <div class="gen-card">
         <h3 class="gen-card__title">Nuevo contenido</h3>
 
+        @if (menuProducts().length > 0) {
+          <div class="form-field">
+            <label>Seleccionar del menú</label>
+            <select class="input" (change)="selectProduct(menuProducts()[$any($event.target).value])" >
+              <option value="" disabled selected>— Elige un plato (opcional) —</option>
+              @for (p of menuProducts(); track p.id; let i = $index) {
+                <option [value]="i">{{ p.categoryName }} · {{ p.name }}</option>
+              }
+            </select>
+          </div>
+          <div class="form-divider"><span>o escribe un tema libre</span></div>
+        }
+
         <div class="form-field">
           <label>Tema o producto *</label>
           <input type="text" class="input" placeholder="ej. Hamburguesa BBQ doble, promo 2x1..." [value]="topic()" (input)="topic.set($any($event.target).value)" />
