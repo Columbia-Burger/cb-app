@@ -54,6 +54,7 @@ export class AdminSocialComponent implements OnInit {
     this.loadPosts();
     this.svc.getAdminProducts().subscribe({
       next: products => this.menuProducts.set(products),
+      error: () => {},   // non-critical, don't propagate to auth interceptor
     });
   }
 

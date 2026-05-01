@@ -21,7 +21,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 
   return next(authReq).pipe(
     catchError((error: HttpErrorResponse) => {
-      if (isBusinessApi && (error.status === 401 || error.status === 403)) {
+      if (isBusinessApi && error.status === 401) {
         const isAdminRoute = router.url.startsWith('/admin');
         if (isAdminRoute) {
           adminService.logout();
