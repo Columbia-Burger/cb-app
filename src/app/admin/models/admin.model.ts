@@ -9,12 +9,14 @@ export interface LoginResponse {
 }
 
 export type OrderStatus = 'RECEIVED' | 'PREPARING' | 'ON_THE_WAY' | 'DELIVERED' | 'CANCELLED';
+export type InvoiceStatus = 'PENDING' | 'INVOICED' | 'VOID';
 
 export interface OrderItemResponse {
   id: number;
   productId: number;
   productName: string;
   flavor: string;
+  additions: string;
   quantity: number;
   unitPrice: number;
   subtotal: number;
@@ -27,6 +29,7 @@ export interface OrderResponse {
   customerName: string;
   customerWhatsapp: string;
   status: OrderStatus;
+  source: OrderSource;
   total: number;
   deliveryFee: number;
   deliveryZone: string;
@@ -35,6 +38,16 @@ export interface OrderResponse {
   customerLongitude: number | null;
   createdAt: string;
   items: OrderItemResponse[];
+  invoiceStatus: InvoiceStatus;
+  invoiceNumber: string | null;
+  invoicedAt: string | null;
+}
+
+export interface UpdateOrderRequest {
+  items?: OrderItemRequest[];
+  deliveryFee?: number;
+  deliveryZone?: string;
+  notes?: string;
 }
 
 export interface CustomerResponse {

@@ -1,0 +1,118 @@
+<div class="page">
+  <div class="page-header">
+    <div>
+      <h2 class="page-title">Facturas</h2>
+      <p class="page-sub">Genera y gestiona órdenes de compra de los pedidos</p>
+    </div>
+    <button class="refresh-btn" (click)="load()">↻ Actualizar</button>
+  </div>
+
+  @if (error()) {
+    <div class="alert-error">⚠️ {{ error() }}</div>
+  }
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab" [class.tab--active]="activeTab()==='ALL'"     (click)="activeTab.set('ALL')">     Todos      <span class="tab-badge">{{ counts().ALL }}</span></button>
+    <button class="tab" [class.tab--active]="activeTab()==='PENDING'" (click)="activeTab.set('PENDING')"> Pendientes <span class="tab-badge">{{ counts().PENDING }}</span></button>
+    <button class="tab" [class.tab--active]="activeTab()==='INVOICED'"(click)="activeTab.set('INVOICED')">Facturados <span class="tab-badge">{{ counts().INVOICED }}</span></button>
+    <button class="tab" [class.tab--active]="activeTab()==='VOID'"    (click)="activeTab.set('VOID')">    Anulados   <span class="tab-badge">{{ counts().VOID }}</span></button>
+  </div>
+
+  @if (loading()) {
+    <div class="loading"><div class="spinner"></div> Cargando...</div>
+  } @else if (filtered().length === 0) {
+    <p class="empty">No hay registros en esta sección.</p>
+  } @else {
+    <div class="table-wrap">
+      <table class="invoice-table">
+        <thead>
+          <tr>
+            <th>#Pedido</th>
+            <th>Factura</th>
+            <th>Cliente</th>
+            <th>Estado pedido</th>
+            <th>Estado factura</th>
+            <th>Total</th>
+            <th>Fecha</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (o of filtered(); track o.id) {
+            <tr [class.row--invoiced]="o.invoiceStatus === 'INVOICED'"
+                [class.row--void]="o.invoiceStatus === 'VOID'">
+              <td class="cell-id">#{{ o.id }}</td>
+              <td class="cell-inv">
+                @if (o.invoiceNumber) {
+                  <span class="inv-number">{{ o.invoiceNumber }}</span>
+                } @else {
+                  <span class="inv-none">—</span>
+                }
+              </td>
+              <td class="cell-client">
+                <span class="client-name">{{ o.customerName }}</span>
+                <span class="client-wa">{{ o.customerWhatsapp }}</span>
+              </td>
+              <td>
+                <span class="badge badge--order" [attr.data-status]="o.status">
+                  {{ orderStatusLabel(o.status) }}
+                </span>
+              </td>
+              <td>
+                <span class="badge" [attr.data-inv]="o.invoiceStatus">
+                  {{ statusLabel(o.invoiceStatus) }}
+                </span>
+              </td>
+              <td class="cell-total">{{ o.total | currency:'COP':'symbol-narrow':'1.0-0' }}</td>
+              <td class="cell-date">{{ o.createdAt | date:'dd/MM/yy HH:mm' }}</td>
+              <td class="cell-actions">
+                <!-- Imprimir ticket -->
+                <button class="action-btn btn-print"
+                        [disabled]="printingId() === o.id"
+                        (click)="print(o)"
+                        title="Imprimir ticket">
+                  🖨️
+                </button>
+                <!-- Editar pedido -->
+                <button class="action-btn btn-edit"
+                        [disabled]="o.invoiceStatus === 'INVOICED'"
+                        (click)="editingOrder.set(o)"
+                        title="Editar pedido">
+                  ✏️
+                </button>
+                <!-- Generar factura -->
+                @if (o.invoiceStatus === 'PENDING') {
+                  <button class="action-btn btn-generate"
+                          [disabled]="generatingId() === o.id"
+                          (click)="generate(o)"
+                          title="Generar factura">
+                    {{ generatingId() === o.id ? '...' : '🧾' }}
+                  </button>
+                }
+                <!-- Anular factura -->
+                @if (o.invoiceStatus === 'INVOICED') {
+                  <button class="action-btn btn-void"
+                          [disabled]="voidingId() === o.id"
+                          (click)="voidOrder(o)"
+                          title="Anular factura">
+                    🚫
+                  </button>
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>
+
+<!-- Modal editar pedido -->
+@if (editingOrder()) {
+  <app-edit-order-modal
+    [order]="editingOrder()!"
+    (saved)="onOrderSaved($event)"
+    (cancelled)="editingOrder.set(null)"
+  />
+}

@@ -1,0 +1,95 @@
+<div class="modal-overlay" (click)="cancelled.emit()">
+  <div class="modal-sheet" (click)="$event.stopPropagation()">
+
+    <div class="modal-header">
+      <h3 class="modal-title">Editar pedido #{{ order.id }}</h3>
+      <button class="close-btn" (click)="cancelled.emit()">✕</button>
+    </div>
+
+    <!-- Items -->
+    <div class="section-label">Ítems del pedido</div>
+    <div class="items-list">
+      @for (item of items(); track $index) {
+        <div class="item-row">
+          <div class="item-name">{{ item.productName }}
+            @if (item.flavor) { <span class="item-sub">· {{ item.flavor }}</span> }
+            @if (item.additions) { <span class="item-sub">· {{ item.additions }}</span> }
+          </div>
+          <div class="item-controls">
+            <button class="qty-btn" (click)="updateQty($index, -1)">−</button>
+            <span class="qty-val">{{ item.quantity }}</span>
+            <button class="qty-btn" (click)="updateQty($index, +1)">+</button>
+            <span class="item-price">{{ (item.unitPrice * item.quantity) | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
+            <button class="remove-btn" (click)="removeItem($index)" title="Eliminar">✕</button>
+          </div>
+        </div>
+      }
+      @if (items().length === 0) {
+        <p class="empty-items">Sin ítems. Agrega al menos uno.</p>
+      }
+    </div>
+
+    <!-- Agregar producto -->
+    @if (!showAddProduct()) {
+      <button class="add-product-btn" (click)="showAddProduct.set(true)">+ Agregar producto</button>
+    } @else {
+      <div class="add-product-panel">
+        <input
+          class="search-input"
+          type="text"
+          placeholder="Buscar producto..."
+          [ngModel]="searchTerm()"
+          (ngModelChange)="searchTerm.set($event)"
+          autofocus
+        />
+        <div class="product-results">
+          @for (p of filteredProducts(); track p.id) {
+            <button class="product-result-row" (click)="addProduct(p)">
+              <span class="pr-name">{{ p.name }}</span>
+              <span class="pr-price">{{ p.price | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
+            </button>
+          }
+          @if (filteredProducts().length === 0) {
+            <p class="no-results">No se encontraron productos</p>
+          }
+        </div>
+        <button class="cancel-search-btn" (click)="showAddProduct.set(false); searchTerm.set('')">Cancelar</button>
+      </div>
+    }
+
+    <!-- Notas y domicilio -->
+    <div class="section-label" style="margin-top:1.2em">Entrega y notas</div>
+    <div class="form-row">
+      <label class="form-field">
+        <span>Zona de domicilio</span>
+        <input type="text" [ngModel]="deliveryZone()" (ngModelChange)="deliveryZone.set($event)" placeholder="Barrio / zona" />
+      </label>
+      <label class="form-field">
+        <span>Costo de domicilio (COP)</span>
+        <input type="number" min="0" [ngModel]="deliveryFee()" (ngModelChange)="deliveryFee.set(+$event)" />
+      </label>
+    </div>
+    <label class="form-field">
+      <span>Notas</span>
+      <textarea rows="2" [ngModel]="notes()" (ngModelChange)="notes.set($event)" placeholder="Indicaciones especiales..."></textarea>
+    </label>
+
+    <!-- Total -->
+    <div class="total-row">
+      <span>Total</span>
+      <span class="total-val">{{ total() | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
+    </div>
+
+    @if (error()) {
+      <p class="error-msg">⚠️ {{ error() }}</p>
+    }
+
+    <div class="modal-actions">
+      <button class="btn-save" [disabled]="saving()" (click)="save()">
+        {{ saving() ? 'Guardando...' : 'Guardar cambios' }}
+      </button>
+      <button class="btn-cancel" (click)="cancelled.emit()">Cancelar</button>
+    </div>
+
+  </div>
+</div>

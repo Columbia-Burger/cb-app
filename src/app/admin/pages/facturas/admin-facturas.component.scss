@@ -1,0 +1,162 @@
+* { box-sizing: border-box; }
+.page { color: #c9d1d9; }
+
+.page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1em;
+  margin-bottom: 1.25em;
+  flex-wrap: wrap;
+}
+.page-title { font-size: 1.5em; font-weight: 700; color: #e6edf3; margin: 0 0 0.2em; }
+.page-sub { color: #8b949e; font-size: 0.85em; margin: 0; }
+
+.refresh-btn {
+  background: none;
+  border: 1px solid #30363d;
+  border-radius: 8px;
+  color: #8b949e;
+  font-size: 0.85em;
+  padding: 0.45em 0.9em;
+  cursor: pointer;
+  white-space: nowrap;
+  &:hover { color: #e6edf3; border-color: #8b949e; }
+}
+
+.alert-error {
+  background: rgba(248,81,73,0.1);
+  border: 1px solid #f85149;
+  color: #f85149;
+  border-radius: 8px;
+  padding: 0.65em 1em;
+  font-size: 0.85em;
+  margin-bottom: 1em;
+}
+
+/* Tabs */
+.tabs {
+  display: flex;
+  gap: 0.5em;
+  margin-bottom: 1.25em;
+  flex-wrap: wrap;
+}
+
+.tab {
+  display: flex;
+  align-items: center;
+  gap: 0.4em;
+  background: none;
+  border: 1px solid #30363d;
+  border-radius: 20px;
+  color: #8b949e;
+  font-size: 0.82em;
+  font-weight: 600;
+  padding: 0.35em 0.9em;
+  cursor: pointer;
+  transition: all 0.15s;
+
+  &:hover { color: #e6edf3; border-color: #8b949e; }
+  &--active { background: #e94560; border-color: #e94560; color: #fff; }
+}
+
+.tab-badge {
+  background: rgba(255,255,255,0.15);
+  border-radius: 10px;
+  padding: 0.05em 0.45em;
+  font-size: 0.85em;
+}
+
+/* Loading / empty */
+.loading {
+  display: flex; align-items: center; gap: 0.75em;
+  color: #8b949e; padding: 3em 0; font-size: 0.9em;
+}
+.spinner {
+  width: 18px; height: 18px;
+  border: 2px solid #30363d; border-top-color: #e94560;
+  border-radius: 50%; animation: spin 0.7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.empty { color: #8b949e; text-align: center; padding: 3em; font-size: 0.9em; }
+
+/* Table */
+.table-wrap { overflow-x: auto; }
+
+.invoice-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.83em;
+
+  th {
+    text-align: left;
+    padding: 0.6em 0.75em;
+    color: #8b949e;
+    font-weight: 600;
+    font-size: 0.78em;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-bottom: 1px solid #21262d;
+    white-space: nowrap;
+  }
+
+  td {
+    padding: 0.65em 0.75em;
+    border-bottom: 1px solid #161b22;
+    vertical-align: middle;
+  }
+
+  tr:hover td { background: rgba(255,255,255,0.02); }
+  tr.row--invoiced td { background: rgba(63,185,80,0.03); }
+  tr.row--void td { opacity: 0.5; }
+}
+
+.cell-id { font-weight: 700; color: #8b949e; }
+
+.inv-number { font-weight: 700; color: #e3b341; font-size: 0.9em; }
+.inv-none { color: #484f58; }
+
+.cell-client { display: flex; flex-direction: column; gap: 0.1em; }
+.client-name { font-weight: 600; color: #e6edf3; }
+.client-wa { font-size: 0.78em; color: #8b949e; }
+
+.badge {
+  display: inline-block;
+  padding: 0.2em 0.6em;
+  border-radius: 12px;
+  font-size: 0.78em;
+  font-weight: 700;
+
+  &[data-inv="PENDING"]  { background: rgba(139,148,158,0.15); color: #8b949e; }
+  &[data-inv="INVOICED"] { background: rgba(63,185,80,0.15);   color: #3fb950; }
+  &[data-inv="VOID"]     { background: rgba(248,81,73,0.12);   color: #f85149; }
+
+  &[data-status="RECEIVED"]   { background: rgba(88,166,255,0.12); color: #58a6ff; }
+  &[data-status="PREPARING"]  { background: rgba(227,179,65,0.12); color: #e3b341; }
+  &[data-status="ON_THE_WAY"] { background: rgba(243,165,31,0.12); color: #f3a51f; }
+  &[data-status="DELIVERED"]  { background: rgba(63,185,80,0.12);  color: #3fb950; }
+  &[data-status="CANCELLED"]  { background: rgba(248,81,73,0.12);  color: #f85149; }
+}
+
+.cell-total { font-weight: 700; color: #e6edf3; white-space: nowrap; }
+.cell-date { color: #8b949e; white-space: nowrap; }
+
+.cell-actions { display: flex; align-items: center; gap: 0.35em; }
+
+.action-btn {
+  background: none;
+  border: 1px solid #30363d;
+  border-radius: 6px;
+  font-size: 0.9em;
+  padding: 0.25em 0.5em;
+  cursor: pointer;
+  transition: all 0.15s;
+
+  &:disabled { opacity: 0.4; cursor: not-allowed; }
+  &:hover:not(:disabled) { border-color: #8b949e; background: rgba(255,255,255,0.05); }
+
+  &.btn-generate:hover:not(:disabled) { border-color: #3fb950; }
+  &.btn-void:hover:not(:disabled)     { border-color: #f85149; }
+  &.btn-print:hover:not(:disabled)    { border-color: #58a6ff; }
+  &.btn-edit:hover:not(:disabled)     { border-color: #e3b341; }
+}

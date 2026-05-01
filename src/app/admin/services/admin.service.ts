@@ -6,7 +6,7 @@ import { environment } from '../../../environments/environment';
 import {
   LoginRequest, LoginResponse, OrderResponse, OrderStatus,
   CustomerResponse, DashboardStats, TopProduct,
-  CreateOrderRequest, CatalogProduct, FlavorItem, AdditionItem, ShiftResponse, DailyStatResponse,
+  CreateOrderRequest, UpdateOrderRequest, CatalogProduct, FlavorItem, AdditionItem, ShiftResponse, DailyStatResponse,
   SourceStatResponse, HourlyStatResponse, CategoryItem, CreateProductRequest, CreateAdditionRequest,
   DeliveryZone, CreateDeliveryZoneRequest
 } from '../models/admin.model';
@@ -129,6 +129,31 @@ export class AdminService {
       { status },
       { headers: this.authHeaders() }
     );
+  }
+
+  updateOrder(id: number, request: UpdateOrderRequest): Observable<OrderResponse> {
+    return this.http.put<OrderResponse>(`${this.base}/api/orders/${id}`, request, {
+      headers: this.authHeaders()
+    });
+  }
+
+  // ── Facturas ─────────────────────────────────────────────────
+  getInvoices(): Observable<OrderResponse[]> {
+    return this.http.get<OrderResponse[]>(`${this.base}/api/invoices`, {
+      headers: this.authHeaders()
+    });
+  }
+
+  generateInvoice(orderId: number): Observable<OrderResponse> {
+    return this.http.post<OrderResponse>(`${this.base}/api/invoices/${orderId}/generate`, null, {
+      headers: this.authHeaders()
+    });
+  }
+
+  voidInvoice(orderId: number): Observable<OrderResponse> {
+    return this.http.patch<OrderResponse>(`${this.base}/api/invoices/${orderId}/void`, null, {
+      headers: this.authHeaders()
+    });
   }
 
   // ── Clientes ─────────────────────────────────────────────────
