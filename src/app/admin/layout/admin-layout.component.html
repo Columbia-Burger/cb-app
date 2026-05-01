@@ -33,13 +33,17 @@
             <span class="nav-icon">📦</span>
             <span>Pedidos</span>
           </a>
+          <a routerLink="/admin/facturas" routerLinkActive="active" (click)="sidebarOpen.set(false)">
+            <span class="nav-icon">🧾</span>
+            <span>Facturas</span>
+          </a>
+          <a routerLink="/admin/mesero" routerLinkActive="active" (click)="sidebarOpen.set(false)">
+            <span class="nav-icon">🍽️</span>
+            <span>Tomar Pedido</span>
+          </a>
           <a routerLink="/admin/clientes" routerLinkActive="active" (click)="sidebarOpen.set(false)">
             <span class="nav-icon">👥</span>
             <span>Clientes</span>
-          </a>
-          <a routerLink="/admin/mesero" routerLinkActive="active" (click)="sidebarOpen.set(false)">
-            <span class="nav-icon">🧾</span>
-            <span>Tomar Pedido</span>
           </a>
           <a routerLink="/admin/menu" routerLinkActive="active" (click)="sidebarOpen.set(false)">
             <span class="nav-icon">🍔</span>
@@ -52,10 +56,6 @@
           <a routerLink="/admin/zonas" routerLinkActive="active" (click)="sidebarOpen.set(false)">
             <span class="nav-icon">🗺️</span>
             <span>Zonas</span>
-          </a>
-          <a routerLink="/admin/facturas" routerLinkActive="active" (click)="sidebarOpen.set(false)">
-            <span class="nav-icon">🧾</span>
-            <span>Facturas</span>
           </a>
           <a routerLink="/admin/reportes" routerLinkActive="active" (click)="sidebarOpen.set(false)">
             <span class="nav-icon">📈</span>

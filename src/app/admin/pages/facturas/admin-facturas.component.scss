@@ -1,6 +1,27 @@
 * { box-sizing: border-box; }
 .page { color: #c9d1d9; }
 
+.paginator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5em;
+  margin-top: 1em;
+}
+.page-btn {
+  background: none;
+  border: 1px solid #30363d;
+  border-radius: 6px;
+  color: #c9d1d9;
+  font-size: 0.9em;
+  padding: 0.3em 0.75em;
+  cursor: pointer;
+  &:hover:not(:disabled) { border-color: #8b949e; color: #e6edf3; }
+  &:disabled { opacity: 0.35; cursor: default; }
+  &--active { background: #e03030; border-color: #e03030; color: #fff; font-weight: 600; }
+}
+.page-info { color: #8b949e; font-size: 0.85em; min-width: 60px; text-align: center; }
+
 .page-header {
   display: flex;
   align-items: flex-start;

@@ -32,12 +32,23 @@ export class AdminFacturasComponent implements OnInit {
   selectedPrinter = this.printer.getSavedPrinter() ?? '';
   loadingPrinters = signal(false);
 
-  filtered = computed(() => {
+  page = signal(1);
+  readonly pageSize = 10;
+
+  filteredAll = computed(() => {
     const tab = this.activeTab();
     const list = this.orders();
     if (tab === 'ALL') return list;
     return list.filter(o => o.invoiceStatus === tab);
   });
+
+  filtered = computed(() => {
+    const all = this.filteredAll();
+    const start = (this.page() - 1) * this.pageSize;
+    return all.slice(start, start + this.pageSize);
+  });
+
+  totalPages = computed(() => Math.max(1, Math.ceil(this.filteredAll().length / this.pageSize)));
 
   counts = computed(() => ({
     ALL: this.orders().length,
@@ -50,8 +61,14 @@ export class AdminFacturasComponent implements OnInit {
     this.load();
   }
 
+  setTab(tab: FilterTab): void {
+    this.activeTab.set(tab);
+    this.page.set(1);
+  }
+
   load(): void {
     this.loading.set(true);
+    this.page.set(1);
     this.svc.getInvoices().subscribe({
       next: data => { this.orders.set(data); this.loading.set(false); },
       error: () => this.loading.set(false),

@@ -32,10 +32,10 @@
 
   <!-- Tabs -->
   <div class="tabs">
-    <button class="tab" [class.tab--active]="activeTab()==='ALL'"     (click)="activeTab.set('ALL')">     Todos      <span class="tab-badge">{{ counts().ALL }}</span></button>
-    <button class="tab" [class.tab--active]="activeTab()==='PENDING'" (click)="activeTab.set('PENDING')"> Pendientes <span class="tab-badge">{{ counts().PENDING }}</span></button>
-    <button class="tab" [class.tab--active]="activeTab()==='INVOICED'"(click)="activeTab.set('INVOICED')">Facturados <span class="tab-badge">{{ counts().INVOICED }}</span></button>
-    <button class="tab" [class.tab--active]="activeTab()==='VOID'"    (click)="activeTab.set('VOID')">    Anulados   <span class="tab-badge">{{ counts().VOID }}</span></button>
+    <button class="tab" [class.tab--active]="activeTab()==='ALL'"     (click)="setTab('ALL')">     Todos      <span class="tab-badge">{{ counts().ALL }}</span></button>
+    <button class="tab" [class.tab--active]="activeTab()==='PENDING'" (click)="setTab('PENDING')"> Pendientes <span class="tab-badge">{{ counts().PENDING }}</span></button>
+    <button class="tab" [class.tab--active]="activeTab()==='INVOICED'"(click)="setTab('INVOICED')">Facturados <span class="tab-badge">{{ counts().INVOICED }}</span></button>
+    <button class="tab" [class.tab--active]="activeTab()==='VOID'"    (click)="setTab('VOID')">    Anulados   <span class="tab-badge">{{ counts().VOID }}</span></button>
   </div>
 
   @if (loading()) {
@@ -124,6 +124,14 @@
         </tbody>
       </table>
     </div>
+
+    @if (totalPages() > 1) {
+      <div class="paginator">
+        <button class="page-btn" [disabled]="page() === 1" (click)="page.set(page() - 1)">‹</button>
+        <span class="page-info">{{ page() }} / {{ totalPages() }}</span>
+        <button class="page-btn" [disabled]="page() === totalPages()" (click)="page.set(page() + 1)">›</button>
+      </div>
+    }
   }
 </div>
 
