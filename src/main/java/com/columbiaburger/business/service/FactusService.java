@@ -131,7 +131,7 @@ public class FactusService {
         customer.put("municipality_code", BOGOTA_MUNICIPALITY_CODE);
         customer.put("email", email);
         customer.put("phone", "0000000000");
-        customer.put("tribute_code", isNit ? "ZZ" : "21");
+        customer.put("tribute_code", "ZZ");
         return customer;
     }
 
