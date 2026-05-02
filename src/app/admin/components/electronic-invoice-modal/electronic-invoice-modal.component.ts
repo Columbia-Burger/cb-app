@@ -18,19 +18,36 @@ export class ElectronicInvoiceModalComponent {
   private adminService = inject(AdminService);
 
   useConsumidorFinal = signal(true);
+  documentType: 'CC' | 'NIT' = 'CC';
   identification = '';
   customerName = '';
   customerEmail = '';
   loading = signal(false);
   error = signal('');
 
+  get identificationLabel(): string {
+    return this.documentType === 'NIT' ? 'NIT' : 'Cédula';
+  }
+
+  get customerNameLabel(): string {
+    return this.documentType === 'NIT' ? 'Razón social' : 'Nombre completo';
+  }
+
   submit(): void {
+    if (!this.useConsumidorFinal()) {
+      if (!this.identification.trim() || !this.customerName.trim() || !this.customerEmail.trim()) {
+        this.error.set('Completa tipo de documento, identificación, nombre o razón social y correo.');
+        return;
+      }
+    }
+
     this.loading.set(true);
     this.error.set('');
 
     const req: ElectronicInvoiceRequest = this.useConsumidorFinal()
       ? {}
       : {
+          customerDocumentType: this.documentType,
           customerIdentification: this.identification.trim(),
           customerName: this.customerName.trim(),
           customerEmail: this.customerEmail.trim(),
