@@ -41,9 +41,9 @@ public class FactusService {
     @Value("${factus.numbering-range-id}")
     private int numberingRangeId;
 
-    public ElectronicInvoiceResponse createBill(Order order, String customerIdentification,
+    public ElectronicInvoiceResponse createBill(Order order, String customerDocumentType, String customerIdentification,
                                                 String customerName, String customerEmail) {
-        Map<String, Object> payload = buildPayload(order, customerIdentification, customerName, customerEmail);
+        Map<String, Object> payload = buildPayload(order, customerDocumentType, customerIdentification, customerName, customerEmail);
 
         HttpHeaders headers = buildHeaders();
         ResponseEntity<Map<String, Object>> response = exchange(
@@ -75,7 +75,7 @@ public class FactusService {
         exchange("/v2/credit-notes", HttpMethod.POST, new HttpEntity<>(payload, headers));
     }
 
-    private Map<String, Object> buildPayload(Order order, String identification,
+    private Map<String, Object> buildPayload(Order order, String documentType, String identification,
                                              String customerName, String customerEmail) {
         boolean isConsumidorFinal = identification == null || identification.isBlank();
         String id = isConsumidorFinal ? CONSUMIDOR_FINAL_ID : identification.trim();
@@ -86,7 +86,7 @@ public class FactusService {
 
         Map<String, Object> customer = isConsumidorFinal
                 ? buildConsumidorFinalCustomer(email)
-                : buildCustomer(id, name, email);
+                : buildCustomer(documentType, id, name, email);
 
         Map<String, Object> payload = new HashMap<>();
         payload.put("numbering_range_id", numberingRangeId);
@@ -115,8 +115,9 @@ public class FactusService {
         return customer;
     }
 
-    private Map<String, Object> buildCustomer(String identification, String name, String email) {
-        boolean isNit = identification.length() > 9;
+    private Map<String, Object> buildCustomer(String documentType, String identification, String name, String email) {
+        boolean isNit = "NIT".equalsIgnoreCase(documentType)
+                || (documentType == null || documentType.isBlank()) && identification.length() > 9;
 
         Map<String, Object> customer = new HashMap<>();
         customer.put("identification", identification);

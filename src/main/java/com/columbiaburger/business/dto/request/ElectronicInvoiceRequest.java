@@ -6,7 +6,8 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor
 public class ElectronicInvoiceRequest {
-    private String customerIdentification; // NIT o cédula, null = consumidor final
+    private String customerDocumentType; // CC o NIT, null = inferir legado
+    private String customerIdentification; // NIT o cedula, null = consumidor final
     private String customerName;
     private String customerEmail;
 }
