@@ -102,4 +102,14 @@ public class OrderController {
         orderService.rateOrder(id, body.getOrDefault("rating", 0));
         return ResponseEntity.ok().build();
     }
+
+    @PostMapping("/rate-by-whatsapp")
+    public ResponseEntity<Void> rateByWhatsapp(@RequestBody java.util.Map<String, Object> body) {
+        String whatsapp = (String) body.get("whatsapp");
+        int rating = body.get("rating") instanceof Number n ? n.intValue() : 0;
+        if (whatsapp != null && !whatsapp.isBlank()) {
+            orderService.rateByWhatsapp(whatsapp, rating);
+        }
+        return ResponseEntity.ok().build();
+    }
 }

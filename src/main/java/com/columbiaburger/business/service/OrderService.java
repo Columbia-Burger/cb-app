@@ -208,6 +208,17 @@ public class OrderService {
         return toResponse(orderRepository.save(order));
     }
 
+    @Transactional
+    public void rateByWhatsapp(String whatsapp, int rating) {
+        if (rating < 1 || rating > 5) return;
+        orderRepository.findDeliveredUnratedByWhatsapp(whatsapp)
+                .stream().findFirst()
+                .ifPresent(order -> {
+                    order.setRating(rating);
+                    orderRepository.save(order);
+                });
+    }
+
     private static String firstName(String fullName) {
         if (fullName == null || fullName.isBlank()) return "cliente";
         int space = fullName.indexOf(' ');
