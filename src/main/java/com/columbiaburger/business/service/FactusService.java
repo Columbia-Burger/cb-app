@@ -121,6 +121,9 @@ public class FactusService {
         Map<String, Object> customer = new HashMap<>();
         customer.put("identification", identification);
         customer.put("names", name);
+        if (isNit) {
+            customer.put("company", name);
+        }
         customer.put("identification_document_code", isNit ? "31" : "13");
         customer.put("legal_organization_code", isNit ? "1" : "2");
         customer.put("address", "No indica");
