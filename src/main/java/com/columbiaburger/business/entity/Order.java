@@ -72,7 +72,7 @@ public class Order {
     private Integer rating;
 
     @Builder.Default
-    @Column(name = "rating_request_sent", nullable = false)
+    @Column(name = "rating_request_sent", columnDefinition = "boolean DEFAULT false NOT NULL")
     private Boolean ratingRequestSent = false;
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
