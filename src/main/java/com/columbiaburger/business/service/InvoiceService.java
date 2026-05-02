@@ -1,6 +1,7 @@
 package com.columbiaburger.business.service;
 
 import com.columbiaburger.business.dto.request.ElectronicInvoiceRequest;
+import com.columbiaburger.business.dto.response.ElectronicInvoiceDetailResponse;
 import com.columbiaburger.business.dto.response.ElectronicInvoiceResponse;
 import com.columbiaburger.business.dto.response.OrderResponse;
 import com.columbiaburger.business.entity.InvoiceStatus;
@@ -28,6 +29,21 @@ public class InvoiceService {
         return orderRepository.findAllByOrderByCreatedAtDesc().stream()
                 .map(orderService::toResponse)
                 .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public ElectronicInvoiceDetailResponse getElectronicInvoiceDetail(String number) {
+        return factusService.getBill(number);
+    }
+
+    @Transactional(readOnly = true)
+    public FactusFileResponse downloadElectronicInvoicePdf(String number) {
+        return factusService.downloadBillPdf(number);
+    }
+
+    @Transactional(readOnly = true)
+    public FactusFileResponse downloadElectronicInvoiceXml(String number) {
+        return factusService.downloadBillXml(number);
     }
 
     @Transactional

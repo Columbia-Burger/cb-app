@@ -1,5 +1,6 @@
 package com.columbiaburger.business.service;
 
+import com.columbiaburger.business.dto.response.ElectronicInvoiceDetailResponse;
 import com.columbiaburger.business.dto.response.ElectronicInvoiceResponse;
 import com.columbiaburger.business.entity.Order;
 import com.columbiaburger.business.entity.OrderItem;
@@ -18,9 +19,11 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -76,6 +79,24 @@ public class FactusService {
         )));
 
         exchange("/v2/credit-notes", HttpMethod.POST, new HttpEntity<>(payload, headers));
+    }
+
+    public ElectronicInvoiceDetailResponse getBill(String number) {
+        HttpHeaders headers = buildHeaders();
+        ResponseEntity<Map<String, Object>> response = exchange(
+                "/v2/bills/" + number,
+                HttpMethod.GET,
+                new HttpEntity<>(headers)
+        );
+        return parseDetailResponse(response.getBody());
+    }
+
+    public FactusFileResponse downloadBillPdf(String number) {
+        return downloadFile(number, "/v2/bills/" + number + "/download-pdf", "pdf_base_64_encoded", ".pdf");
+    }
+
+    public FactusFileResponse downloadBillXml(String number) {
+        return downloadFile(number, "/v2/bills/" + number + "/download-xml/", "xml_base_64_encoded", ".xml");
     }
 
     private Map<String, Object> buildPayload(Order order, String documentType, String paymentMethodCode,
@@ -194,6 +215,105 @@ public class FactusService {
                 .build();
     }
 
+    @SuppressWarnings("unchecked")
+    private ElectronicInvoiceDetailResponse parseDetailResponse(Map<String, Object> body) {
+        Map<String, Object> data = objectMap(body.get("data"));
+        Map<String, Object> paymentForm = objectMap(data.get("payment_form"));
+        Map<String, Object> paymentMethod = objectMap(data.get("payment_method"));
+        Map<String, Object> customer = objectMap(data.get("customer"));
+        Map<String, Object> customerDocument = objectMap(customer.get("identification_document"));
+        Map<String, Object> customerLegalOrg = objectMap(customer.get("legal_organization"));
+        Map<String, Object> customerTribute = objectMap(customer.get("tribute"));
+        Map<String, Object> customerMunicipality = objectMap(customer.get("municipality"));
+        Map<String, Object> customerDepartment = objectMap(customerMunicipality.get("department"));
+        Map<String, Object> totals = objectMap(data.get("totals"));
+        Map<String, Object> links = objectMap(data.get("links"));
+
+        List<ElectronicInvoiceDetailResponse.Item> items = listOfMaps(data.get("items")).stream()
+                .map(this::toDetailItem)
+                .toList();
+
+        return ElectronicInvoiceDetailResponse.builder()
+                .number(stringValue(data.get("number")))
+                .referenceCode(stringValue(data.get("reference_code")))
+                .cufe(stringValue(data.get("cufe")))
+                .documentName(stringValue(objectMap(data.get("document_type")).get("name")))
+                .operationTypeName(stringValue(objectMap(data.get("operation_type")).get("name")))
+                .validated(booleanValue(data.get("is_validated")))
+                .validatedAt(stringValue(data.get("validated_at")))
+                .createdAt(stringValue(data.get("created_at")))
+                .observation(stringValue(data.get("observation")))
+                .sendEmail(booleanValue(data.get("send_email")))
+                .qrUrl(stringValue(links.get("qr")))
+                .publicUrl(stringValue(links.get("public_url")))
+                .payment(ElectronicInvoiceDetailResponse.Payment.builder()
+                        .formCode(stringValue(paymentForm.get("code")))
+                        .formName(stringValue(paymentForm.get("name")))
+                        .methodCode(stringValue(paymentMethod.get("code")))
+                        .methodName(stringValue(paymentMethod.get("name")))
+                        .build())
+                .customer(ElectronicInvoiceDetailResponse.Customer.builder()
+                        .documentCode(stringValue(customerDocument.get("code")))
+                        .documentName(stringValue(customerDocument.get("name")))
+                        .identification(stringValue(customer.get("identification")))
+                        .dv(stringValue(customer.get("dv")))
+                        .company(stringValue(customer.get("company")))
+                        .names(stringValue(customer.get("names")))
+                        .email(stringValue(customer.get("email")))
+                        .phone(stringValue(customer.get("phone")))
+                        .address(stringValue(customer.get("address")))
+                        .legalOrganizationCode(stringValue(customerLegalOrg.get("code")))
+                        .legalOrganizationName(stringValue(customerLegalOrg.get("name")))
+                        .tributeCode(stringValue(customerTribute.get("code")))
+                        .tributeName(stringValue(customerTribute.get("name")))
+                        .municipality(stringValue(customerMunicipality.get("name")))
+                        .department(stringValue(customerDepartment.get("name")))
+                        .build())
+                .totals(ElectronicInvoiceDetailResponse.Totals.builder()
+                        .grossValue(stringValue(totals.get("gross_value")))
+                        .taxableAmount(stringValue(totals.get("taxable_amount")))
+                        .taxAmount(stringValue(totals.get("tax_amount")))
+                        .discountAmount(stringValue(totals.get("discount_amount")))
+                        .total(stringValue(totals.get("total")))
+                        .build())
+                .items(items)
+                .errors(stringMap(data.get("errors")))
+                .build();
+    }
+
+    private ElectronicInvoiceDetailResponse.Item toDetailItem(Map<String, Object> item) {
+        String taxSummary = listOfMaps(item.get("taxes")).stream()
+                .map(tax -> {
+                    String tribute = stringValue(objectMap(tax.get("tribute")).get("name"));
+                    String rates = listOfMaps(tax.get("rates")).stream()
+                            .map(rate -> stringValue(rate.get("rate")) + "%")
+                            .collect(Collectors.joining(", "));
+                    return (tribute.isBlank() ? "Impuesto" : tribute) + (rates.isBlank() ? "" : " " + rates);
+                })
+                .collect(Collectors.joining(" | "));
+
+        return ElectronicInvoiceDetailResponse.Item.builder()
+                .codeReference(stringValue(item.get("code_reference")))
+                .name(stringValue(item.get("name")))
+                .quantity(stringValue(item.get("quantity")))
+                .price(stringValue(item.get("price")))
+                .total(stringValue(item.get("total")))
+                .discountRate(stringValue(item.get("discount_rate")))
+                .taxSummary(taxSummary)
+                .build();
+    }
+
+    private FactusFileResponse downloadFile(String number, String path, String encodedField, String extension) {
+        HttpHeaders headers = buildHeaders();
+        ResponseEntity<Map<String, Object>> response = exchange(path, HttpMethod.GET, new HttpEntity<>(headers));
+        Map<String, Object> data = objectMap(response.getBody().get("data"));
+        String fileName = stringValue(data.get("file_name"));
+        String encoded = stringValue(data.get(encodedField));
+        byte[] content = Base64.getDecoder().decode(encoded);
+        String safeFileName = fileName.isBlank() ? number + extension : fileName + extension;
+        return new FactusFileResponse(safeFileName, content);
+    }
+
     private HttpHeaders buildHeaders() {
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(tokenService.getToken());
@@ -239,5 +359,39 @@ public class FactusService {
             return "respuesta vacia";
         }
         return responseBody;
+    }
+
+    @SuppressWarnings("unchecked")
+    private Map<String, Object> objectMap(Object value) {
+        return value instanceof Map<?, ?> map ? (Map<String, Object>) map : Map.of();
+    }
+
+    @SuppressWarnings("unchecked")
+    private List<Map<String, Object>> listOfMaps(Object value) {
+        if (!(value instanceof List<?> list)) {
+            return List.of();
+        }
+        return list.stream()
+                .filter(Map.class::isInstance)
+                .map(item -> (Map<String, Object>) item)
+                .toList();
+    }
+
+    private String stringValue(Object value) {
+        return value == null ? "" : String.valueOf(value);
+    }
+
+    private boolean booleanValue(Object value) {
+        return value instanceof Boolean bool && bool;
+    }
+
+    @SuppressWarnings("unchecked")
+    private Map<String, String> stringMap(Object value) {
+        if (!(value instanceof Map<?, ?> map)) {
+            return Map.of();
+        }
+        Map<String, String> result = new HashMap<>();
+        map.forEach((key, val) -> result.put(String.valueOf(key), String.valueOf(val)));
+        return result;
     }
 }
