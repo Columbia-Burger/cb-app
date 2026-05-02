@@ -8,10 +8,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.Instant;
 import java.util.Map;
-import java.util.HashMap;
 
 @Slf4j
 @Service
@@ -56,20 +56,27 @@ public class FactusTokenService {
         body.add("username", username);
         body.add("password", password);
 
-        @SuppressWarnings("unchecked")
-        ResponseEntity<Map<String, Object>> response = restTemplate.exchange(
-                baseUrl + "/oauth/token",
-                HttpMethod.POST,
-                new HttpEntity<>(body, headers),
-                (Class<Map<String, Object>>) (Class<?>) Map.class
-        );
+        try {
+            @SuppressWarnings("unchecked")
+            ResponseEntity<Map<String, Object>> response = restTemplate.exchange(
+                    baseUrl + "/oauth/token",
+                    HttpMethod.POST,
+                    new HttpEntity<>(body, headers),
+                    (Class<Map<String, Object>>) (Class<?>) Map.class
+            );
 
-        Map<String, Object> resp = response.getBody();
-        cachedToken = (String) resp.get("access_token");
-        int expiresIn = (Integer) resp.get("expires_in");
-        tokenExpiresAt = Instant.now().plusSeconds(expiresIn);
-
-        log.info("Factus token renovado, expira en {}s", expiresIn);
-        return cachedToken;
+            Map<String, Object> resp = response.getBody();
+            cachedToken = (String) resp.get("access_token");
+            int expiresIn = (Integer) resp.get("expires_in");
+            tokenExpiresAt = Instant.now().plusSeconds(expiresIn);
+            log.info("Factus token renovado, expira en {}s", expiresIn);
+            return cachedToken;
+        } catch (Exception e) {
+            log.error("Error autenticando con Factus: {}", e.getMessage());
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_GATEWAY,
+                    "Error conectando con Factus: verifique las credenciales"
+            );
+        }
     }
 }
