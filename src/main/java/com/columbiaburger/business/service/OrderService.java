@@ -185,7 +185,7 @@ public class OrderService {
 
         if (status == OrderStatus.ON_THE_WAY) {
             whatsAppService.sendText(whatsapp,
-                    "¡Hola " + firstName + "! 🛵 Tu pedido de Columbia Burger está en camino. ¡Buen provecho!");
+                    "¡Hola " + firstName + "! 🛵 Tu pedido de Columbia Burger ya está en camino. ¡Mantente pendiente, pronto llega a tu puerta! 🚪");
         } else if (status == OrderStatus.DELIVERED && !Boolean.TRUE.equals(saved.getRatingRequestSent())) {
             whatsAppService.sendText(whatsapp,
                     "¡Hola " + firstName + "! ✅ Tu pedido fue entregado. ¿Cómo estuvo?\n" +
