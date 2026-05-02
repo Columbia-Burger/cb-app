@@ -15,11 +15,19 @@ export class HeaderComponent {
   readonly whatsappUrl = `https://wa.me/${environment.whatsappNumber}?text=${environment.whatsappText}`;
 
   scrolled = false;
+  hidden = false;
   menuOpen = false;
+
+  private lastScrollY = 0;
 
   @HostListener('window:scroll')
   onScroll(): void {
-    this.scrolled = window.scrollY > 40;
+    const y = window.scrollY;
+    this.scrolled = y > 40;
+    if (!this.menuOpen) {
+      this.hidden = y > 80 && y > this.lastScrollY;
+    }
+    this.lastScrollY = y;
   }
 
   goToContacto(): void {
