@@ -283,11 +283,50 @@
   &:disabled { opacity: 0.4; cursor: not-allowed; }
   &:hover:not(:disabled) { border-color: #8b949e; background: rgba(255,255,255,0.05); }
 
-  &.btn-generate:hover:not(:disabled)    { border-color: #3fb950; }
-  &.btn-void:hover:not(:disabled)        { border-color: #f85149; }
-  &.btn-print:hover:not(:disabled)       { border-color: #58a6ff; }
-  &.btn-edit:hover:not(:disabled)        { border-color: #e3b341; }
-  &.btn-electronic:hover:not(:disabled)  { border-color: #e94560; }
+  &.btn-generate:hover:not(:disabled)    { border-color: #3fb950; color: #3fb950; }
+  &.btn-void:hover:not(:disabled)        { border-color: #f85149; color: #f85149; }
+  &.btn-print:hover:not(:disabled)       { border-color: #58a6ff; color: #58a6ff; }
+  &.btn-edit:hover:not(:disabled)        { border-color: #e3b341; color: #e3b341; }
+  &.btn-electronic:hover:not(:disabled)  { border-color: #e94560; color: #e94560; }
+  &.btn-pdf:hover:not(:disabled)         { border-color: #f85149; color: #f85149; }
+  &.btn-xml:hover:not(:disabled)         { border-color: #3fb950; color: #3fb950; }
+}
+
+.electronic-filters {
+  display: flex;
+  gap: 0.75em;
+  flex-wrap: wrap;
+  margin-bottom: 1.25em;
+}
+
+.filter-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25em;
+  font-size: 0.78em;
+  color: #8b949e;
+
+  input, select {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 8px;
+    color: #e6edf3;
+    font-size: 0.9em;
+    padding: 0.4em 0.65em;
+    min-width: 140px;
+
+    &:focus { outline: none; border-color: #58a6ff; }
+  }
+}
+
+.payment-chip {
+  font-size: 0.72em;
+  color: #8b949e;
+  background: rgba(139,148,158,0.1);
+  border: 1px solid #30363d;
+  border-radius: 10px;
+  padding: 0.15em 0.5em;
+  white-space: nowrap;
 }
 
 .electronic-badge {
@@ -295,6 +334,28 @@
   color: #3fb950;
   font-weight: 600;
   white-space: nowrap;
+}
+
+.detail-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35em;
+  background: none;
+  border: 1px solid #30363d;
+  border-radius: 8px;
+  color: #c9d1d9;
+  font-size: 0.85em;
+  padding: 0.45em 0.9em;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s;
+
+  &:hover:not(:disabled) { color: #e6edf3; border-color: #8b949e; background: rgba(255,255,255,0.04); }
+  &:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  &.btn-pdf:hover:not(:disabled)   { border-color: #f85149; color: #f85149; }
+  &.btn-xml:hover:not(:disabled)   { border-color: #3fb950; color: #3fb950; }
+  &.btn-email:hover:not(:disabled) { border-color: #58a6ff; color: #58a6ff; }
 }
 
 .electronic-link {

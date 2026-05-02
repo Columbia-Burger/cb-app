@@ -72,6 +72,7 @@ export interface OrderResponse {
   invoicedAt: string | null;
   electronicInvoiceNumber: string | null;
   cufe: string | null;
+  electronicPaymentMethodCode: '10' | '47' | '48' | null;
 }
 
 export interface UpdateOrderRequest {

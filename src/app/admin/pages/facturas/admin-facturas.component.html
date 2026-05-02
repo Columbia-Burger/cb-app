@@ -91,22 +91,22 @@
                 <td class="cell-total">{{ o.total | currency:'COP':'symbol-narrow':'1.0-0' }}</td>
                 <td class="cell-date">{{ o.createdAt | date:'dd/MM/yy HH:mm' }}</td>
                 <td class="cell-actions">
-                  <button class="action-btn btn-print" [disabled]="printingId() === o.id" (click)="print(o)" title="Imprimir ticket">Print</button>
-                  <button class="action-btn btn-edit" [disabled]="o.invoiceStatus === 'INVOICED'" (click)="editingOrder.set(o)" title="Editar pedido">Edit</button>
+                  <button class="action-btn btn-print" [disabled]="printingId() === o.id" (click)="print(o)" title="Imprimir ticket">🖨️</button>
+                  <button class="action-btn btn-edit" [disabled]="o.invoiceStatus === 'INVOICED'" (click)="editingOrder.set(o)" title="Editar pedido">✏️</button>
                   @if (o.invoiceStatus === 'PENDING') {
                     <button class="action-btn btn-generate" [disabled]="generatingId() === o.id" (click)="generate(o)" title="Generar factura interna">
-                      {{ generatingId() === o.id ? '...' : 'Generar' }}
+                      {{ generatingId() === o.id ? '...' : '🧾' }}
                     </button>
                   }
                   @if (!o.electronicInvoiceNumber) {
-                    <button class="action-btn btn-electronic" (click)="electronicOrder.set(o)" title="Generar factura electronica">FE</button>
+                    <button class="action-btn btn-electronic" (click)="electronicOrder.set(o)" title="Generar factura electronica">⚡ FE</button>
                   } @else {
                     <button class="electronic-link" (click)="openElectronicDetail(o)" title="Ver factura electronica">
                       {{ o.electronicInvoiceNumber }}
                     </button>
                   }
                   @if (o.invoiceStatus === 'INVOICED') {
-                    <button class="action-btn btn-void" [disabled]="voidingId() === o.id" (click)="voidOrder(o)" title="Anular factura">Anular</button>
+                    <button class="action-btn btn-void" [disabled]="voidingId() === o.id" (click)="voidOrder(o)" title="Anular factura">🚫</button>
                   }
                 </td>
               </tr>
@@ -132,6 +132,35 @@
         placeholder="Buscar por numero FE, pedido, cliente, CUFE o whatsapp"
       />
       <span class="search-meta">{{ electronicInvoices().length }} facturas electronicas</span>
+    </div>
+
+    <div class="electronic-filters">
+      <label class="filter-field">
+        <span>Cliente</span>
+        <input
+          [ngModel]="electronicCustomerFilter()"
+          (ngModelChange)="electronicCustomerFilter.set($event)"
+          placeholder="Nombre o whatsapp"
+        />
+      </label>
+      <label class="filter-field">
+        <span>Desde</span>
+        <input type="date" [ngModel]="electronicDateFrom()" (ngModelChange)="electronicDateFrom.set($event)" />
+      </label>
+      <label class="filter-field">
+        <span>Hasta</span>
+        <input type="date" [ngModel]="electronicDateTo()" (ngModelChange)="electronicDateTo.set($event)" />
+      </label>
+      <label class="filter-field">
+        <span>Medio de pago</span>
+        <select [ngModel]="electronicPaymentMethodFilter()" (ngModelChange)="electronicPaymentMethodFilter.set($event)">
+          <option value="ALL">Todos</option>
+          <option value="10">Efectivo</option>
+          <option value="47">Transferencia Bancolombia</option>
+          <option value="48">Pago con tarjeta</option>
+          <option value="UNKNOWN">Sin dato</option>
+        </select>
+      </label>
     </div>
 
     @if (loading()) {
@@ -165,9 +194,10 @@
                 <td class="cell-total">{{ o.total | currency:'COP':'symbol-narrow':'1.0-0' }}</td>
                 <td class="cell-date">{{ o.createdAt | date:'dd/MM/yy HH:mm' }}</td>
                 <td class="cell-actions">
-                  <button class="action-btn btn-electronic" (click)="openElectronicDetail(o)">Ver</button>
-                  <button class="action-btn btn-print" (click)="downloadElectronicPdf(o.electronicInvoiceNumber!)">PDF</button>
-                  <button class="action-btn btn-edit" (click)="downloadElectronicXml(o.electronicInvoiceNumber!)">XML</button>
+                  <button class="action-btn btn-electronic" (click)="openElectronicDetail(o)" title="Ver detalle">👁️ Ver</button>
+                  <button class="action-btn btn-pdf" (click)="downloadElectronicPdf(o.electronicInvoiceNumber!)" title="Descargar PDF">📄 PDF</button>
+                  <button class="action-btn btn-xml" (click)="downloadElectronicXml(o.electronicInvoiceNumber!)" title="Descargar XML">📋 XML</button>
+                  <span class="payment-chip">{{ paymentMethodLabel(o.electronicPaymentMethodCode) }}</span>
                 </td>
               </tr>
             }
@@ -188,7 +218,7 @@
             <p>{{ detailCustomerName() }} · CUFE {{ electronicDetail()!.cufe }}</p>
           }
         </div>
-        <button class="modal-close" (click)="closeElectronicDetail()">X</button>
+        <button class="modal-close" (click)="closeElectronicDetail()">✕</button>
       </div>
 
       @if (loadingElectronicDetail()) {
@@ -197,18 +227,19 @@
         <div class="alert-error">{{ electronicDetailError() }}</div>
       } @else if (electronicDetail()) {
         <div class="detail-actions">
-          <button class="refresh-btn" [disabled]="downloadingPdf()" (click)="downloadElectronicPdf(electronicDetail()!.number)">
-            {{ downloadingPdf() ? 'Descargando PDF...' : 'Descargar PDF' }}
+          <button class="detail-action-btn btn-pdf" [disabled]="downloadingPdf()" (click)="downloadElectronicPdf(electronicDetail()!.number)">
+            📄 {{ downloadingPdf() ? 'Descargando...' : 'PDF' }}
           </button>
-          <button class="refresh-btn" [disabled]="downloadingXml()" (click)="downloadElectronicXml(electronicDetail()!.number)">
-            {{ downloadingXml() ? 'Descargando XML...' : 'Descargar XML' }}
+          <button class="detail-action-btn btn-xml" [disabled]="downloadingXml()" (click)="downloadElectronicXml(electronicDetail()!.number)">
+            📋 {{ downloadingXml() ? 'Descargando...' : 'XML' }}
           </button>
           @if (electronicDetail()!.publicUrl) {
-            <button class="refresh-btn" (click)="openPublicUrl()">Abrir vista publica</button>
+            <button class="detail-action-btn" (click)="openPublicUrl()">🔗 Vista publica</button>
           }
           @if (electronicDetail()!.qrUrl) {
-            <button class="refresh-btn" (click)="openQrUrl()">Abrir QR</button>
+            <button class="detail-action-btn" (click)="openQrUrl()">📱 QR</button>
           }
+          <button class="detail-action-btn btn-email" (click)="resendElectronicInvoiceEmail()">✉️ Reenviar correo</button>
         </div>
 
         <div class="detail-grid">
@@ -294,4 +325,24 @@
     (done)="onElectronicDone($event, electronicOrder()!)"
     (cancelled)="electronicOrder.set(null)"
   />
+}
+
+@if (confirmVoidOrder()) {
+  <div class="detail-overlay" (click)="cancelVoidOrder()">
+    <div class="confirm-modal" (click)="$event.stopPropagation()">
+      <div class="confirm-badge">Anular factura</div>
+      <h3>¿Confirmas la anulación?</h3>
+      <p>
+        Vas a anular la factura interna <strong>{{ confirmVoidOrder()!.invoiceNumber }}</strong>
+        del pedido <strong>#{{ confirmVoidOrder()!.id }}</strong> a nombre de
+        <strong>{{ confirmVoidOrder()!.customerName }}</strong>.
+      </p>
+      <div class="confirm-actions">
+        <button class="btn-cancel" (click)="cancelVoidOrder()">Cancelar</button>
+        <button class="btn-danger" [disabled]="voidingId() === confirmVoidOrder()!.id" (click)="confirmVoidInvoice()">
+          {{ voidingId() === confirmVoidOrder()!.id ? 'Anulando...' : 'Sí, anular factura' }}
+        </button>
+      </div>
+    </div>
+  </div>
 }

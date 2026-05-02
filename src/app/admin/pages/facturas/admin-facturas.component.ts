@@ -33,6 +33,7 @@ export class AdminFacturasComponent implements OnInit {
   viewMode = signal<ViewMode>('OPERATIONS');
   generatingId = signal<number | null>(null);
   voidingId = signal<number | null>(null);
+  confirmVoidOrder = signal<OrderResponse | null>(null);
   editingOrder = signal<OrderResponse | null>(null);
   electronicOrder = signal<OrderResponse | null>(null);
   printingId = signal<number | null>(null);
@@ -46,6 +47,10 @@ export class AdminFacturasComponent implements OnInit {
   readonly pageSize = 10;
 
   electronicSearch = signal('');
+  electronicCustomerFilter = signal('');
+  electronicDateFrom = signal('');
+  electronicDateTo = signal('');
+  electronicPaymentMethodFilter = signal<'ALL' | '10' | '47' | '48' | 'UNKNOWN'>('ALL');
   selectedElectronicNumber = signal<string | null>(null);
   electronicDetail = signal<ElectronicInvoiceDetailResponse | null>(null);
   loadingElectronicDetail = signal(false);
@@ -77,6 +82,11 @@ export class AdminFacturasComponent implements OnInit {
 
   electronicInvoices = computed(() => {
     const term = this.electronicSearch().trim().toLowerCase();
+    const customer = this.electronicCustomerFilter().trim().toLowerCase();
+    const dateFrom = this.electronicDateFrom();
+    const dateTo = this.electronicDateTo();
+    const paymentMethod = this.electronicPaymentMethodFilter();
+
     return this.orders()
       .filter(o => !!o.electronicInvoiceNumber)
       .filter(o => {
@@ -89,6 +99,21 @@ export class AdminFacturasComponent implements OnInit {
           o.cufe,
           String(o.id),
         ].some(value => (value ?? '').toLowerCase().includes(term));
+      })
+      .filter(o => {
+        if (!customer) return true;
+        return [o.customerName, o.customerWhatsapp].some(value => (value ?? '').toLowerCase().includes(customer));
+      })
+      .filter(o => {
+        if (paymentMethod === 'ALL') return true;
+        if (paymentMethod === 'UNKNOWN') return !o.electronicPaymentMethodCode;
+        return o.electronicPaymentMethodCode === paymentMethod;
+      })
+      .filter(o => {
+        const createdAt = o.createdAt?.slice(0, 10);
+        if (dateFrom && (!createdAt || createdAt < dateFrom)) return false;
+        if (dateTo && (!createdAt || createdAt > dateTo)) return false;
+        return true;
       });
   });
 
@@ -134,8 +159,18 @@ export class AdminFacturasComponent implements OnInit {
   }
 
   voidOrder(order: OrderResponse): void {
-    if (!confirm(`¿Anular la factura ${order.invoiceNumber}?`)) return;
+    this.confirmVoidOrder.set(order);
+  }
+
+  cancelVoidOrder(): void {
+    this.confirmVoidOrder.set(null);
+  }
+
+  confirmVoidInvoice(): void {
+    const order = this.confirmVoidOrder();
+    if (!order) return;
     this.voidingId.set(order.id);
+    this.confirmVoidOrder.set(null);
     this.svc.voidInvoice(order.id).subscribe({
       next: updated => {
         this.orders.update(list => list.map(o => o.id === updated.id ? updated : o));
@@ -260,6 +295,26 @@ export class AdminFacturasComponent implements OnInit {
     if (url) window.open(url, '_blank');
   }
 
+  resendElectronicInvoiceEmail(): void {
+    const detail = this.electronicDetail();
+    if (!detail) return;
+
+    const email = detail.customer.email?.trim();
+    if (!email) {
+      this.electronicDetailError.set('La factura no tiene correo del cliente para reenviar.');
+      return;
+    }
+
+    const subject = encodeURIComponent(`Factura electronica ${detail.number}`);
+    const body = encodeURIComponent(
+      `Hola,\n\nCompartimos tu factura electronica ${detail.number}.\n\n` +
+      `Consulta en linea: ${detail.publicUrl || 'No disponible'}\n` +
+      `CUFE: ${detail.cufe}\n\nGracias.`
+    );
+
+    window.location.href = `mailto:${encodeURIComponent(email)}?subject=${subject}&body=${body}`;
+  }
+
   statusLabel(s: InvoiceStatus): string {
     return s === 'INVOICED' ? 'Facturada' : s === 'VOID' ? 'Anulada' : 'Pendiente';
   }
@@ -279,6 +334,14 @@ export class AdminFacturasComponent implements OnInit {
     const detail = this.electronicDetail();
     if (!detail) return '';
     return detail.customer.company || detail.customer.names || 'Cliente';
+  }
+
+  paymentMethodLabel(code: string | null | undefined): string {
+    return ({
+      '10': 'Efectivo',
+      '47': 'Transferencia Bancolombia',
+      '48': 'Pago con tarjeta'
+    } as Record<string, string>)[code ?? ''] ?? 'Sin dato';
   }
 
   private saveBlobResponse(response: HttpResponse<Blob>, fallbackName: string): void {
