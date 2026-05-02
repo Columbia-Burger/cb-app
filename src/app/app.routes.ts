@@ -33,5 +33,10 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./pages/seguimiento/seguimiento.component').then(m => m.SeguimientoComponent)
   },
+  {
+    path: 'privacidad',
+    loadComponent: () =>
+      import('./pages/privacidad/privacidad.component').then(m => m.PrivacidadComponent)
+  },
   { path: '**', redirectTo: '' },
 ];
