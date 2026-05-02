@@ -156,6 +156,12 @@ export class AdminService {
     });
   }
 
+  generateElectronicInvoice(orderId: number, req: import('../models/admin.model').ElectronicInvoiceRequest): Observable<import('../models/admin.model').ElectronicInvoiceResponse> {
+    return this.http.post<import('../models/admin.model').ElectronicInvoiceResponse>(
+      `${this.base}/api/invoices/${orderId}/electronic`, req, { headers: this.authHeaders() }
+    );
+  }
+
   // ── Clientes ─────────────────────────────────────────────────
   getCustomers(): Observable<CustomerResponse[]> {
     return this.http.get<CustomerResponse[]>(`${this.base}/api/customers`, {

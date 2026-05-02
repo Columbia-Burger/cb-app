@@ -70,6 +70,8 @@ export interface OrderResponse {
   invoiceStatus: InvoiceStatus;
   invoiceNumber: string | null;
   invoicedAt: string | null;
+  electronicInvoiceNumber: string | null;
+  cufe: string | null;
 }
 
 export interface UpdateOrderRequest {
@@ -177,6 +179,19 @@ export interface DailyStatResponse {
 export interface SourceStatResponse {
   source: string;
   orders: number;
+}
+
+export interface ElectronicInvoiceRequest {
+  customerIdentification?: string;
+  customerName?: string;
+  customerEmail?: string;
+}
+
+export interface ElectronicInvoiceResponse {
+  number: string;
+  cufe: string;
+  qr: string;
+  pdfUrl: string;
 }
 
 export interface HourlyStatResponse {

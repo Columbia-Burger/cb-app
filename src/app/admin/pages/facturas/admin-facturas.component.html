@@ -100,14 +100,24 @@
                         title="Editar pedido">
                   ✏️
                 </button>
-                <!-- Generar factura -->
+                <!-- Generar factura interna -->
                 @if (o.invoiceStatus === 'PENDING') {
                   <button class="action-btn btn-generate"
                           [disabled]="generatingId() === o.id"
                           (click)="generate(o)"
-                          title="Generar factura">
+                          title="Generar factura interna">
                     {{ generatingId() === o.id ? '...' : '🧾' }}
                   </button>
+                }
+                <!-- Factura electrónica DIAN -->
+                @if (!o.electronicInvoiceNumber) {
+                  <button class="action-btn btn-electronic"
+                          (click)="electronicOrder.set(o)"
+                          title="Generar factura electrónica DIAN">
+                    📤
+                  </button>
+                } @else {
+                  <span class="electronic-badge" title="CUFE: {{ o.cufe }}">✅ {{ o.electronicInvoiceNumber }}</span>
                 }
                 <!-- Anular factura -->
                 @if (o.invoiceStatus === 'INVOICED') {
@@ -141,5 +151,14 @@
     [order]="editingOrder()!"
     (saved)="onOrderSaved($event)"
     (cancelled)="editingOrder.set(null)"
+  />
+}
+
+<!-- Modal factura electrónica -->
+@if (electronicOrder()) {
+  <app-electronic-invoice-modal
+    [order]="electronicOrder()!"
+    (done)="onElectronicDone($event, electronicOrder()!)"
+    (cancelled)="electronicOrder.set(null)"
   />
 }

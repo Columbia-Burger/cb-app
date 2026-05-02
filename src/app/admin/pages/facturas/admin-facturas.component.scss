@@ -232,8 +232,16 @@
   &:disabled { opacity: 0.4; cursor: not-allowed; }
   &:hover:not(:disabled) { border-color: #8b949e; background: rgba(255,255,255,0.05); }
 
-  &.btn-generate:hover:not(:disabled) { border-color: #3fb950; }
-  &.btn-void:hover:not(:disabled)     { border-color: #f85149; }
-  &.btn-print:hover:not(:disabled)    { border-color: #58a6ff; }
-  &.btn-edit:hover:not(:disabled)     { border-color: #e3b341; }
+  &.btn-generate:hover:not(:disabled)    { border-color: #3fb950; }
+  &.btn-void:hover:not(:disabled)        { border-color: #f85149; }
+  &.btn-print:hover:not(:disabled)       { border-color: #58a6ff; }
+  &.btn-edit:hover:not(:disabled)        { border-color: #e3b341; }
+  &.btn-electronic:hover:not(:disabled)  { border-color: #e94560; }
+}
+
+.electronic-badge {
+  font-size: 0.75em;
+  color: #3fb950;
+  font-weight: 600;
+  white-space: nowrap;
 }

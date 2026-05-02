@@ -2,8 +2,9 @@ import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { CurrencyPipe, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AdminService } from '../../services/admin.service';
-import { OrderResponse, InvoiceStatus } from '../../models/admin.model';
+import { OrderResponse, InvoiceStatus, ElectronicInvoiceResponse } from '../../models/admin.model';
 import { EditOrderModalComponent } from '../../components/edit-order-modal/edit-order-modal.component';
+import { ElectronicInvoiceModalComponent } from '../../components/electronic-invoice-modal/electronic-invoice-modal.component';
 import { PrintService } from '../../services/print.service';
 
 type FilterTab = 'ALL' | 'PENDING' | 'INVOICED' | 'VOID';
@@ -11,7 +12,7 @@ type FilterTab = 'ALL' | 'PENDING' | 'INVOICED' | 'VOID';
 @Component({
   selector: 'app-admin-facturas',
   standalone: true,
-  imports: [CurrencyPipe, DatePipe, EditOrderModalComponent, FormsModule],
+  imports: [CurrencyPipe, DatePipe, EditOrderModalComponent, ElectronicInvoiceModalComponent, FormsModule],
   templateUrl: './admin-facturas.component.html',
   styleUrl: './admin-facturas.component.scss',
 })
@@ -25,6 +26,7 @@ export class AdminFacturasComponent implements OnInit {
   generatingId = signal<number | null>(null);
   voidingId = signal<number | null>(null);
   editingOrder = signal<OrderResponse | null>(null);
+  electronicOrder = signal<OrderResponse | null>(null);
   printingId = signal<number | null>(null);
   error = signal('');
 
@@ -136,6 +138,16 @@ export class AdminFacturasComponent implements OnInit {
     } finally {
       this.printingId.set(null);
     }
+  }
+
+  onElectronicDone(res: ElectronicInvoiceResponse, order: OrderResponse): void {
+    this.orders.update(list => list.map(o =>
+      o.id === order.id
+        ? { ...o, electronicInvoiceNumber: res.number, cufe: res.cufe, invoiceStatus: 'INVOICED' }
+        : o
+    ));
+    this.electronicOrder.set(null);
+    if (res.pdfUrl) window.open(res.pdfUrl, '_blank');
   }
 
   onOrderSaved(updated: OrderResponse): void {
