@@ -16,6 +16,8 @@
 .stat-card.accent { border-color: #e94560; }
 .stat-card.green { border-color: #3fb950; }
 .stat-card.yellow { border-color: #d29922; }
+.stat-card.blue { border-color: #388bfd; }
+.stat-card.star { border-color: #d29922; }
 .stat-label { font-size: 0.8em; color: #8b949e; margin-bottom: 0.5em; text-transform: uppercase; letter-spacing: 0.05em; }
 .stat-value { font-size: 1.6em; font-weight: 700; color: #e6edf3; }
 
@@ -35,6 +37,21 @@
   padding: 1.25em;
 }
 .chart-title { font-size: 0.9em; font-weight: 600; color: #8b949e; margin: 0 0 1em; text-transform: uppercase; letter-spacing: 0.05em; }
+
+.stat-sub { font-size: 0.75em; color: #8b949e; margin-top: 0.25em; }
+.no-data { color: #8b949e; }
+
+.stars-row { display: flex; align-items: center; gap: 2px; margin-top: 0.4em; }
+.star { font-size: 1.1em; color: #30363d; }
+.star.full { color: #d29922; }
+.rated-count { font-size: 0.75em; color: #8b949e; margin-left: 6px; }
+
+.chart-card--donut { grid-column: span 1; }
+.donut-wrap { max-width: 220px; margin: 0 auto; }
+.source-list { margin-top: 1em; display: flex; flex-direction: column; gap: 0.5em; }
+.source-row { display: flex; justify-content: space-between; align-items: center; font-size: 0.85em; }
+.source-label { color: #c9d1d9; }
+.source-count { color: #8b949e; font-weight: 600; }
 
 .section { margin-top: 2em; }
 .section-title { font-size: 1.1em; font-weight: 600; color: #e6edf3; margin: 0 0 1em; }

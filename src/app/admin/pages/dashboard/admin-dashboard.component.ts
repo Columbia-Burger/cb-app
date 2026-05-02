@@ -1,7 +1,7 @@
 import { Component, inject, signal, OnInit, AfterViewInit, ElementRef, ViewChild, OnDestroy } from '@angular/core';
-import { CurrencyPipe } from '@angular/common';
+import { CurrencyPipe, DecimalPipe } from '@angular/common';
 import { AdminService } from '../../services/admin.service';
-import { DashboardStats, TopProduct, DailyStatResponse } from '../../models/admin.model';
+import { DashboardStats, TopProduct, DailyStatResponse, SourceStatResponse } from '../../models/admin.model';
 import { Chart, registerables } from 'chart.js';
 
 Chart.register(...registerables);
@@ -9,7 +9,7 @@ Chart.register(...registerables);
 @Component({
   selector: 'app-admin-dashboard',
   standalone: true,
-  imports: [CurrencyPipe],
+  imports: [CurrencyPipe, DecimalPipe],
   templateUrl: './admin-dashboard.component.html',
   styleUrl: './admin-dashboard.component.scss'
 })
@@ -18,21 +18,21 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
 
   @ViewChild('ordersChart') ordersChartRef!: ElementRef<HTMLCanvasElement>;
   @ViewChild('revenueChart') revenueChartRef!: ElementRef<HTMLCanvasElement>;
+  @ViewChild('sourceChart') sourceChartRef!: ElementRef<HTMLCanvasElement>;
 
   loading = signal(true);
   stats = signal<DashboardStats | null>(null);
   topProducts = signal<TopProduct[]>([]);
   dailyStats = signal<DailyStatResponse[]>([]);
+  sourceStats = signal<SourceStatResponse[]>([]);
 
   private ordersChart?: Chart;
   private revenueChart?: Chart;
+  private sourceChart?: Chart;
 
   ngOnInit(): void {
     this.adminService.getStats().subscribe({
-      next: data => {
-        this.stats.set(data);
-        this.loading.set(false);
-      },
+      next: data => { this.stats.set(data); this.loading.set(false); },
       error: () => this.loading.set(false)
     });
 
@@ -43,7 +43,14 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
     this.adminService.getDailyStats(7).subscribe({
       next: data => {
         this.dailyStats.set(data);
-        setTimeout(() => this.renderCharts(data), 0);
+        setTimeout(() => this.renderBarCharts(data), 0);
+      }
+    });
+
+    this.adminService.getStatsBySource().subscribe({
+      next: data => {
+        this.sourceStats.set(data);
+        setTimeout(() => this.renderSourceChart(data), 0);
       }
     });
   }
@@ -53,9 +60,33 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
   ngOnDestroy(): void {
     this.ordersChart?.destroy();
     this.revenueChart?.destroy();
+    this.sourceChart?.destroy();
   }
 
-  private renderCharts(data: DailyStatResponse[]): void {
+  starsArray(rating: number | null): number[] {
+    if (!rating) return [];
+    return Array.from({ length: 5 }, (_, i) => i + 1);
+  }
+
+  starFill(index: number, rating: number | null): string {
+    if (!rating) return 'empty';
+    if (index <= Math.floor(rating)) return 'full';
+    if (index <= rating + 0.5) return 'half';
+    return 'empty';
+  }
+
+  ticketPromedio(): number {
+    const s = this.stats();
+    if (!s || s.ordersToday === 0) return 0;
+    return s.revenueToday / s.ordersToday;
+  }
+
+  sourceLabel(source: string): string {
+    const map: Record<string, string> = { WEB: 'Web', WHATSAPP: 'WhatsApp', WAITER: 'Mesero' };
+    return map[source] ?? source;
+  }
+
+  private renderBarCharts(data: DailyStatResponse[]): void {
     if (!this.ordersChartRef || !this.revenueChartRef) return;
 
     const labels = data.map(d => {
@@ -107,14 +138,36 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
         scales: {
           x: { ticks: { color: '#8b949e' }, grid: { color: '#21262d' } },
           y: {
-            ticks: {
-              color: '#8b949e',
-              callback: (v) => '$' + Number(v).toLocaleString('es-CO')
-            },
+            ticks: { color: '#8b949e', callback: (v) => '$' + Number(v).toLocaleString('es-CO') },
             grid: { color: '#21262d' },
             beginAtZero: true
           }
         }
+      }
+    });
+  }
+
+  private renderSourceChart(data: SourceStatResponse[]): void {
+    if (!this.sourceChartRef || data.length === 0) return;
+
+    this.sourceChart?.destroy();
+    this.sourceChart = new Chart(this.sourceChartRef.nativeElement, {
+      type: 'doughnut',
+      data: {
+        labels: data.map(d => this.sourceLabel(d.source)),
+        datasets: [{
+          data: data.map(d => d.orders),
+          backgroundColor: ['rgba(233,69,96,0.8)', 'rgba(63,185,80,0.8)', 'rgba(56,139,253,0.8)'],
+          borderColor: ['#e94560', '#3fb950', '#388bfd'],
+          borderWidth: 2,
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { position: 'bottom', labels: { color: '#8b949e', padding: 16, font: { size: 12 } } }
+        },
+        cutout: '65%',
       }
     });
   }

@@ -99,6 +99,8 @@ export interface DashboardStats {
   pendingOrders: number;
   onTheWayOrders: number;
   totalCustomers: number;
+  averageRating: number | null;
+  ratedOrdersCount: number;
 }
 
 export interface TopProduct {
