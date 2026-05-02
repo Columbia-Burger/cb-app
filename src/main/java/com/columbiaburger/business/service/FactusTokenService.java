@@ -7,6 +7,7 @@ import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -71,11 +72,17 @@ public class FactusTokenService {
             tokenExpiresAt = Instant.now().plusSeconds(expiresIn);
             log.info("Factus token renovado, expira en {}s", expiresIn);
             return cachedToken;
+        } catch (HttpClientErrorException e) {
+            log.error("Factus auth error {} - body: {}", e.getStatusCode(), e.getResponseBodyAsString());
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_GATEWAY,
+                    "Error Factus: " + e.getResponseBodyAsString()
+            );
         } catch (Exception e) {
             log.error("Error autenticando con Factus: {}", e.getMessage());
             throw new ResponseStatusException(
                     HttpStatus.BAD_GATEWAY,
-                    "Error conectando con Factus: verifique las credenciales"
+                    "Error conectando con Factus: " + e.getMessage()
             );
         }
     }
