@@ -48,14 +48,21 @@ public class JwtUtil {
     }
 
     public boolean isTokenValid(String token) {
+        return getValidationError(token) == null;
+    }
+
+    public String getValidationError(String token) {
         try {
             Claims claims = parseClaims(token);
             boolean notExpired = claims.getExpiration().after(new Date());
-            if (!notExpired) log.warn("Token expirado. Expira: {}", claims.getExpiration());
-            return notExpired;
+            if (!notExpired) {
+                log.warn("Token expirado. Expira: {}", claims.getExpiration());
+                return "Token expirado";
+            }
+            return null;
         } catch (Exception e) {
-            log.warn("Token inválido — {}: {}", e.getClass().getSimpleName(), e.getMessage());
-            return false;
+            log.warn("Token invalido - {}: {}", e.getClass().getSimpleName(), e.getMessage());
+            return "Token invalido: " + e.getClass().getSimpleName();
         }
     }
 

@@ -89,7 +89,9 @@ public class SecurityConfig {
                 .authenticationEntryPoint((request, response, authException) -> {
                     response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                     response.setContentType("application/json");
-                    response.getWriter().write("{\"error\":\"Unauthorized\"}");
+                    Object authError = request.getAttribute(JwtAuthFilter.AUTH_ERROR_ATTR);
+                    String message = authError != null ? authError.toString() : "Unauthorized";
+                    response.getWriter().write("{\"error\":\"" + message + "\"}");
                 })
             )
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)

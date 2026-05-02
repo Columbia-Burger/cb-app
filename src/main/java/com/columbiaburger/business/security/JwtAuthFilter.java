@@ -20,6 +20,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class JwtAuthFilter extends OncePerRequestFilter {
 
+    public static final String AUTH_ERROR_ATTR = "auth_error";
+
     private final JwtUtil jwtUtil;
 
     @Override
@@ -32,15 +34,14 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         if (header != null && header.startsWith("Bearer ")) {
             try {
                 String token = header.substring(7);
-                log.debug("JWT recibido (primeros 20 chars): {}", token.length() > 20 ? token.substring(0, 20) : token);
-
-                boolean valid = jwtUtil.isTokenValid(token);
+                String validationError = jwtUtil.getValidationError(token);
+                boolean valid = validationError == null;
                 log.info("isTokenValid={} para {} {}", valid, request.getMethod(), request.getRequestURI());
 
                 if (valid) {
                     String subject = jwtUtil.extractSubject(token);
                     String role = jwtUtil.extractRole(token);
-                    log.info("Token válido — subject={}, role={}", subject, role);
+                    log.info("Token valido - subject={}, role={}", subject, role);
 
                     String authority = switch (role) {
                         case "CUSTOMER" -> "ROLE_CUSTOMER";
@@ -50,17 +51,20 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                     };
 
                     var auth = new UsernamePasswordAuthenticationToken(
-                            subject, null,
+                            subject,
+                            null,
                             List.of(new SimpleGrantedAuthority(authority))
                     );
 
                     SecurityContextHolder.getContext().setAuthentication(auth);
                 } else {
-                    log.warn("Token inválido (isTokenValid=false) para {} {}", request.getMethod(), request.getRequestURI());
+                    request.setAttribute(AUTH_ERROR_ATTR, validationError);
+                    log.warn("Token invalido para {} {}: {}", request.getMethod(), request.getRequestURI(), validationError);
                 }
-
             } catch (Exception e) {
-                log.error("Excepción procesando JWT para {} {}: {}", request.getMethod(), request.getRequestURI(), e.getMessage(), e);
+                request.setAttribute(AUTH_ERROR_ATTR, "Error procesando token");
+                log.error("Excepcion procesando JWT para {} {}: {}",
+                        request.getMethod(), request.getRequestURI(), e.getMessage(), e);
                 SecurityContextHolder.clearContext();
             }
         } else {
