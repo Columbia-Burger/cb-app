@@ -1,0 +1,99 @@
+<div class="page">
+  <div class="page-header">
+    <div>
+      <h2 class="page-title">Cupones de descuento</h2>
+      <p class="page-sub">Crea y gestiona códigos de descuento para tus clientes</p>
+    </div>
+    <button class="btn btn--primary" (click)="showForm.set(!showForm())">
+      {{ showForm() ? '✕ Cancelar' : '+ Nuevo cupón' }}
+    </button>
+  </div>
+
+  @if (showForm()) {
+    <div class="form-card">
+      <h3 class="form-card__title">Nuevo cupón</h3>
+
+      @if (error()) {
+        <div class="alert-error">⚠️ {{ error() }}</div>
+      }
+
+      <div class="form-row">
+        <div class="form-field">
+          <label>Código *</label>
+          <input class="input" type="text" placeholder="VERANO20" [value]="code()"
+            (input)="code.set($any($event.target).value.toUpperCase())" />
+        </div>
+        <div class="form-field">
+          <label>Tipo *</label>
+          <select class="input" [value]="type()" (change)="type.set($any($event.target).value)">
+            <option value="PERCENTAGE">Porcentaje (%)</option>
+            <option value="FIXED">Valor fijo ($)</option>
+          </select>
+        </div>
+        <div class="form-field">
+          <label>Valor *</label>
+          <input class="input" type="number" min="1" [placeholder]="type() === 'PERCENTAGE' ? '10' : '5000'"
+            [value]="value()" (input)="value.set($any($event.target).value)" />
+        </div>
+        <div class="form-field">
+          <label>Máx. usos</label>
+          <input class="input" type="number" min="1" placeholder="Sin límite"
+            [value]="maxUses()" (input)="maxUses.set($any($event.target).value)" />
+        </div>
+        <div class="form-field">
+          <label>Vence</label>
+          <input class="input" type="datetime-local"
+            [value]="expiresAt()" (input)="expiresAt.set($any($event.target).value)" />
+        </div>
+      </div>
+
+      <button class="btn btn--primary" [disabled]="saving() || !code().trim() || !value()" (click)="create()">
+        @if (saving()) { Guardando... } @else { ✓ Crear cupón }
+      </button>
+    </div>
+  }
+
+  @if (loading()) {
+    <div class="loading"><div class="spinner"></div> Cargando...</div>
+  } @else if (coupons().length === 0) {
+    <p class="empty">No hay cupones creados aún.</p>
+  } @else {
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Código</th>
+            <th>Tipo</th>
+            <th>Valor</th>
+            <th>Usos</th>
+            <th>Vence</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (c of coupons(); track c.id) {
+            <tr [class.inactive]="!c.active">
+              <td><code class="code-tag">{{ c.code }}</code></td>
+              <td>{{ c.type === 'PERCENTAGE' ? 'Porcentaje' : 'Valor fijo' }}</td>
+              <td>{{ c.type === 'PERCENTAGE' ? c.value + '%' : '$' + (c.value | number) }}</td>
+              <td>{{ c.currentUses }}{{ c.maxUses ? ' / ' + c.maxUses : '' }}</td>
+              <td>{{ c.expiresAt ? (c.expiresAt | date:'dd/MM/yy HH:mm') : '—' }}</td>
+              <td>
+                <span class="badge" [class.badge--active]="c.active" [class.badge--inactive]="!c.active">
+                  {{ c.active ? 'Activo' : 'Inactivo' }}
+                </span>
+              </td>
+              <td class="actions-cell">
+                <button class="btn btn--sm btn--ghost" (click)="toggle(c)">
+                  {{ c.active ? 'Desactivar' : 'Activar' }}
+                </button>
+                <button class="btn btn--sm btn--danger" (click)="delete(c)">🗑</button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>

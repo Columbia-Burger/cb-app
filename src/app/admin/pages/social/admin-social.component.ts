@@ -32,6 +32,7 @@ export class AdminSocialComponent implements OnInit {
   editCaption = signal('');
   editHashtags = signal('');
   editImageUrl = signal('');
+  editScheduledAt = signal('');
   saving = signal(false);
 
   // Posts list
@@ -96,6 +97,7 @@ export class AdminSocialComponent implements OnInit {
         this.editCaption.set(post.caption);
         this.editHashtags.set(post.hashtags);
         this.editImageUrl.set(post.imageUrl ?? '');
+        this.editScheduledAt.set('');
         this.generating.set(false);
       },
       error: (err) => {
@@ -113,6 +115,7 @@ export class AdminSocialComponent implements OnInit {
       caption: this.editCaption(),
       hashtags: this.editHashtags(),
       imageUrl: this.editImageUrl() || undefined,
+      scheduledAt: this.editScheduledAt() || undefined,
       status,
     }).subscribe({
       next: updated => {

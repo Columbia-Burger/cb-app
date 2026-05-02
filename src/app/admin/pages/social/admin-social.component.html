@@ -112,6 +112,12 @@
             <input type="url" class="input" [value]="editImageUrl()" (input)="editImageUrl.set($any($event.target).value)" />
           </div>
 
+          <div class="form-field">
+            <label>Programar publicación (opcional)</label>
+            <input type="datetime-local" class="input" [value]="editScheduledAt()" (input)="editScheduledAt.set($any($event.target).value)" />
+            <span class="field-hint">Si apruebas con fecha, se publicará automáticamente a esa hora.</span>
+          </div>
+
           <div class="preview-actions">
             <button class="btn btn--ghost" [disabled]="saving()" (click)="discardGenerated()">
               🗑 Descartar

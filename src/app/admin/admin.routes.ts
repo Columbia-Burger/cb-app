@@ -63,6 +63,11 @@ export const adminRoutes: Routes = [
         path: 'social',
         loadComponent: () =>
           import('./pages/social/admin-social.component').then(m => m.AdminSocialComponent)
+      },
+      {
+        path: 'cupones',
+        loadComponent: () =>
+          import('./pages/cupones/admin-cupones.component').then(m => m.AdminCuponesComponent)
       }
     ]
   }

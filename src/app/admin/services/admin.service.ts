@@ -324,4 +324,21 @@ export class AdminService {
   publishSocialPost(id: number): Observable<SocialPost> {
     return this.http.post<SocialPost>(`${this.base}/api/social/posts/${id}/publish`, {}, { headers: this.authHeaders() });
   }
+
+  // ── Cupones ──────────────────────────────────────────────────
+  getCoupons(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.base}/api/coupons`, { headers: this.authHeaders() });
+  }
+
+  createCoupon(body: any): Observable<any> {
+    return this.http.post<any>(`${this.base}/api/coupons`, body, { headers: this.authHeaders() });
+  }
+
+  toggleCoupon(id: number): Observable<any> {
+    return this.http.patch<any>(`${this.base}/api/coupons/${id}/toggle`, {}, { headers: this.authHeaders() });
+  }
+
+  deleteCoupon(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.base}/api/coupons/${id}`, { headers: this.authHeaders() });
+  }
 }
