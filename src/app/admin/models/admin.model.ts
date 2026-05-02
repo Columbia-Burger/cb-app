@@ -183,6 +183,7 @@ export interface SourceStatResponse {
 
 export interface ElectronicInvoiceRequest {
   customerDocumentType?: 'CC' | 'NIT';
+  paymentMethodCode?: '10' | '47' | '48';
   customerIdentification?: string;
   customerName?: string;
   customerEmail?: string;

@@ -19,6 +19,7 @@ export class ElectronicInvoiceModalComponent {
 
   useConsumidorFinal = signal(true);
   documentType: 'CC' | 'NIT' = 'CC';
+  paymentMethodCode: '10' | '47' | '48' = '10';
   identification = '';
   customerName = '';
   customerEmail = '';
@@ -48,6 +49,7 @@ export class ElectronicInvoiceModalComponent {
       ? {}
       : {
           customerDocumentType: this.documentType,
+          paymentMethodCode: this.paymentMethodCode,
           customerIdentification: this.identification.trim(),
           customerName: this.customerName.trim(),
           customerEmail: this.customerEmail.trim(),
