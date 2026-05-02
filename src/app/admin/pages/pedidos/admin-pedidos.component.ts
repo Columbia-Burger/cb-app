@@ -1,6 +1,5 @@
 import { Component, inject, signal, OnInit, OnDestroy, AfterViewInit, ViewChild, ElementRef } from '@angular/core';
 import { CurrencyPipe, DatePipe } from '@angular/common';
-import { Router } from '@angular/router';
 import { AdminService } from '../../services/admin.service';
 import { OrderResponse, OrderStatus } from '../../models/admin.model';
 import { Subscription } from 'rxjs';
@@ -24,7 +23,6 @@ interface KanbanColumn {
 export class AdminPedidosComponent implements OnInit, AfterViewInit, OnDestroy {
   private adminService = inject(AdminService);
   private orderEvents = inject(OrderEventsService);
-  private router = inject(Router);
 
   loading = signal(true);
   selectedOrder = signal<OrderResponse | null>(null);
@@ -88,10 +86,6 @@ export class AdminPedidosComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private handleLoadError(error: { status?: number }): void {
     this.loading.set(false);
-    if (error.status === 401 || error.status === 403) {
-      this.adminService.logout();
-      this.router.navigate(['/admin/login']);
-    }
   }
 
   private getBusinessDayStart(): string {
