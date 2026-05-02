@@ -69,7 +69,7 @@ public class FactusService {
                 "price", "0.00",
                 "unit_measure_code", UNIT_MEASURE_CODE,
                 "standard_code", STANDARD_CODE,
-                "taxes", List.of()
+                "taxes", defaultTaxes()
         )));
 
         exchange("/v2/credit-notes", HttpMethod.POST, new HttpEntity<>(payload, headers));
@@ -151,10 +151,17 @@ public class FactusService {
             payload.put("discount_rate", "0.00");
             payload.put("unit_measure_code", UNIT_MEASURE_CODE);
             payload.put("standard_code", STANDARD_CODE);
-            payload.put("taxes", List.of());
+            payload.put("taxes", defaultTaxes());
             items.add(payload);
         }
         return items;
+    }
+
+    private List<Map<String, Object>> defaultTaxes() {
+        return List.of(Map.of(
+                "code", "01",
+                "rate", "0.00"
+        ));
     }
 
     @SuppressWarnings("unchecked")
