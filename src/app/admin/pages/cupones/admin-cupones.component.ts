@@ -1,5 +1,5 @@
 import { Component, inject, signal, OnInit } from '@angular/core';
-import { DatePipe } from '@angular/common';
+import { DatePipe, DecimalPipe } from '@angular/common';
 import { AdminService } from '../../services/admin.service';
 
 export interface Coupon {
@@ -17,7 +17,7 @@ export interface Coupon {
 @Component({
   selector: 'app-admin-cupones',
   standalone: true,
-  imports: [DatePipe],
+  imports: [DatePipe, DecimalPipe],
   templateUrl: './admin-cupones.component.html',
   styleUrl: './admin-cupones.component.scss',
 })

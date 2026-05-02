@@ -36,6 +36,7 @@ export interface UpdatePostRequest {
   caption?: string;
   hashtags?: string;
   imageUrl?: string;
+  scheduledAt?: string;
   status?: PostStatus;
 }
 
