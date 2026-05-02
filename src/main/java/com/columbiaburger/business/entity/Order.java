@@ -62,6 +62,12 @@ public class Order {
     @Column(name = "invoiced_at")
     private LocalDateTime invoicedAt;
 
+    @Column(name = "electronic_invoice_number", length = 50)
+    private String electronicInvoiceNumber;
+
+    @Column(name = "cufe", length = 100)
+    private String cufe;
+
     @Column(name = "coupon_code", length = 50)
     private String couponCode;
 

@@ -294,6 +294,8 @@ public class OrderService {
                 .couponCode(o.getCouponCode())
                 .discount(o.getDiscount())
                 .rating(o.getRating())
+                .electronicInvoiceNumber(o.getElectronicInvoiceNumber())
+                .cufe(o.getCufe())
                 .build();
     }
 

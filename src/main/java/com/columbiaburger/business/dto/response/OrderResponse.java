@@ -32,4 +32,6 @@ public class OrderResponse {
     private String couponCode;
     private java.math.BigDecimal discount;
     private Integer rating;
+    private String electronicInvoiceNumber;
+    private String cufe;
 }

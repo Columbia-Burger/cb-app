@@ -1,5 +1,7 @@
 package com.columbiaburger.business.service;
 
+import com.columbiaburger.business.dto.request.ElectronicInvoiceRequest;
+import com.columbiaburger.business.dto.response.ElectronicInvoiceResponse;
 import com.columbiaburger.business.dto.response.OrderResponse;
 import com.columbiaburger.business.entity.InvoiceStatus;
 import com.columbiaburger.business.entity.Order;
@@ -19,6 +21,7 @@ public class InvoiceService {
 
     private final OrderRepository orderRepository;
     private final OrderService orderService;
+    private final FactusService factusService;
 
     @Transactional(readOnly = true)
     public List<OrderResponse> listInvoices() {
@@ -55,6 +58,32 @@ public class InvoiceService {
 
         order.setInvoiceStatus(InvoiceStatus.VOID);
         return orderService.toResponse(orderRepository.save(order));
+    }
+
+    @Transactional
+    public ElectronicInvoiceResponse generateElectronicInvoice(Long orderId, ElectronicInvoiceRequest req) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Pedido no encontrado"));
+
+        if (order.getElectronicInvoiceNumber() != null) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                    "Ya tiene factura electrónica: " + order.getElectronicInvoiceNumber());
+        }
+
+        ElectronicInvoiceResponse result = factusService.createBill(
+                order,
+                req != null ? req.getCustomerIdentification() : null,
+                req != null ? req.getCustomerName() : null,
+                req != null ? req.getCustomerEmail() : null
+        );
+
+        order.setElectronicInvoiceNumber(result.getNumber());
+        order.setCufe(result.getCufe());
+        order.setInvoiceStatus(InvoiceStatus.INVOICED);
+        if (order.getInvoicedAt() == null) order.setInvoicedAt(LocalDateTime.now());
+        orderRepository.save(order);
+
+        return result;
     }
 
     private String buildInvoiceNumber() {
