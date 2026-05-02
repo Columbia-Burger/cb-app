@@ -54,7 +54,8 @@ export class CuentaService {
   }
 
   private authHeaders(): HttpHeaders {
-    return new HttpHeaders({ Authorization: `Bearer ${this.getToken()}` });
+    const token = this.getToken();
+    return token ? new HttpHeaders({ Authorization: `Bearer ${token}` }) : new HttpHeaders();
   }
 
   sendOtp(whatsapp: string): Observable<void> {

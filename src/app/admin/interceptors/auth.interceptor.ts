@@ -12,7 +12,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const isBusinessApi = req.url.startsWith(environment.businessApiUrl);
 
   let authReq = req;
-  if (isBusinessApi) {
+  if (isBusinessApi && !req.headers.has('Authorization')) {
     const token = adminService.getToken();
     if (token) {
       authReq = req.clone({ setHeaders: { Authorization: `Bearer ${token}` } });
