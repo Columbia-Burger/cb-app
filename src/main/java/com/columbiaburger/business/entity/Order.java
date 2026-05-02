@@ -68,6 +68,9 @@ public class Order {
     @Column(name = "cufe", length = 100)
     private String cufe;
 
+    @Column(name = "electronic_payment_method_code", length = 10)
+    private String electronicPaymentMethodCode;
+
     @Column(name = "coupon_code", length = 50)
     private String couponCode;
 

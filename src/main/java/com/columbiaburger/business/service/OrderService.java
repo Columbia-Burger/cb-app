@@ -296,6 +296,7 @@ public class OrderService {
                 .rating(o.getRating())
                 .electronicInvoiceNumber(o.getElectronicInvoiceNumber())
                 .cufe(o.getCufe())
+                .electronicPaymentMethodCode(o.getElectronicPaymentMethodCode())
                 .build();
     }
 

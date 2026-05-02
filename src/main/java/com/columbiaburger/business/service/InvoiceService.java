@@ -97,6 +97,7 @@ public class InvoiceService {
 
         order.setElectronicInvoiceNumber(result.getNumber());
         order.setCufe(result.getCufe());
+        order.setElectronicPaymentMethodCode(resolvePaymentMethodCode(req != null ? req.getPaymentMethodCode() : null));
         order.setInvoiceStatus(InvoiceStatus.INVOICED);
         if (order.getInvoicedAt() == null) order.setInvoicedAt(LocalDateTime.now());
         orderRepository.save(order);
@@ -119,5 +120,12 @@ public class InvoiceService {
                 .orElse(0L);
 
         return prefix + String.format("%04d", maxSeq + 1);
+    }
+
+    private String resolvePaymentMethodCode(String paymentMethodCode) {
+        return switch (paymentMethodCode) {
+            case "47", "48" -> paymentMethodCode;
+            default -> "10";
+        };
     }
 }

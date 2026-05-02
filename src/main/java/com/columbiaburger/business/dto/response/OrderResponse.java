@@ -34,4 +34,5 @@ public class OrderResponse {
     private Integer rating;
     private String electronicInvoiceNumber;
     private String cufe;
+    private String electronicPaymentMethodCode;
 }
