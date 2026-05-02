@@ -41,9 +41,12 @@ public class FactusService {
     @Value("${factus.numbering-range-id}")
     private int numberingRangeId;
 
-    public ElectronicInvoiceResponse createBill(Order order, String customerDocumentType, String customerIdentification,
-                                                String customerName, String customerEmail) {
-        Map<String, Object> payload = buildPayload(order, customerDocumentType, customerIdentification, customerName, customerEmail);
+    public ElectronicInvoiceResponse createBill(Order order, String customerDocumentType, String paymentMethodCode,
+                                                String customerIdentification,
+                                                 String customerName, String customerEmail) {
+        Map<String, Object> payload = buildPayload(
+                order, customerDocumentType, paymentMethodCode, customerIdentification, customerName, customerEmail
+        );
 
         HttpHeaders headers = buildHeaders();
         ResponseEntity<Map<String, Object>> response = exchange(
@@ -75,7 +78,8 @@ public class FactusService {
         exchange("/v2/credit-notes", HttpMethod.POST, new HttpEntity<>(payload, headers));
     }
 
-    private Map<String, Object> buildPayload(Order order, String documentType, String identification,
+    private Map<String, Object> buildPayload(Order order, String documentType, String paymentMethodCode,
+                                             String identification,
                                              String customerName, String customerEmail) {
         boolean isConsumidorFinal = identification == null || identification.isBlank();
         String id = isConsumidorFinal ? CONSUMIDOR_FINAL_ID : identification.trim();
@@ -96,7 +100,7 @@ public class FactusService {
         payload.put("observation", "Pedido #" + order.getId());
         payload.put("send_email", true);
         payload.put("customer", customer);
-        payload.put("payment_details", buildPaymentDetails(order));
+        payload.put("payment_details", buildPaymentDetails(order, paymentMethodCode));
         payload.put("items", buildItems(order));
         return payload;
     }
@@ -135,10 +139,15 @@ public class FactusService {
         return customer;
     }
 
-    private List<Map<String, Object>> buildPaymentDetails(Order order) {
+    private List<Map<String, Object>> buildPaymentDetails(Order order, String paymentMethodCode) {
+        String resolvedPaymentMethodCode = switch (paymentMethodCode) {
+            case "47", "48" -> paymentMethodCode;
+            default -> "10";
+        };
+
         return List.of(Map.of(
                 "payment_form", "1",
-                "payment_method_code", "10",
+                "payment_method_code", resolvedPaymentMethodCode,
                 "amount", order.getTotal().setScale(2).toPlainString(),
                 "reference_code", "pedido-" + order.getId()
         ));

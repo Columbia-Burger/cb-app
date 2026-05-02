@@ -73,6 +73,7 @@ public class InvoiceService {
         ElectronicInvoiceResponse result = factusService.createBill(
                 order,
                 req != null ? req.getCustomerDocumentType() : null,
+                req != null ? req.getPaymentMethodCode() : null,
                 req != null ? req.getCustomerIdentification() : null,
                 req != null ? req.getCustomerName() : null,
                 req != null ? req.getCustomerEmail() : null
