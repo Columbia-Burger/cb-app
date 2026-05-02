@@ -1,51 +1,51 @@
-<div class="modal-backdrop" (click)="cancelled.emit()"></div>
-
-<div class="modal">
-  <div class="modal-header">
-    <h3 class="modal-title">Factura Electrónica — Pedido #{{ order.id }}</h3>
-    <button class="modal-close" (click)="cancelled.emit()">✕</button>
-  </div>
-
-  <div class="modal-body">
-    <div class="toggle-row">
-      <button class="toggle-btn" [class.active]="useConsumidorFinal()" (click)="useConsumidorFinal.set(true)">
-        Consumidor Final
-      </button>
-      <button class="toggle-btn" [class.active]="!useConsumidorFinal()" (click)="useConsumidorFinal.set(false)">
-        Con datos del cliente
-      </button>
+<div class="modal-overlay" (click)="cancelled.emit()">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3 class="modal-title">Factura Electrónica — Pedido #{{ order.id }}</h3>
+      <button class="modal-close" (click)="cancelled.emit()">✕</button>
     </div>
 
-    @if (!useConsumidorFinal()) {
-      <div class="fields">
-        <label class="field">
-          <span>NIT / Cédula</span>
-          <input [(ngModel)]="identification" placeholder="Ej: 9001234567" />
-        </label>
-        <label class="field">
-          <span>Razón social / Nombre</span>
-          <input [(ngModel)]="customerName" placeholder="Ej: Empresa SAS" />
-        </label>
-        <label class="field">
-          <span>Correo (para envío)</span>
-          <input [(ngModel)]="customerEmail" type="email" placeholder="cliente@correo.com" />
-        </label>
+    <div class="modal-body">
+      <div class="toggle-row">
+        <button class="toggle-btn" [class.active]="useConsumidorFinal()" (click)="useConsumidorFinal.set(true)">
+          Consumidor Final
+        </button>
+        <button class="toggle-btn" [class.active]="!useConsumidorFinal()" (click)="useConsumidorFinal.set(false)">
+          Con datos del cliente
+        </button>
       </div>
-    } @else {
-      <p class="consumidor-info">
-        Se emitirá a nombre de <strong>Consumidor Final</strong> con identificación <strong>222222222222</strong>.
-      </p>
-    }
 
-    @if (error()) {
-      <div class="alert-error">⚠️ {{ error() }}</div>
-    }
-  </div>
+      @if (!useConsumidorFinal()) {
+        <div class="fields">
+          <label class="field">
+            <span>NIT / Cédula</span>
+            <input [(ngModel)]="identification" placeholder="Ej: 9001234567" />
+          </label>
+          <label class="field">
+            <span>Razón social / Nombre</span>
+            <input [(ngModel)]="customerName" placeholder="Ej: Empresa SAS" />
+          </label>
+          <label class="field">
+            <span>Correo (para envío)</span>
+            <input [(ngModel)]="customerEmail" type="email" placeholder="cliente@correo.com" />
+          </label>
+        </div>
+      } @else {
+        <p class="consumidor-info">
+          Se emitirá a nombre de <strong>Consumidor Final</strong> con identificación <strong>222222222222</strong>.
+        </p>
+      }
 
-  <div class="modal-footer">
-    <button class="btn-cancel" (click)="cancelled.emit()">Cancelar</button>
-    <button class="btn-submit" [disabled]="loading()" (click)="submit()">
-      {{ loading() ? 'Generando...' : '📤 Generar factura electrónica' }}
-    </button>
+      @if (error()) {
+        <div class="alert-error">⚠️ {{ error() }}</div>
+      }
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-cancel" (click)="cancelled.emit()">Cancelar</button>
+      <button class="btn-submit" [disabled]="loading()" (click)="submit()">
+        {{ loading() ? 'Generando...' : '📤 Generar factura electrónica' }}
+      </button>
+    </div>
   </div>
 </div>
