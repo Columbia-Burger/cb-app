@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpResponse } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { tap, map } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
@@ -8,7 +8,8 @@ import {
   CustomerResponse, DashboardStats, TopProduct,
   CreateOrderRequest, UpdateOrderRequest, CatalogProduct, FlavorItem, AdditionItem, ShiftResponse, DailyStatResponse,
   SourceStatResponse, HourlyStatResponse, CategoryItem, CreateProductRequest, CreateAdditionRequest,
-  DeliveryZone, CreateDeliveryZoneRequest, SocialPost, GeneratePostRequest, UpdatePostRequest, PostStatus
+  DeliveryZone, CreateDeliveryZoneRequest, SocialPost, GeneratePostRequest, UpdatePostRequest, PostStatus,
+  ElectronicInvoiceDetailResponse
 } from '../models/admin.model';
 import { ProductResponse } from '../../models/api.model';
 
@@ -160,6 +161,29 @@ export class AdminService {
     return this.http.post<import('../models/admin.model').ElectronicInvoiceResponse>(
       `${this.base}/api/invoices/${orderId}/electronic`, req, { headers: this.authHeaders() }
     );
+  }
+
+  getElectronicInvoiceDetail(number: string): Observable<ElectronicInvoiceDetailResponse> {
+    return this.http.get<ElectronicInvoiceDetailResponse>(
+      `${this.base}/api/invoices/electronic/${encodeURIComponent(number)}`,
+      { headers: this.authHeaders() }
+    );
+  }
+
+  downloadElectronicInvoicePdf(number: string): Observable<HttpResponse<Blob>> {
+    return this.http.get(`${this.base}/api/invoices/electronic/${encodeURIComponent(number)}/pdf`, {
+      headers: this.authHeaders(),
+      observe: 'response',
+      responseType: 'blob'
+    });
+  }
+
+  downloadElectronicInvoiceXml(number: string): Observable<HttpResponse<Blob>> {
+    return this.http.get(`${this.base}/api/invoices/electronic/${encodeURIComponent(number)}/xml`, {
+      headers: this.authHeaders(),
+      observe: 'response',
+      responseType: 'blob'
+    });
   }
 
   // ── Clientes ─────────────────────────────────────────────────

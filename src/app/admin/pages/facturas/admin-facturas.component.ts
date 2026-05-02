@@ -1,13 +1,20 @@
-import { Component, inject, signal, computed, OnInit } from '@angular/core';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { CurrencyPipe, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { HttpResponse } from '@angular/common/http';
 import { AdminService } from '../../services/admin.service';
-import { OrderResponse, InvoiceStatus, ElectronicInvoiceResponse } from '../../models/admin.model';
+import {
+  ElectronicInvoiceDetailResponse,
+  ElectronicInvoiceResponse,
+  InvoiceStatus,
+  OrderResponse
+} from '../../models/admin.model';
 import { EditOrderModalComponent } from '../../components/edit-order-modal/edit-order-modal.component';
 import { ElectronicInvoiceModalComponent } from '../../components/electronic-invoice-modal/electronic-invoice-modal.component';
 import { PrintService } from '../../services/print.service';
 
 type FilterTab = 'ALL' | 'PENDING' | 'INVOICED' | 'VOID';
+type ViewMode = 'OPERATIONS' | 'ELECTRONIC';
 
 @Component({
   selector: 'app-admin-facturas',
@@ -23,6 +30,7 @@ export class AdminFacturasComponent implements OnInit {
   orders = signal<OrderResponse[]>([]);
   loading = signal(true);
   activeTab = signal<FilterTab>('ALL');
+  viewMode = signal<ViewMode>('OPERATIONS');
   generatingId = signal<number | null>(null);
   voidingId = signal<number | null>(null);
   editingOrder = signal<OrderResponse | null>(null);
@@ -36,6 +44,14 @@ export class AdminFacturasComponent implements OnInit {
 
   page = signal(1);
   readonly pageSize = 10;
+
+  electronicSearch = signal('');
+  selectedElectronicNumber = signal<string | null>(null);
+  electronicDetail = signal<ElectronicInvoiceDetailResponse | null>(null);
+  loadingElectronicDetail = signal(false);
+  electronicDetailError = signal('');
+  downloadingPdf = signal(false);
+  downloadingXml = signal(false);
 
   filteredAll = computed(() => {
     const tab = this.activeTab();
@@ -59,6 +75,23 @@ export class AdminFacturasComponent implements OnInit {
     VOID: this.orders().filter(o => o.invoiceStatus === 'VOID').length,
   }));
 
+  electronicInvoices = computed(() => {
+    const term = this.electronicSearch().trim().toLowerCase();
+    return this.orders()
+      .filter(o => !!o.electronicInvoiceNumber)
+      .filter(o => {
+        if (!term) return true;
+        return [
+          o.electronicInvoiceNumber,
+          o.invoiceNumber,
+          o.customerName,
+          o.customerWhatsapp,
+          o.cufe,
+          String(o.id),
+        ].some(value => (value ?? '').toLowerCase().includes(term));
+      });
+  });
+
   ngOnInit(): void {
     this.load();
   }
@@ -68,11 +101,19 @@ export class AdminFacturasComponent implements OnInit {
     this.page.set(1);
   }
 
+  setViewMode(mode: ViewMode): void {
+    this.viewMode.set(mode);
+    this.error.set('');
+  }
+
   load(): void {
     this.loading.set(true);
     this.page.set(1);
     this.svc.getInvoices().subscribe({
-      next: data => { this.orders.set(data); this.loading.set(false); },
+      next: data => {
+        this.orders.set(data);
+        this.loading.set(false);
+      },
       error: () => this.loading.set(false),
     });
   }
@@ -85,7 +126,7 @@ export class AdminFacturasComponent implements OnInit {
         this.orders.update(list => list.map(o => o.id === updated.id ? updated : o));
         this.generatingId.set(null);
       },
-      error: (err) => {
+      error: err => {
         this.error.set(err?.error?.message ?? 'Error al generar la factura');
         this.generatingId.set(null);
       },
@@ -112,7 +153,7 @@ export class AdminFacturasComponent implements OnInit {
       if (!this.selectedPrinter && list.length > 0) {
         this.selectedPrinter = list[0];
       }
-    } catch (e) {
+    } catch {
       this.error.set('No se pudo conectar con QZ Tray. Asegúrate de que esté abierto.');
     } finally {
       this.loadingPrinters.set(false);
@@ -155,15 +196,103 @@ export class AdminFacturasComponent implements OnInit {
     this.editingOrder.set(null);
   }
 
+  openElectronicDetail(order: OrderResponse): void {
+    if (!order.electronicInvoiceNumber) return;
+    this.selectedElectronicNumber.set(order.electronicInvoiceNumber);
+    this.loadingElectronicDetail.set(true);
+    this.electronicDetailError.set('');
+    this.electronicDetail.set(null);
+
+    this.svc.getElectronicInvoiceDetail(order.electronicInvoiceNumber).subscribe({
+      next: detail => {
+        this.electronicDetail.set(detail);
+        this.loadingElectronicDetail.set(false);
+      },
+      error: err => {
+        this.electronicDetailError.set(err?.error?.message ?? 'No se pudo cargar el detalle de la factura.');
+        this.loadingElectronicDetail.set(false);
+      }
+    });
+  }
+
+  closeElectronicDetail(): void {
+    this.selectedElectronicNumber.set(null);
+    this.electronicDetail.set(null);
+    this.electronicDetailError.set('');
+    this.loadingElectronicDetail.set(false);
+  }
+
+  downloadElectronicPdf(number: string): void {
+    this.downloadingPdf.set(true);
+    this.svc.downloadElectronicInvoicePdf(number).subscribe({
+      next: response => {
+        this.saveBlobResponse(response, `${number}.pdf`);
+        this.downloadingPdf.set(false);
+      },
+      error: err => {
+        this.electronicDetailError.set(err?.error?.message ?? 'No se pudo descargar el PDF.');
+        this.downloadingPdf.set(false);
+      }
+    });
+  }
+
+  downloadElectronicXml(number: string): void {
+    this.downloadingXml.set(true);
+    this.svc.downloadElectronicInvoiceXml(number).subscribe({
+      next: response => {
+        this.saveBlobResponse(response, `${number}.xml`);
+        this.downloadingXml.set(false);
+      },
+      error: err => {
+        this.electronicDetailError.set(err?.error?.message ?? 'No se pudo descargar el XML.');
+        this.downloadingXml.set(false);
+      }
+    });
+  }
+
+  openPublicUrl(): void {
+    const url = this.electronicDetail()?.publicUrl;
+    if (url) window.open(url, '_blank');
+  }
+
+  openQrUrl(): void {
+    const url = this.electronicDetail()?.qrUrl;
+    if (url) window.open(url, '_blank');
+  }
+
   statusLabel(s: InvoiceStatus): string {
     return s === 'INVOICED' ? 'Facturada' : s === 'VOID' ? 'Anulada' : 'Pendiente';
   }
 
   orderStatusLabel(s: string): string {
     const map: Record<string, string> = {
-      RECEIVED: 'Recibido', PREPARING: 'Preparando',
-      ON_THE_WAY: 'En camino', DELIVERED: 'Entregado', CANCELLED: 'Cancelado'
+      RECEIVED: 'Recibido',
+      PREPARING: 'Preparando',
+      ON_THE_WAY: 'En camino',
+      DELIVERED: 'Entregado',
+      CANCELLED: 'Cancelado'
     };
     return map[s] ?? s;
+  }
+
+  detailCustomerName(): string {
+    const detail = this.electronicDetail();
+    if (!detail) return '';
+    return detail.customer.company || detail.customer.names || 'Cliente';
+  }
+
+  private saveBlobResponse(response: HttpResponse<Blob>, fallbackName: string): void {
+    if (!response.body) return;
+
+    const contentDisposition = response.headers.get('content-disposition') ?? '';
+    const match = /filename="?(.*?)"?$/i.exec(contentDisposition);
+    const fileName = match?.[1] ?? fallbackName;
+
+    const url = window.URL.createObjectURL(response.body);
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.download = fileName;
+    anchor.click();
+    window.URL.revokeObjectURL(url);
   }
 }

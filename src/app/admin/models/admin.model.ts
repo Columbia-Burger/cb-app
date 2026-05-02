@@ -196,6 +196,61 @@ export interface ElectronicInvoiceResponse {
   pdfUrl: string;
 }
 
+export interface ElectronicInvoiceDetailResponse {
+  number: string;
+  referenceCode: string;
+  cufe: string;
+  documentName: string;
+  operationTypeName: string;
+  validated: boolean;
+  validatedAt: string;
+  createdAt: string;
+  observation: string;
+  sendEmail: boolean;
+  qrUrl: string;
+  publicUrl: string;
+  payment: {
+    formCode: string;
+    formName: string;
+    methodCode: string;
+    methodName: string;
+  };
+  customer: {
+    documentCode: string;
+    documentName: string;
+    identification: string;
+    dv: string;
+    company: string;
+    names: string;
+    email: string;
+    phone: string;
+    address: string;
+    legalOrganizationCode: string;
+    legalOrganizationName: string;
+    tributeCode: string;
+    tributeName: string;
+    municipality: string;
+    department: string;
+  };
+  totals: {
+    grossValue: string;
+    taxableAmount: string;
+    taxAmount: string;
+    discountAmount: string;
+    total: string;
+  };
+  items: Array<{
+    codeReference: string;
+    name: string;
+    quantity: string;
+    price: string;
+    total: string;
+    discountRate: string;
+    taxSummary: string;
+  }>;
+  errors: Record<string, string>;
+}
+
 export interface HourlyStatResponse {
   hour: number;
   orders: number;
