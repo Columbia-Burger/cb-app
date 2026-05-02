@@ -17,6 +17,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.server.ResponseStatusException;
 
+import org.springframework.scheduling.annotation.Scheduled;
+
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
@@ -330,6 +332,22 @@ public class SocialService {
             sb.append("\n\n").append(post.getHashtags());
         }
         return sb.toString();
+    }
+
+    // ─── F) Auto-publish scheduled posts ─────────────────────────────────────
+
+    @Scheduled(fixedDelay = 60_000)
+    public void publishScheduledPosts() {
+        List<SocialPost> due = socialPostRepository
+                .findByStatusAndScheduledAtIsNotNullAndScheduledAtLessThanEqual(
+                        PostStatus.APPROVED, LocalDateTime.now());
+        for (SocialPost post : due) {
+            try {
+                publishToInstagram(post.getId());
+            } catch (Exception e) {
+                log.error("Error publicando post programado {}: {}", post.getId(), e.getMessage());
+            }
+        }
     }
 
     private SocialPostResponse toResponse(SocialPost post) {

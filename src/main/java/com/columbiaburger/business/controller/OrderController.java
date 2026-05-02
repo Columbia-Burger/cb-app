@@ -94,4 +94,12 @@ public class OrderController {
             @Valid @RequestBody UpdateOrderRequest request) {
         return ResponseEntity.ok(orderService.updateOrder(id, request));
     }
+
+    @PostMapping("/{id}/rating")
+    public ResponseEntity<Void> rateOrder(
+            @PathVariable Long id,
+            @RequestBody java.util.Map<String, Integer> body) {
+        orderService.rateOrder(id, body.getOrDefault("rating", 0));
+        return ResponseEntity.ok().build();
+    }
 }

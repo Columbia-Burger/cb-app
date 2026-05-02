@@ -67,6 +67,8 @@ public class SecurityConfig {
                 .requestMatchers(req -> "POST".equals(req.getMethod()) && "/api/customers".equals(req.getRequestURI())).permitAll()
                 .requestMatchers("/api/customers/whatsapp/**").permitAll()
                 .requestMatchers("/api/orders/*/tracking").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/orders/*/rating").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/coupons/validate").permitAll()
                 .requestMatchers("/api/orders/events").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/products*").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/categories*").permitAll()

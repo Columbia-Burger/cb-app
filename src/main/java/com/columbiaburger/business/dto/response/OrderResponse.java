@@ -29,4 +29,7 @@ public class OrderResponse {
     private InvoiceStatus invoiceStatus;
     private String invoiceNumber;
     private LocalDateTime invoicedAt;
+    private String couponCode;
+    private java.math.BigDecimal discount;
+    private Integer rating;
 }

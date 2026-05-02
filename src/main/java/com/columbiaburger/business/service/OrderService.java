@@ -28,6 +28,7 @@ public class OrderService {
     private final OrderItemRepository orderItemRepository;
     private final CustomerRepository customerRepository;
     private final OrderEventService orderEventService;
+    private final WhatsAppService whatsAppService;
 
     @Transactional
     public OrderResponse create(CreateOrderRequest request) {
@@ -176,9 +177,41 @@ public class OrderService {
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Pedido no encontrado"));
         order.setStatus(status);
-        OrderResponse response = toResponse(orderRepository.save(order));
-        orderEventService.publishUpdated(response);
-        return response;
+        Order saved = orderRepository.save(order);
+        orderEventService.publishUpdated(toResponse(saved));
+
+        String whatsapp = saved.getCustomer().getWhatsapp();
+        String firstName = firstName(saved.getCustomer().getName());
+
+        if (status == OrderStatus.ON_THE_WAY) {
+            whatsAppService.sendText(whatsapp,
+                    "¡Hola " + firstName + "! 🛵 Tu pedido de Columbia Burger está en camino. ¡Buen provecho!");
+        } else if (status == OrderStatus.DELIVERED && !Boolean.TRUE.equals(saved.getRatingRequestSent())) {
+            whatsAppService.sendText(whatsapp,
+                    "¡Hola " + firstName + "! ✅ Tu pedido fue entregado. ¿Cómo estuvo?\n" +
+                    "Responde con un número del 1️⃣ al 5️⃣ para calificarnos ⭐");
+            saved.setRatingRequestSent(true);
+            orderRepository.save(saved);
+        }
+
+        return toResponse(saved);
+    }
+
+    @Transactional
+    public OrderResponse rateOrder(Long id, int rating) {
+        if (rating < 1 || rating > 5) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Calificación debe ser entre 1 y 5");
+        }
+        Order order = orderRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Pedido no encontrado"));
+        order.setRating(rating);
+        return toResponse(orderRepository.save(order));
+    }
+
+    private static String firstName(String fullName) {
+        if (fullName == null || fullName.isBlank()) return "cliente";
+        int space = fullName.indexOf(' ');
+        return space > 0 ? fullName.substring(0, space) : fullName;
     }
 
     @Transactional
@@ -247,6 +280,9 @@ public class OrderService {
                 .invoiceStatus(o.getInvoiceStatus())
                 .invoiceNumber(o.getInvoiceNumber())
                 .invoicedAt(o.getInvoicedAt())
+                .couponCode(o.getCouponCode())
+                .discount(o.getDiscount())
+                .rating(o.getRating())
                 .build();
     }
 

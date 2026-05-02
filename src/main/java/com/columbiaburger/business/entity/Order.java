@@ -62,6 +62,19 @@ public class Order {
     @Column(name = "invoiced_at")
     private LocalDateTime invoicedAt;
 
+    @Column(name = "coupon_code", length = 50)
+    private String couponCode;
+
+    @Column(name = "discount", precision = 10, scale = 2)
+    private BigDecimal discount;
+
+    @Column(name = "rating")
+    private Integer rating;
+
+    @Builder.Default
+    @Column(name = "rating_request_sent", nullable = false)
+    private Boolean ratingRequestSent = false;
+
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<OrderItem> items;
 }
