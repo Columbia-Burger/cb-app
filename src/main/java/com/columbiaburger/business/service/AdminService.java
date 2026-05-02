@@ -62,6 +62,8 @@ public class AdminService {
                 )
                 .onTheWayOrders(orderRepository.countByStatus(OrderStatus.ON_THE_WAY))
                 .totalCustomers(customerRepository.count())
+                .averageRating(orderRepository.averageRating())
+                .ratedOrdersCount(orderRepository.countRated())
                 .build();
     }
 

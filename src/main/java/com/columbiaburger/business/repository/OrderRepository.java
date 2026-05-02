@@ -36,4 +36,10 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
 
     @Query("SELECT o FROM Order o WHERE o.customer.whatsapp = :whatsapp AND o.status = 'DELIVERED' AND o.rating IS NULL ORDER BY o.createdAt DESC")
     List<Order> findDeliveredUnratedByWhatsapp(@Param("whatsapp") String whatsapp);
+
+    @Query("SELECT AVG(o.rating) FROM Order o WHERE o.rating IS NOT NULL")
+    Double averageRating();
+
+    @Query("SELECT COUNT(o) FROM Order o WHERE o.rating IS NOT NULL")
+    long countRated();
 }
