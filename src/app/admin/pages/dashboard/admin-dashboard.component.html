@@ -42,7 +42,7 @@
           <div class="stat-value">{{ stats()!.averageRating! | number:'1.1-1' }}</div>
           <div class="stars-row">
             @for (i of [1,2,3,4,5]; track i) {
-              <span class="star" [class.full]="i <= (stats()!.averageRating! | number:'1.0-0')" >★</span>
+              <span class="star" [class.full]="i <= roundRating(stats()!.averageRating!)" >★</span>
             }
             <span class="rated-count">({{ stats()!.ratedOrdersCount }} reseñas)</span>
           </div>

@@ -75,6 +75,10 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
     return 'empty';
   }
 
+  roundRating(rating: number): number {
+    return Math.round(rating);
+  }
+
   ticketPromedio(): number {
     const s = this.stats();
     if (!s || s.ordersToday === 0) return 0;
