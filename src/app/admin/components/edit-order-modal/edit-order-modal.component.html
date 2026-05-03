@@ -76,6 +76,37 @@
 
     <!-- Descuentos -->
     <div class="section-label" style="margin-top:1.2em">Descuentos</div>
+
+    <!-- Cupón -->
+    <div class="coupon-row">
+      <div class="input-affix-wrap coupon-input-wrap">
+        <input
+          type="text"
+          placeholder="Código de cupón"
+          style="text-transform:uppercase"
+          [ngModel]="couponCode()"
+          (ngModelChange)="couponCode.set($event.toUpperCase()); couponError.set(''); couponSuccess.set('')"
+          (keydown.enter)="validateCoupon()"
+        />
+        @if (couponSuccess()) {
+          <button class="coupon-remove-btn" (click)="removeCoupon()" title="Quitar cupón">✕</button>
+        }
+      </div>
+      <button
+        class="coupon-validate-btn"
+        [disabled]="validatingCoupon() || !couponCode().trim()"
+        (click)="validateCoupon()"
+      >
+        {{ validatingCoupon() ? '...' : 'Validar' }}
+      </button>
+    </div>
+    @if (couponSuccess()) {
+      <p class="coupon-ok">✓ {{ couponSuccess() }}</p>
+    }
+    @if (couponError()) {
+      <p class="coupon-err">✕ {{ couponError() }}</p>
+    }
+
     <div class="form-row">
       <label class="form-field">
         <span>Descuento (%)</span>

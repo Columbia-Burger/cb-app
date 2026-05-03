@@ -379,4 +379,8 @@ export class AdminService {
   deleteCoupon(id: number): Observable<void> {
     return this.http.delete<void>(`${this.base}/api/coupons/${id}`, { headers: this.authHeaders() });
   }
+
+  validateCoupon(code: string, total: number): Observable<{ code: string; type: 'PERCENTAGE' | 'FIXED'; value: number; discountAmount: number }> {
+    return this.http.post<any>(`${this.base}/api/coupons/validate`, { code, total }, { headers: this.authHeaders() });
+  }
 }

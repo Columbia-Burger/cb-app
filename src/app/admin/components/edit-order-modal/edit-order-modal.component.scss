@@ -248,6 +248,56 @@
   }
 }
 
+.coupon-row {
+  display: flex;
+  gap: 0.5em;
+  align-items: stretch;
+}
+
+.coupon-input-wrap {
+  flex: 1;
+}
+
+.coupon-remove-btn {
+  background: none;
+  border: none;
+  color: #8b949e;
+  font-size: 0.8em;
+  padding: 0 0.6em;
+  cursor: pointer;
+  flex-shrink: 0;
+  &:hover { color: #f85149; }
+}
+
+.coupon-validate-btn {
+  flex-shrink: 0;
+  padding: 0 1em;
+  background: #21262d;
+  border: 1px solid #30363d;
+  border-radius: 8px;
+  color: #58a6ff;
+  font-size: 0.82em;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s, border-color 0.15s;
+
+  &:hover:not(:disabled) { background: rgba(88,166,255,0.1); border-color: #58a6ff; }
+  &:disabled { opacity: 0.4; cursor: not-allowed; }
+}
+
+.coupon-ok {
+  font-size: 0.78em;
+  color: #3fb950;
+  margin: 0;
+}
+
+.coupon-err {
+  font-size: 0.78em;
+  color: #f85149;
+  margin: 0;
+}
+
 .input-affix-wrap {
   display: flex;
   align-items: center;

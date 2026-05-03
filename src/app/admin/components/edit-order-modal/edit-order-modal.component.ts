@@ -27,6 +27,10 @@ export class EditOrderModalComponent implements OnInit {
   discountPercentage = signal(0);
   discountFixed = signal(0);
   discountFixedDisplay = signal('');
+  couponCode = signal('');
+  couponError = signal('');
+  couponSuccess = signal('');
+  validatingCoupon = signal(false);
   saving = signal(false);
   error = signal('');
 
@@ -97,6 +101,38 @@ export class EditOrderModalComponent implements OnInit {
     this.searchTerm.set('');
   }
 
+  validateCoupon(): void {
+    const code = this.couponCode().trim().toUpperCase();
+    if (!code) return;
+    this.validatingCoupon.set(true);
+    this.couponError.set('');
+    this.couponSuccess.set('');
+    this.svc.validateCoupon(code, this.subtotal()).subscribe({
+      next: res => {
+        this.validatingCoupon.set(false);
+        const discount = Math.round(res.discountAmount);
+        this.discountFixed.set(discount);
+        const formatted = discount ? discount.toLocaleString('es-CO').replace(/,/g, '.') : '';
+        this.discountFixedDisplay.set(formatted);
+        this.discountPercentage.set(0);
+        const label = res.type === 'PERCENTAGE' ? `${res.value}%` : `$${discount.toLocaleString('es-CO')}`;
+        this.couponSuccess.set(`Cupón aplicado: ${label} de descuento`);
+      },
+      error: err => {
+        this.validatingCoupon.set(false);
+        this.couponError.set(err?.error?.message ?? 'Cupón inválido o expirado');
+      },
+    });
+  }
+
+  removeCoupon(): void {
+    this.couponCode.set('');
+    this.couponSuccess.set('');
+    this.couponError.set('');
+    this.discountFixed.set(0);
+    this.discountFixedDisplay.set('');
+  }
+
   onDiscountFixedInput(event: Event): void {
     const input = event.target as HTMLInputElement;
     const digits = input.value.replace(/\D/g, '');
@@ -105,6 +141,7 @@ export class EditOrderModalComponent implements OnInit {
     input.value = formatted;
     this.discountFixed.set(numeric);
     this.discountFixedDisplay.set(formatted);
+    this.couponSuccess.set('');
   }
 
   save(): void {
