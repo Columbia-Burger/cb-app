@@ -14,4 +14,6 @@ public class UpdateOrderRequest {
     private BigDecimal deliveryFee;
     private String deliveryZone;
     private String notes;
+    private BigDecimal discountPercentage;
+    private BigDecimal discountFixed;
 }

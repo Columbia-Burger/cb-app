@@ -18,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
 
 @Service
@@ -239,18 +240,26 @@ public class OrderService {
             List<OrderItem> newItems = request.getItems().stream().map(this::toOrderItem).toList();
             newItems.forEach(item -> item.setOrder(order));
             order.getItems().addAll(newItems);
-
-            BigDecimal fee = order.getDeliveryFee() != null ? order.getDeliveryFee() : BigDecimal.ZERO;
-            BigDecimal itemsTotal = newItems.stream()
-                    .map(i -> i.getUnitPrice().multiply(BigDecimal.valueOf(i.getQuantity())))
-                    .reduce(BigDecimal.ZERO, BigDecimal::add);
-            order.setTotal(itemsTotal.add(fee));
-        } else if (request.getDeliveryFee() != null && order.getItems() != null) {
-            BigDecimal itemsTotal = order.getItems().stream()
-                    .map(i -> i.getUnitPrice().multiply(BigDecimal.valueOf(i.getQuantity())))
-                    .reduce(BigDecimal.ZERO, BigDecimal::add);
-            order.setTotal(itemsTotal.add(request.getDeliveryFee()));
         }
+
+        BigDecimal fee = order.getDeliveryFee() != null ? order.getDeliveryFee() : BigDecimal.ZERO;
+        BigDecimal itemsTotal = order.getItems().stream()
+                .map(i -> i.getUnitPrice().multiply(BigDecimal.valueOf(i.getQuantity())))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal subtotal = itemsTotal.add(fee);
+
+        if (request.getDiscountPercentage() != null || request.getDiscountFixed() != null) {
+            BigDecimal pctAmt = request.getDiscountPercentage() != null
+                    ? subtotal.multiply(request.getDiscountPercentage())
+                            .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP)
+                    : BigDecimal.ZERO;
+            BigDecimal fixedAmt = request.getDiscountFixed() != null ? request.getDiscountFixed() : BigDecimal.ZERO;
+            BigDecimal totalDiscount = pctAmt.add(fixedAmt).min(subtotal).max(BigDecimal.ZERO);
+            order.setDiscount(totalDiscount);
+        }
+
+        BigDecimal discount = order.getDiscount() != null ? order.getDiscount() : BigDecimal.ZERO;
+        order.setTotal(subtotal.subtract(discount).max(BigDecimal.ZERO));
 
         OrderResponse response = toResponse(orderRepository.save(order));
         orderEventService.publishUpdated(response);
