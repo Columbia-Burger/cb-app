@@ -86,36 +86,31 @@
   width: 100%;
 }
 
-.btn-open {
-  background: #238636;
+.btn-open, .btn-close {
   border: none;
   border-radius: 10px;
   color: #fff;
-  font-size: 0.95em;
+  font-size: 0.9em;
   font-weight: 700;
-  padding: 0.65em 1.75em;
+  padding: 0.65em 1.5em;
   cursor: pointer;
   margin-top: 0.5em;
   transition: background 0.15s;
+  white-space: nowrap;
+  width: 100%;
+  max-width: 280px;
 
-  &:hover:not(:disabled) { background: #2ea043; }
   &:disabled { opacity: 0.45; cursor: not-allowed; }
+}
+
+.btn-open {
+  background: #238636;
+  &:hover:not(:disabled) { background: #2ea043; }
 }
 
 .btn-close {
   background: #b91c1c;
-  border: none;
-  border-radius: 10px;
-  color: #fff;
-  font-size: 0.95em;
-  font-weight: 700;
-  padding: 0.65em 1.75em;
-  cursor: pointer;
-  margin-top: 0.5em;
-  transition: background 0.15s;
-
   &:hover:not(:disabled) { background: #dc2626; }
-  &:disabled { opacity: 0.45; cursor: not-allowed; }
 }
 
 /* ── Turno activo ── */

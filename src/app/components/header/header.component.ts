@@ -1,4 +1,4 @@
-import { Component, inject, NgZone, OnDestroy, OnInit } from '@angular/core';
+import { Component, HostListener, inject } from '@angular/core';
 import { RouterLink, RouterLinkActive, Router } from '@angular/router';
 import { environment } from '../../../environments/environment';
 
@@ -9,9 +9,8 @@ import { environment } from '../../../environments/environment';
   templateUrl: './header.component.html',
   styleUrl: './header.component.scss',
 })
-export class HeaderComponent implements OnInit, OnDestroy {
+export class HeaderComponent {
   private readonly router = inject(Router);
-  private readonly zone = inject(NgZone);
 
   readonly whatsappUrl = `https://wa.me/${environment.whatsappNumber}?text=${environment.whatsappText}`;
 
@@ -20,36 +19,21 @@ export class HeaderComponent implements OnInit, OnDestroy {
   menuOpen = false;
 
   private lastScrollY = 0;
-  private readonly scrollHandler = () => {
-    const y = window.scrollY;
-    const nextScrolled = y > 40;
-    let nextHidden = this.hidden;
 
+  @HostListener('window:scroll')
+  onScroll(): void {
+    const y = window.scrollY ?? document.documentElement.scrollTop ?? 0;
+    this.scrolled = y > 40;
     if (!this.menuOpen) {
-      if (y < 80) {
-        nextHidden = false;
-      } else if (y > this.lastScrollY + 8) {
-        nextHidden = true;
-      } else if (y < this.lastScrollY - 8) {
-        nextHidden = false;
+      if (y < 60) {
+        this.hidden = false;
+      } else if (y > this.lastScrollY + 4) {
+        this.hidden = true;
+      } else if (y < this.lastScrollY - 4) {
+        this.hidden = false;
       }
     }
     this.lastScrollY = y;
-
-    if (nextScrolled !== this.scrolled || nextHidden !== this.hidden) {
-      this.zone.run(() => {
-        this.scrolled = nextScrolled;
-        this.hidden = nextHidden;
-      });
-    }
-  };
-
-  ngOnInit(): void {
-    window.addEventListener('scroll', this.scrollHandler, { passive: true });
-  }
-
-  ngOnDestroy(): void {
-    window.removeEventListener('scroll', this.scrollHandler);
   }
 
   goToContacto(): void {
