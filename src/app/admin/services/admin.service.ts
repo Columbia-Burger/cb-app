@@ -116,12 +116,20 @@ export class AdminService {
     );
   }
 
-  openShift(): Observable<ShiftResponse> {
-    return this.http.post<ShiftResponse>(`${this.base}/api/shifts/open`, {});
+  openShift(initialCash: number): Observable<ShiftResponse> {
+    return this.http.post<ShiftResponse>(
+      `${this.base}/api/admin/shifts/open`,
+      { initialCash },
+      { headers: this.authHeaders() }
+    );
   }
 
-  closeShift(): Observable<ShiftResponse> {
-    return this.http.post<ShiftResponse>(`${this.base}/api/shifts/close`, {});
+  closeShift(finalCash: number): Observable<ShiftResponse> {
+    return this.http.post<ShiftResponse>(
+      `${this.base}/api/admin/shifts/close`,
+      { finalCash },
+      { headers: this.authHeaders() }
+    );
   }
 
   updateOrderStatus(id: number, status: OrderStatus): Observable<OrderResponse> {

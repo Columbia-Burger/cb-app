@@ -1,4 +1,4 @@
-import { Component, HostListener, inject } from '@angular/core';
+import { Component, inject, NgZone, OnDestroy, OnInit } from '@angular/core';
 import { RouterLink, RouterLinkActive, Router } from '@angular/router';
 import { environment } from '../../../environments/environment';
 
@@ -9,8 +9,9 @@ import { environment } from '../../../environments/environment';
   templateUrl: './header.component.html',
   styleUrl: './header.component.scss',
 })
-export class HeaderComponent {
+export class HeaderComponent implements OnInit, OnDestroy {
   private readonly router = inject(Router);
+  private readonly zone = inject(NgZone);
 
   readonly whatsappUrl = `https://wa.me/${environment.whatsappNumber}?text=${environment.whatsappText}`;
 
@@ -19,21 +20,36 @@ export class HeaderComponent {
   menuOpen = false;
 
   private lastScrollY = 0;
-
-  @HostListener('window:scroll')
-  onScroll(): void {
+  private readonly scrollHandler = () => {
     const y = window.scrollY;
-    this.scrolled = y > 40;
+    const nextScrolled = y > 40;
+    let nextHidden = this.hidden;
+
     if (!this.menuOpen) {
       if (y < 80) {
-        this.hidden = false;
+        nextHidden = false;
       } else if (y > this.lastScrollY + 8) {
-        this.hidden = true;
+        nextHidden = true;
       } else if (y < this.lastScrollY - 8) {
-        this.hidden = false;
+        nextHidden = false;
       }
     }
     this.lastScrollY = y;
+
+    if (nextScrolled !== this.scrolled || nextHidden !== this.hidden) {
+      this.zone.run(() => {
+        this.scrolled = nextScrolled;
+        this.hidden = nextHidden;
+      });
+    }
+  };
+
+  ngOnInit(): void {
+    window.addEventListener('scroll', this.scrollHandler, { passive: true });
+  }
+
+  ngOnDestroy(): void {
+    window.removeEventListener('scroll', this.scrollHandler);
   }
 
   goToContacto(): void {

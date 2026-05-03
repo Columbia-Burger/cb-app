@@ -1,0 +1,155 @@
+<div class="page">
+  <div class="page-header">
+    <div>
+      <h2 class="page-title">Turno</h2>
+      <p class="page-sub">Abre y cierra el turno del día con control de efectivo en caja.</p>
+    </div>
+  </div>
+
+  @if (error()) {
+    <div class="alert-error">{{ error() }}</div>
+  }
+
+  @if (state() === 'loading') {
+    <div class="loading"><div class="spinner"></div> Cargando turno...</div>
+  }
+
+  @if (state() === 'no-shift') {
+    <div class="card open-card">
+      <div class="card-icon">🔓</div>
+      <h3>No hay turno activo</h3>
+      <p>Ingresa el efectivo inicial en caja para abrir el turno del día.</p>
+      <div class="cash-field">
+        <label>Efectivo inicial en caja</label>
+        <div class="cash-input-wrap">
+          <span class="currency-prefix">$</span>
+          <input
+            type="number"
+            min="0"
+            step="1000"
+            [(ngModel)]="initialCash"
+            placeholder="0"
+          />
+        </div>
+      </div>
+      <button class="btn-open" [disabled]="opening()" (click)="openShift()">
+        {{ opening() ? 'Abriendo...' : '🔓 Abrir turno' }}
+      </button>
+    </div>
+  }
+
+  @if (state() === 'active' && shift()) {
+    <div class="active-wrap">
+      <div class="shift-banner">
+        <span class="shift-badge">Turno activo</span>
+        <span class="shift-since">Abierto desde {{ shift()!.openedAt | date:'dd/MM/yyyy HH:mm' }}</span>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <span class="stat-label">Pedidos en el turno</span>
+          <span class="stat-value">{{ shift()!.totalOrders ?? 0 }}</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-label">Ingresos del turno</span>
+          <span class="stat-value">{{ (shift()!.totalRevenue ?? 0) | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-label">Efectivo inicial</span>
+          <span class="stat-value">{{ (shift()!.initialCash ?? 0) | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
+        </div>
+        <div class="stat-card stat-card--highlight">
+          <span class="stat-label">Esperado en caja</span>
+          <span class="stat-value">{{ (shift()!.expectedCash ?? 0) | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
+        </div>
+      </div>
+
+      <div class="card close-card">
+        <div class="card-icon">🔒</div>
+        <h3>Cerrar turno</h3>
+        <p>Cuenta el efectivo en caja e ingresa el total para calcular si cuadra.</p>
+        <div class="cash-field">
+          <label>Efectivo real en caja</label>
+          <div class="cash-input-wrap">
+            <span class="currency-prefix">$</span>
+            <input
+              type="number"
+              min="0"
+              step="1000"
+              [(ngModel)]="finalCash"
+              placeholder="0"
+            />
+          </div>
+        </div>
+        <button class="btn-close" [disabled]="closing()" (click)="closeShift()">
+          {{ closing() ? 'Cerrando...' : '🔒 Cerrar turno' }}
+        </button>
+      </div>
+    </div>
+  }
+
+  @if (state() === 'closed-summary' && shift()) {
+    <div class="summary-wrap">
+      <div class="summary-header no-print">
+        <h3>Turno cerrado</h3>
+        <div class="summary-actions">
+          <button class="btn-print" (click)="printSummary()">🖨️ Imprimir resumen</button>
+          <button class="btn-new" (click)="newShift()">➕ Nuevo turno</button>
+        </div>
+      </div>
+
+      <div class="summary-card print-area">
+        <div class="print-header">
+          <h2>Columbia Burger</h2>
+          <p>Resumen de turno</p>
+        </div>
+
+        <div class="summary-row">
+          <span>Turno #</span>
+          <strong>{{ shift()!.id }}</strong>
+        </div>
+        <div class="summary-row">
+          <span>Apertura</span>
+          <strong>{{ shift()!.openedAt | date:'dd/MM/yyyy HH:mm' }}</strong>
+        </div>
+        <div class="summary-row">
+          <span>Cierre</span>
+          <strong>{{ shift()!.closedAt | date:'dd/MM/yyyy HH:mm' }}</strong>
+        </div>
+
+        <div class="summary-divider"></div>
+
+        <div class="summary-row">
+          <span>Pedidos</span>
+          <strong>{{ shift()!.totalOrders ?? 0 }}</strong>
+        </div>
+        <div class="summary-row">
+          <span>Ingresos totales</span>
+          <strong>{{ (shift()!.totalRevenue ?? 0) | currency:'COP':'symbol-narrow':'1.0-0' }}</strong>
+        </div>
+
+        <div class="summary-divider"></div>
+
+        <div class="summary-row">
+          <span>Efectivo inicial</span>
+          <strong>{{ (shift()!.initialCash ?? 0) | currency:'COP':'symbol-narrow':'1.0-0' }}</strong>
+        </div>
+        <div class="summary-row">
+          <span>Esperado en caja</span>
+          <strong>{{ (shift()!.expectedCash ?? 0) | currency:'COP':'symbol-narrow':'1.0-0' }}</strong>
+        </div>
+        <div class="summary-row">
+          <span>Contado en caja</span>
+          <strong>{{ (shift()!.finalCash ?? 0) | currency:'COP':'symbol-narrow':'1.0-0' }}</strong>
+        </div>
+
+        <div class="summary-divider"></div>
+
+        <div class="summary-difference" [ngClass]="differenceClass()">
+          <span>Diferencia</span>
+          <strong>{{ differenceLabel() }}</strong>
+        </div>
+      </div>
+    </div>
+  }
+</div>

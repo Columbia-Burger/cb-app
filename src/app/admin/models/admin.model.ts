@@ -263,6 +263,12 @@ export interface ShiftResponse {
   openedAt: string;
   closedAt: string | null;
   active: boolean;
+  initialCash: number | null;
+  finalCash: number | null;
+  totalOrders: number | null;
+  totalRevenue: number | null;
+  expectedCash: number | null;
+  difference: number | null;
 }
 
 export interface CatalogCategory {

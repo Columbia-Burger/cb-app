@@ -60,6 +60,11 @@ export const adminRoutes: Routes = [
           import('./pages/facturas/admin-facturas.component').then(m => m.AdminFacturasComponent)
       },
       {
+        path: 'turno',
+        loadComponent: () =>
+          import('./pages/turno/admin-turno.component').then(m => m.AdminTurnoComponent)
+      },
+      {
         path: 'social',
         loadComponent: () =>
           import('./pages/social/admin-social.component').then(m => m.AdminSocialComponent)
