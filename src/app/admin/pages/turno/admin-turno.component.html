@@ -32,7 +32,7 @@
           />
         </div>
       </div>
-      <button class="btn-open" [disabled]="opening()" (click)="openShift()">
+      <button class="turno-btn turno-btn--open" [disabled]="opening()" (click)="openShift()">
         {{ opening() ? 'Abriendo...' : 'Abrir turno' }}
       </button>
     </div>
@@ -81,7 +81,7 @@
             />
           </div>
         </div>
-        <button class="btn-close" [disabled]="closing()" (click)="closeShift()">
+        <button class="turno-btn turno-btn--cerrar" [disabled]="closing()" (click)="closeShift()">
           {{ closing() ? 'Cerrando...' : 'Cerrar turno' }}
         </button>
       </div>
