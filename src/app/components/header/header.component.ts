@@ -25,7 +25,13 @@ export class HeaderComponent {
     const y = window.scrollY;
     this.scrolled = y > 40;
     if (!this.menuOpen) {
-      this.hidden = y > 80 && y > this.lastScrollY;
+      if (y < 80) {
+        this.hidden = false;
+      } else if (y > this.lastScrollY + 8) {
+        this.hidden = true;
+      } else if (y < this.lastScrollY - 8) {
+        this.hidden = false;
+      }
     }
     this.lastScrollY = y;
   }
