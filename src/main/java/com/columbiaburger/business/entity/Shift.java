@@ -3,6 +3,7 @@ package com.columbiaburger.business.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
@@ -22,6 +23,12 @@ public class Shift {
 
     @Column(nullable = false)
     private boolean active;
+
+    @Column(name = "initial_cash", precision = 12, scale = 2)
+    private BigDecimal initialCash;
+
+    @Column(name = "final_cash", precision = 12, scale = 2)
+    private BigDecimal finalCash;
 
     @PrePersist
     protected void onCreate() {
