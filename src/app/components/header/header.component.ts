@@ -22,14 +22,14 @@ export class HeaderComponent {
 
   @HostListener('window:scroll')
   onScroll(): void {
-    const y = window.scrollY ?? document.documentElement.scrollTop ?? 0;
-    this.scrolled = y > 40;
+    const y = window.scrollY;
+    this.scrolled = y > 10;
     if (!this.menuOpen) {
-      if (y < 60) {
+      if (y <= 50) {
         this.hidden = false;
-      } else if (y > this.lastScrollY + 4) {
+      } else if (y > this.lastScrollY) {
         this.hidden = true;
-      } else if (y < this.lastScrollY - 4) {
+      } else if (y < this.lastScrollY) {
         this.hidden = false;
       }
     }
