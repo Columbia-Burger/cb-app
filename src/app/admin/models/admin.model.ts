@@ -84,6 +84,7 @@ export interface UpdateOrderRequest {
   notes?: string;
   discountPercentage?: number;
   discountFixed?: number;
+  couponCode?: string;
 }
 
 export interface CustomerResponse {

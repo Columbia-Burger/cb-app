@@ -166,6 +166,7 @@ export class EditOrderModalComponent implements OnInit {
       deliveryZone: this.deliveryZone(),
       discountPercentage: this.discountPercentage(),
       discountFixed: this.discountFixed(),
+      couponCode: this.couponSuccess() ? this.couponCode() : undefined,
     }).subscribe({
       next: updated => { this.saving.set(false); this.saved.emit(updated); },
       error: () => { this.saving.set(false); this.error.set('Error al guardar los cambios'); },
