@@ -16,4 +16,5 @@ public class UpdateOrderRequest {
     private String notes;
     private BigDecimal discountPercentage;
     private BigDecimal discountFixed;
+    private String couponCode;
 }

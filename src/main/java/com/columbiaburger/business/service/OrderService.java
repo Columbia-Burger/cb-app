@@ -30,6 +30,7 @@ public class OrderService {
     private final CustomerRepository customerRepository;
     private final OrderEventService orderEventService;
     private final WhatsAppService whatsAppService;
+    private final CouponService couponService;
 
     @Transactional
     public OrderResponse create(CreateOrderRequest request) {
@@ -256,6 +257,15 @@ public class OrderService {
             BigDecimal fixedAmt = request.getDiscountFixed() != null ? request.getDiscountFixed() : BigDecimal.ZERO;
             BigDecimal totalDiscount = pctAmt.add(fixedAmt).min(subtotal).max(BigDecimal.ZERO);
             order.setDiscount(totalDiscount);
+        }
+
+        if (request.getCouponCode() != null && !request.getCouponCode().isBlank()) {
+            String newCode = request.getCouponCode().trim().toUpperCase();
+            boolean alreadyApplied = newCode.equalsIgnoreCase(order.getCouponCode());
+            order.setCouponCode(newCode);
+            if (!alreadyApplied) {
+                couponService.incrementUsage(newCode);
+            }
         }
 
         BigDecimal discount = order.getDiscount() != null ? order.getDiscount() : BigDecimal.ZERO;
