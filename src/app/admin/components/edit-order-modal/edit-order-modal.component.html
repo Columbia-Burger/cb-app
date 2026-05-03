@@ -74,10 +74,56 @@
       <textarea rows="2" [ngModel]="notes()" (ngModelChange)="notes.set($event)" placeholder="Indicaciones especiales..."></textarea>
     </label>
 
-    <!-- Total -->
-    <div class="total-row">
-      <span>Total</span>
-      <span class="total-val">{{ total() | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
+    <!-- Descuentos -->
+    <div class="section-label" style="margin-top:1.2em">Descuentos</div>
+    <div class="form-row">
+      <label class="form-field">
+        <span>Descuento (%)</span>
+        <div class="input-affix-wrap">
+          <input
+            type="number"
+            min="0"
+            max="100"
+            step="1"
+            class="no-spin"
+            [ngModel]="discountPercentage()"
+            (ngModelChange)="discountPercentage.set(+$event)"
+            placeholder="0"
+          />
+          <span class="input-suffix">%</span>
+        </div>
+      </label>
+      <label class="form-field">
+        <span>Descuento ($)</span>
+        <div class="input-affix-wrap">
+          <span class="input-prefix">$</span>
+          <input
+            type="text"
+            inputmode="numeric"
+            [value]="discountFixedDisplay()"
+            (input)="onDiscountFixedInput($event)"
+            placeholder="0"
+          />
+        </div>
+      </label>
+    </div>
+
+    <!-- Resumen de totales -->
+    <div class="totals-section">
+      <div class="subtotal-row">
+        <span>Subtotal</span>
+        <span>{{ subtotal() | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
+      </div>
+      @if (discountAmount() > 0) {
+        <div class="discount-row">
+          <span>Descuento</span>
+          <span class="discount-val">− {{ discountAmount() | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
+        </div>
+      }
+      <div class="total-row">
+        <span>Total</span>
+        <span class="total-val">{{ total() | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
+      </div>
     </div>
 
     @if (error()) {

@@ -70,6 +70,8 @@ export interface OrderResponse {
   invoiceStatus: InvoiceStatus;
   invoiceNumber: string | null;
   invoicedAt: string | null;
+  couponCode: string | null;
+  discount: number | null;
   electronicInvoiceNumber: string | null;
   cufe: string | null;
   electronicPaymentMethodCode: '10' | '47' | '48' | null;
@@ -80,6 +82,8 @@ export interface UpdateOrderRequest {
   deliveryFee?: number;
   deliveryZone?: string;
   notes?: string;
+  discountPercentage?: number;
+  discountFixed?: number;
 }
 
 export interface CustomerResponse {

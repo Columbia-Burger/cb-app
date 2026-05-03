@@ -1,6 +1,5 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { CurrencyPipe, DatePipe, NgClass } from '@angular/common';
-import { FormsModule } from '@angular/forms';
 import { AdminService } from '../../services/admin.service';
 import { ShiftResponse } from '../../models/admin.model';
 
@@ -9,7 +8,7 @@ type PageState = 'loading' | 'no-shift' | 'active' | 'closed-summary';
 @Component({
   selector: 'app-admin-turno',
   standalone: true,
-  imports: [CurrencyPipe, DatePipe, NgClass, FormsModule],
+  imports: [CurrencyPipe, DatePipe, NgClass],
   templateUrl: './admin-turno.component.html',
   styleUrl: './admin-turno.component.scss',
 })
@@ -22,6 +21,8 @@ export class AdminTurnoComponent implements OnInit {
 
   initialCash = 0;
   finalCash = 0;
+  initialCashDisplay = '';
+  finalCashDisplay = '';
   opening = signal(false);
   closing = signal(false);
 
@@ -77,9 +78,26 @@ export class AdminTurnoComponent implements OnInit {
     });
   }
 
+  onCashInput(event: Event, field: 'initial' | 'final'): void {
+    const input = event.target as HTMLInputElement;
+    const digits = input.value.replace(/\D/g, '');
+    const numeric = digits ? parseInt(digits, 10) : 0;
+    const formatted = numeric ? numeric.toLocaleString('es-CO').replace(/,/g, '.') : '';
+    input.value = formatted;
+    if (field === 'initial') {
+      this.initialCash = numeric;
+      this.initialCashDisplay = formatted;
+    } else {
+      this.finalCash = numeric;
+      this.finalCashDisplay = formatted;
+    }
+  }
+
   newShift(): void {
     this.initialCash = 0;
     this.finalCash = 0;
+    this.initialCashDisplay = '';
+    this.finalCashDisplay = '';
     this.state.set('no-shift');
     this.shift.set(null);
   }

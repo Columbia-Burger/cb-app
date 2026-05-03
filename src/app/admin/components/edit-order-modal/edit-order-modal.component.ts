@@ -24,6 +24,9 @@ export class EditOrderModalComponent implements OnInit {
   notes = signal('');
   deliveryFee = signal(0);
   deliveryZone = signal('');
+  discountPercentage = signal(0);
+  discountFixed = signal(0);
+  discountFixedDisplay = signal('');
   saving = signal(false);
   error = signal('');
 
@@ -38,15 +41,29 @@ export class EditOrderModalComponent implements OnInit {
     ).slice(0, 20);
   });
 
-  total = computed(() =>
+  subtotal = computed(() =>
     this.items().reduce((s, i) => s + i.unitPrice * i.quantity, 0) + this.deliveryFee()
   );
+
+  discountAmount = computed(() => {
+    const sub = this.subtotal();
+    const byPct = sub * (this.discountPercentage() / 100);
+    const byFixed = this.discountFixed();
+    return Math.min(byPct + byFixed, sub);
+  });
+
+  total = computed(() => this.subtotal() - this.discountAmount());
 
   ngOnInit(): void {
     this.items.set(this.order.items.map(i => ({ ...i })));
     this.notes.set(this.order.notes ?? '');
     this.deliveryFee.set(this.order.deliveryFee ?? 0);
     this.deliveryZone.set(this.order.deliveryZone ?? '');
+    if (this.order.discount) {
+      this.discountFixed.set(this.order.discount);
+      const formatted = this.order.discount.toLocaleString('es-CO').replace(/,/g, '.');
+      this.discountFixedDisplay.set(formatted);
+    }
     this.svc.getMenu().subscribe({ next: p => this.products.set(p) });
   }
 
@@ -80,6 +97,16 @@ export class EditOrderModalComponent implements OnInit {
     this.searchTerm.set('');
   }
 
+  onDiscountFixedInput(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const digits = input.value.replace(/\D/g, '');
+    const numeric = digits ? parseInt(digits, 10) : 0;
+    const formatted = numeric ? numeric.toLocaleString('es-CO').replace(/,/g, '.') : '';
+    input.value = formatted;
+    this.discountFixed.set(numeric);
+    this.discountFixedDisplay.set(formatted);
+  }
+
   save(): void {
     if (this.items().length === 0) { this.error.set('El pedido debe tener al menos un ítem'); return; }
     this.saving.set(true);
@@ -100,6 +127,8 @@ export class EditOrderModalComponent implements OnInit {
       notes: this.notes(),
       deliveryFee: this.deliveryFee(),
       deliveryZone: this.deliveryZone(),
+      discountPercentage: this.discountPercentage(),
+      discountFixed: this.discountFixed(),
     }).subscribe({
       next: updated => { this.saving.set(false); this.saved.emit(updated); },
       error: () => { this.saving.set(false); this.error.set('Error al guardar los cambios'); },
