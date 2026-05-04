@@ -160,6 +160,7 @@
   }
   .sidebar.open { transform: translateX(0); }
   .sidebar-brand { display: none; }
+  .sidebar-nav a { font-size: 0.88em; padding: 0.52em 0.75em; }
   .admin-content {
     margin-left: 0;
     padding: 1em;
