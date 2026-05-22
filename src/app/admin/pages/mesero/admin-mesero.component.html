@@ -68,7 +68,7 @@
               <div class="empty-cart">Agrega productos al pedido</div>
             } @else {
               <div class="cart-items">
-                @for (item of cart(); track item.product.id + '-' + item.flavor + '-' + item.additions) {
+                @for (item of cart(); track item.product.id + '-' + item.flavor + '-' + item.additions + '-' + item.combo) {
                   <div class="cart-item">
                     <div class="item-info">
                       <div>
@@ -83,7 +83,7 @@
                           <div class="item-combo-tag">🍟 {{ item.combo }}</div>
                         }
                       </div>
-                      <span class="item-price">{{ (item.product.price + item.additionsPrice) * item.quantity | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
+                      <span class="item-price">{{ itemUnitPrice(item) * item.quantity | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
                     </div>
                     <div class="item-controls">
                       <button class="qty-btn" (click)="decreaseQty(item)">−</button>
@@ -188,24 +188,28 @@
       }
 
       @if (pendingAdditionsItem()) {
-        <div class="flavor-overlay" (click)="pendingAdditionsItem.set(null)">
+        <div class="flavor-overlay" (click)="cancelAdditions()">
           <div class="flavor-sheet" (click)="$event.stopPropagation()">
             <div class="flavor-header">{{ pendingAdditionsItem()!.product.name }}</div>
-            <p class="flavor-prompt">Adiciones (opcional):</p>
-            <div class="flavor-options">
-              @for (a of pendingAdditionsItem()!.product.additions!; track a.id) {
-                <label class="addition-option">
-                  <input type="checkbox"
-                         [checked]="selectedPendingAdditionIds().has(a.id)"
-                         (change)="togglePendingAdditionId(a.id)" />
-                  <span class="addition-name">{{ a.name }}</span>
-                  <span class="addition-price">+{{ a.effectivePrice | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
-                </label>
-              }
+            <p class="flavor-prompt">¿Deseas agregar alguna adición?</p>
+            <div class="combo-toggle">
+              <button class="combo-toggle-btn" [class.active]="additionsAccepted() === true" (click)="additionsAccepted.set(true)">Sí</button>
+              <button class="combo-toggle-btn" [class.active]="additionsAccepted() === false" (click)="additionsAccepted.set(false)">No</button>
             </div>
+            @if (additionsAccepted() === true) {
+              <select class="combo-select" multiple size="6" (change)="handlePendingAdditionsSelection($event)">
+                @for (a of pendingAdditionsItem()!.product.additions!; track a.id) {
+                  <option
+                    [value]="a.id"
+                    [selected]="selectedPendingAdditionIds().has(a.id)">
+                    {{ a.name }} (+{{ a.effectivePrice | currency:'COP':'symbol-narrow':'1.0-0' }})
+                  </option>
+                }
+              </select>
+            }
             <div class="flavor-options" style="margin-top:0.75em">
-              <button class="flavor-btn" style="background:#e94560;border-color:#e94560;color:#fff" (click)="confirmAdditions()">Confirmar</button>
-              <button class="flavor-cancel" (click)="pendingAdditionsItem.set(null)">Cancelar</button>
+              <button class="flavor-btn" style="background:#e94560;border-color:#e94560;color:#fff" [disabled]="additionsAccepted() === null" (click)="confirmAdditions()">Confirmar</button>
+              <button class="flavor-cancel" (click)="cancelAdditions()">Cancelar</button>
             </div>
           </div>
         </div>

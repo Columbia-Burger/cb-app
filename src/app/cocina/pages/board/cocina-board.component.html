@@ -46,6 +46,9 @@
                       @if (item.flavor) {
                         <span class="item-flavor">{{ item.flavor }}</span>
                       }
+                      @if (item.additions) {
+                        <span class="item-extras">+ {{ item.additions }}</span>
+                      }
                       @if (item.note) {
                         <span class="item-note">📝 {{ item.note }}</span>
                       }

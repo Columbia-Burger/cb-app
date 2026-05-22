@@ -48,6 +48,7 @@ export class AdminMeseroComponent implements OnInit {
   pendingComboItem = signal<{ product: CatalogProduct; flavor: string } | null>(null);
   pendingAdditionsItem = signal<{ product: CatalogProduct; flavor: string; combo: string } | null>(null);
   selectedPendingAdditionIds = signal<Set<number>>(new Set());
+  additionsAccepted = signal<boolean | null>(null);
   comboAccepted = signal<boolean | null>(null);
   comboDrink = signal('');
   comboDrinkFlavor = signal('');
@@ -76,7 +77,7 @@ export class AdminMeseroComponent implements OnInit {
   );
 
   total = computed(() =>
-    this.cart().reduce((sum, item) => sum + (item.product.price + item.additionsPrice) * item.quantity, 0)
+    this.cart().reduce((sum, item) => sum + this.itemUnitPrice(item) * item.quantity, 0)
   );
 
   grandTotal = computed(() =>
@@ -153,12 +154,14 @@ export class AdminMeseroComponent implements OnInit {
   }
 
   private confirmAdditionsOrAdd(product: CatalogProduct, flavor: string, combo: string): void {
+    const comboPrice = this.resolveComboPrice(product, combo);
     if (product.additions?.length) {
+      this.additionsAccepted.set(null);
       this.selectedPendingAdditionIds.set(new Set());
       this.pendingAdditionsItem.set({ product, flavor, combo });
       return;
     }
-    this.addProductToCart(product, flavor, '', 0, combo, 0);
+    this.addProductToCart(product, flavor, '', 0, combo, comboPrice);
   }
 
   togglePendingAdditionId(id: number): void {
@@ -169,14 +172,48 @@ export class AdminMeseroComponent implements OnInit {
     });
   }
 
+  handlePendingAdditionsSelection(event: Event): void {
+    const select = event.target as HTMLSelectElement;
+    const ids = Array.from(select.selectedOptions)
+      .map(option => Number(option.value))
+      .filter(id => !Number.isNaN(id));
+    this.selectedPendingAdditionIds.set(new Set(ids));
+  }
+
   confirmAdditions(): void {
     const item = this.pendingAdditionsItem();
     if (!item) return;
+    if (this.additionsAccepted() === false) {
+      this.pendingAdditionsItem.set(null);
+      this.addProductToCart(
+        item.product,
+        item.flavor,
+        '',
+        0,
+        item.combo,
+        this.resolveComboPrice(item.product, item.combo)
+      );
+      return;
+    }
     const selected = item.product.additions!.filter(a => this.selectedPendingAdditionIds().has(a.id));
     const additionsStr = selected.map(a => a.name).join(', ');
     const additionsPrice = selected.reduce((s, a) => s + a.effectivePrice, 0);
     this.pendingAdditionsItem.set(null);
-    this.addProductToCart(item.product, item.flavor, additionsStr, additionsPrice, item.combo, 0);
+    this.additionsAccepted.set(null);
+    this.addProductToCart(
+      item.product,
+      item.flavor,
+      additionsStr,
+      additionsPrice,
+      item.combo,
+      this.resolveComboPrice(item.product, item.combo)
+    );
+  }
+
+  cancelAdditions(): void {
+    this.additionsAccepted.set(null);
+    this.selectedPendingAdditionIds.set(new Set());
+    this.pendingAdditionsItem.set(null);
   }
 
   private addProductToCart(product: CatalogProduct, flavor: string, additions: string, additionsPrice: number, combo: string, comboPrice: number): void {
@@ -193,6 +230,14 @@ export class AdminMeseroComponent implements OnInit {
       }
       return [...items, { product, flavor, additions, additionsPrice, combo, comboPrice, quantity: 1, note: '' }];
     });
+  }
+
+  itemUnitPrice(item: CartItem): number {
+    return item.product.price + item.additionsPrice + item.comboPrice;
+  }
+
+  private resolveComboPrice(product: CatalogProduct, combo: string): number {
+    return combo ? (product.comboPrice ?? 0) : 0;
   }
 
   decreaseQty(item: CartItem): void {
@@ -236,7 +281,7 @@ export class AdminMeseroComponent implements OnInit {
         flavor: i.flavor || undefined,
         additions: allExtras || undefined,
         quantity: i.quantity,
-        unitPrice: i.product.price + i.additionsPrice,
+        unitPrice: this.itemUnitPrice(i),
         note: i.note || undefined
       };
     });
