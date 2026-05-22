@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable, tap } from 'rxjs';
+import { Observable, forkJoin, map, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { OrderResponse, OrderStatus, LoginRequest, LoginResponse } from '../../admin/models/admin.model';
 
@@ -42,9 +42,15 @@ export class CocinaService {
   }
 
   getKitchenOrders(): Observable<OrderResponse[]> {
-    return this.http.get<OrderResponse[]>(`${this.base}/api/orders/kitchen`, {
-      headers: this.authHeaders()
-    });
+    const headers = this.authHeaders();
+    return forkJoin([
+      this.http.get<OrderResponse[]>(`${this.base}/api/orders?status=RECEIVED`, { headers }),
+      this.http.get<OrderResponse[]>(`${this.base}/api/orders?status=PREPARING`, { headers })
+    ]).pipe(
+      map(([received, preparing]) =>
+        [...received, ...preparing].sort((a, b) => a.createdAt.localeCompare(b.createdAt))
+      )
+    );
   }
 
   updateOrderStatus(id: number, status: OrderStatus): Observable<OrderResponse> {
