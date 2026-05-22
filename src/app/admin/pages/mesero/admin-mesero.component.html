@@ -197,15 +197,18 @@
               <button class="combo-toggle-btn" [class.active]="additionsAccepted() === false" (click)="additionsAccepted.set(false)">No</button>
             </div>
             @if (additionsAccepted() === true) {
-              <select class="combo-select" multiple size="6" (change)="handlePendingAdditionsSelection($event)">
+              <div class="addition-list">
                 @for (a of pendingAdditionsItem()!.product.additions!; track a.id) {
-                  <option
-                    [value]="a.id"
-                    [selected]="selectedPendingAdditionIds().has(a.id)">
-                    {{ a.name }} (+{{ a.effectivePrice | currency:'COP':'symbol-narrow':'1.0-0' }})
-                  </option>
+                  <button
+                    type="button"
+                    class="addition-choice"
+                    [class.selected]="selectedPendingAdditionIds().has(a.id)"
+                    (click)="togglePendingAdditionId(a.id)">
+                    <span class="addition-name">{{ a.name }}</span>
+                    <span class="addition-price">+{{ a.effectivePrice | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
+                  </button>
                 }
-              </select>
+              </div>
             }
             <div class="flavor-options" style="margin-top:0.75em">
               <button class="flavor-btn" style="background:#e94560;border-color:#e94560;color:#fff" [disabled]="additionsAccepted() === null" (click)="confirmAdditions()">Confirmar</button>

@@ -202,6 +202,31 @@
   color: #e6edf3; font-size: 0.9em; outline: none; cursor: pointer; margin-bottom: 0.25em;
 }
 .combo-select:focus { border-color: #e94560; }
+.addition-list { display: flex; flex-direction: column; gap: 0.5em; margin-bottom: 0.25em; }
+.addition-choice {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75em;
+  padding: 0.75em 0.9em;
+  background: #21262d;
+  border: 1px solid #30363d;
+  border-radius: 10px;
+  color: #e6edf3;
+  cursor: pointer;
+  transition: all 0.15s;
+  text-align: left;
+}
+.addition-choice:hover {
+  border-color: rgba(233,69,96,0.45);
+  background: #262c35;
+}
+.addition-choice.selected {
+  border-color: #e94560;
+  background: rgba(233,69,96,0.14);
+  box-shadow: inset 0 -2px 0 #e94560;
+}
 .addition-option {
   display: flex; align-items: center; gap: 0.6em;
   padding: 0.6em 0.75em; background: #21262d; border-radius: 8px; cursor: pointer;
