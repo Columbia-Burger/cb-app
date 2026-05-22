@@ -2,7 +2,6 @@ import { Component, inject, signal, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { DatePipe, CurrencyPipe } from '@angular/common';
 import { Subscription } from 'rxjs';
-import { isCurrentBusinessDayOrder } from '../../../shared/business-hours';
 import { CocinaService } from '../../services/cocina.service';
 import { OrderResponse, OrderStatus } from '../../../admin/models/admin.model';
 import { OrderEvent, OrderEventsService } from '../../../services/order-events.service';
@@ -24,19 +23,23 @@ export class CocinaBoardComponent implements OnInit, OnDestroy {
   updating = new Set<number>();
 
   private eventSub?: Subscription;
+  private refreshHandle?: ReturnType<typeof setInterval>;
 
   ngOnInit(): void {
     this.load();
     this.eventSub = this.orderEvents.connect(this.svc.getToken()).subscribe({
       next: event => this.applyOrderEvent(event),
     });
+    this.refreshHandle = setInterval(() => this.load(false), 15000);
   }
 
   ngOnDestroy(): void {
     this.eventSub?.unsubscribe();
+    if (this.refreshHandle) clearInterval(this.refreshHandle);
   }
 
-  load(): void {
+  load(showLoading = true): void {
+    if (showLoading) this.loading.set(true);
     this.svc.getKitchenOrders().subscribe({
       next: data => { this.setOrders(data); this.loading.set(false); },
       error: () => this.loading.set(false)
@@ -44,13 +47,12 @@ export class CocinaBoardComponent implements OnInit, OnDestroy {
   }
 
   private setOrders(data: OrderResponse[]): void {
-    this.orders.set(data.filter(order => isCurrentBusinessDayOrder(order.createdAt)));
+    this.orders.set(data);
   }
 
   private applyOrderEvent(event: OrderEvent): void {
     const order = event.order;
-    const shouldShow = isCurrentBusinessDayOrder(order.createdAt)
-      && (order.status === 'RECEIVED' || order.status === 'PREPARING');
+    const shouldShow = order.status === 'RECEIVED' || order.status === 'PREPARING';
 
     this.orders.update(list => {
       const current = list.filter(item => item.id !== order.id);
