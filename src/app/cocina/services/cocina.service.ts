@@ -3,6 +3,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, forkJoin, map, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { OrderResponse, OrderStatus, LoginRequest, LoginResponse } from '../../admin/models/admin.model';
+import { getCurrentBusinessDayStartParam } from '../../shared/business-hours';
 
 @Injectable({ providedIn: 'root' })
 export class CocinaService {
@@ -43,9 +44,10 @@ export class CocinaService {
 
   getKitchenOrders(): Observable<OrderResponse[]> {
     const headers = this.authHeaders();
+    const from = encodeURIComponent(getCurrentBusinessDayStartParam());
     return forkJoin([
-      this.http.get<OrderResponse[]>(`${this.base}/api/orders?status=RECEIVED`, { headers }),
-      this.http.get<OrderResponse[]>(`${this.base}/api/orders?status=PREPARING`, { headers })
+      this.http.get<OrderResponse[]>(`${this.base}/api/orders?status=RECEIVED&from=${from}`, { headers }),
+      this.http.get<OrderResponse[]>(`${this.base}/api/orders?status=PREPARING&from=${from}`, { headers })
     ]).pipe(
       map(([received, preparing]) =>
         [...received, ...preparing].sort((a, b) => a.createdAt.localeCompare(b.createdAt))
