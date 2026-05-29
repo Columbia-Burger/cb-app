@@ -5,6 +5,7 @@ import com.columbiaburger.business.dto.response.ElectronicInvoiceDetailResponse;
 import com.columbiaburger.business.dto.response.ElectronicInvoiceResponse;
 import com.columbiaburger.business.dto.response.OrderResponse;
 import com.columbiaburger.business.entity.InvoiceStatus;
+import com.columbiaburger.business.entity.OrderStatus;
 import com.columbiaburger.business.entity.Order;
 import com.columbiaburger.business.repository.OrderRepository;
 import lombok.RequiredArgsConstructor;
@@ -73,6 +74,7 @@ public class InvoiceService {
         }
 
         order.setInvoiceStatus(InvoiceStatus.VOID);
+        order.setStatus(OrderStatus.CANCELLED);
         return orderService.toResponse(orderRepository.save(order));
     }
 
