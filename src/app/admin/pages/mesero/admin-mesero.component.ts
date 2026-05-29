@@ -240,6 +240,16 @@ export class AdminMeseroComponent implements OnInit {
     return combo ? (product.comboPrice ?? 0) : 0;
   }
 
+  increaseQty(item: CartItem): void {
+    this.cart.update(items =>
+      items.map(i =>
+        i.product.id === item.product.id && i.flavor === item.flavor && i.additions === item.additions && i.combo === item.combo
+          ? { ...i, quantity: i.quantity + 1 }
+          : i
+      )
+    );
+  }
+
   decreaseQty(item: CartItem): void {
     if (item.quantity <= 1) {
       this.removeFromCart(item);

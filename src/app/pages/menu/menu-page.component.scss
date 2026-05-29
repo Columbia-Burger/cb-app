@@ -89,14 +89,13 @@ $card-radius: 1.4rem;
 // ── Category navigation ───────────────────────────────────────────────────────
 .category-nav {
   position: sticky;
-  top: 5.6rem;
+  top: var(--header-visible-offset, 5.6rem);
   z-index: 100;
   background-color: rgba(20,20,20,0.92);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border-bottom: 1px solid rgba(255,255,255,0.07);
-
-  @media (min-width: 900px) { top: 7rem; }
+  transition: top 0.2s ease;
 
   &__inner {
     display: flex;

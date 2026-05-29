@@ -1,4 +1,4 @@
-import { Component, HostListener, inject } from '@angular/core';
+import { Component, HostListener, OnDestroy, OnInit, inject } from '@angular/core';
 import { RouterLink, RouterLinkActive, Router } from '@angular/router';
 import { environment } from '../../../environments/environment';
 
@@ -19,6 +19,16 @@ export class HeaderComponent {
   menuOpen = false;
 
   private lastScrollY = 0;
+  private readonly mobileHeight = '5.6rem';
+  private readonly desktopHeight = '7rem';
+
+  ngOnInit(): void {
+    this.syncHeaderOffset();
+  }
+
+  ngOnDestroy(): void {
+    document.documentElement.style.removeProperty('--header-visible-offset');
+  }
 
   @HostListener('window:scroll')
   onScroll(): void {
@@ -34,6 +44,12 @@ export class HeaderComponent {
       }
     }
     this.lastScrollY = y;
+    this.syncHeaderOffset();
+  }
+
+  @HostListener('window:resize')
+  onResize(): void {
+    this.syncHeaderOffset();
   }
 
   goToContacto(): void {
@@ -47,5 +63,12 @@ export class HeaderComponent {
     } else {
       document.getElementById('contacto')?.scrollIntoView({ behavior: 'smooth' });
     }
+  }
+
+  private syncHeaderOffset(): void {
+    const offset = this.hidden && !this.menuOpen
+      ? '0px'
+      : (window.innerWidth >= 900 ? this.desktopHeight : this.mobileHeight);
+    document.documentElement.style.setProperty('--header-visible-offset', offset);
   }
 }

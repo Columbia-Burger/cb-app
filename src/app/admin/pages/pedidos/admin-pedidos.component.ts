@@ -42,7 +42,7 @@ export class AdminPedidosComponent implements OnInit, AfterViewInit, OnDestroy {
     RECEIVED:   [{ status: 'PREPARING',  label: '→ Preparando', color: '#388bfd' }, { status: 'CANCELLED', label: '✕ Cancelar', color: '#f85149' }],
     PREPARING:  [{ status: 'ON_THE_WAY', label: '→ En camino', color: '#bc8cff' }, { status: 'CANCELLED', label: '✕ Cancelar', color: '#f85149' }],
     ON_THE_WAY: [{ status: 'DELIVERED',  label: '→ Entregado', color: '#3fb950' }],
-    DELIVERED:  [],
+    DELIVERED:  [{ status: 'CANCELLED', label: '✕ Cancelar', color: '#f85149' }],
     CANCELLED:  [],
   };
 
