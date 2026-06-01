@@ -1,4 +1,5 @@
 * { box-sizing: border-box; }
+input, textarea, select { margin: 0; padding: 0; }
 
 .modal-overlay {
   position: fixed;
@@ -77,18 +78,22 @@
 .item-extras {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 0.4em;
+  gap: 6px;
+  margin-top: 4px;
 }
 
 .item-extra-input {
+  display: block;
   background: #0d1117;
-  border: 1px solid #484f58;
+  border: 1px solid #6e7681;
   border-radius: 6px;
   color: #c9d1d9;
-  font-size: 0.78em;
-  padding: 0.35em 0.55em;
+  font-size: 12px;
+  line-height: 1.4;
+  padding: 5px 8px;
   outline: none;
   width: 100%;
+  min-height: 28px;
   font-family: inherit;
   &:focus { border-color: #58a6ff; }
   &::placeholder { color: #6e7681; }
