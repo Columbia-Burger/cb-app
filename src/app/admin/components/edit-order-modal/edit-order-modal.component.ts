@@ -37,6 +37,8 @@ export class EditOrderModalComponent implements OnInit {
   products = signal<CatalogProduct[]>([]);
   showAddProduct = signal(false);
   searchTerm = signal('');
+  pendingProduct = signal<CatalogProduct | null>(null);
+  pendingAdditionIds = signal<Set<number>>(new Set());
 
   filteredProducts = computed(() => {
     const q = this.searchTerm().toLowerCase();
@@ -84,8 +86,36 @@ export class EditOrderModalComponent implements OnInit {
   }
 
   addProduct(p: CatalogProduct): void {
+    if (p.additions?.length) {
+      this.pendingProduct.set(p);
+      this.pendingAdditionIds.set(new Set());
+      this.showAddProduct.set(false);
+      return;
+    }
+    this.doAddProduct(p, '', 0);
+  }
+
+  togglePendingAdditionId(id: number): void {
+    this.pendingAdditionIds.update(ids => {
+      const next = new Set(ids);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  }
+
+  confirmAddProduct(): void {
+    const p = this.pendingProduct();
+    if (!p) return;
+    const selected = (p.additions ?? []).filter(a => this.pendingAdditionIds().has(a.id));
+    const additionsStr = selected.map(a => a.name).join(', ');
+    const additionsPrice = selected.reduce((s, a) => s + a.effectivePrice, 0);
+    this.doAddProduct(p, additionsStr, additionsPrice);
+    this.pendingProduct.set(null);
+  }
+
+  private doAddProduct(p: CatalogProduct, additions: string, additionsPrice: number): void {
     this.items.update(list => {
-      const idx = list.findIndex(i => i.productName === p.name);
+      const idx = list.findIndex(i => i.productName === p.name && i.additions === additions);
       if (idx >= 0) {
         const next = [...list];
         next[idx] = { ...next[idx], quantity: next[idx].quantity + 1 };
@@ -93,12 +123,20 @@ export class EditOrderModalComponent implements OnInit {
       }
       return [...list, {
         id: 0, productId: p.id, productName: p.name,
-        flavor: '', additions: '', quantity: 1,
-        unitPrice: p.price, subtotal: p.price, note: ''
+        flavor: '', additions, quantity: 1,
+        unitPrice: p.price + additionsPrice, subtotal: p.price + additionsPrice, note: ''
       }];
     });
     this.showAddProduct.set(false);
     this.searchTerm.set('');
+  }
+
+  updateItemField(index: number, field: 'flavor' | 'additions', value: string): void {
+    this.items.update(list => {
+      const next = [...list];
+      next[index] = { ...next[index], [field]: value };
+      return next;
+    });
   }
 
   validateCoupon(): void {

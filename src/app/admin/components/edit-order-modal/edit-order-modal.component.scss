@@ -67,13 +67,31 @@
 
 .item-row {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.5em;
+  flex-direction: column;
+  gap: 0.35em;
   padding: 0.55em 0.75em;
   background: #21262d;
   border-radius: 8px;
-  flex-wrap: wrap;
+}
+
+.item-extras {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.4em;
+}
+
+.item-extra-input {
+  background: #161b22;
+  border: 1px solid #30363d;
+  border-radius: 6px;
+  color: #c9d1d9;
+  font-size: 0.78em;
+  padding: 0.35em 0.55em;
+  outline: none;
+  width: 100%;
+  font-family: inherit;
+  &:focus { border-color: #58a6ff; }
+  &::placeholder { color: #484f58; }
 }
 
 .item-name {
@@ -426,4 +444,77 @@
   font-size: 0.9em;
   cursor: pointer;
   &:hover { color: #e6edf3; border-color: #8b949e; }
+}
+
+.additions-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  z-index: 600;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  @media (min-width: 600px) { align-items: center; }
+}
+
+.additions-sheet {
+  background: #161b22;
+  border: 1px solid #30363d;
+  border-radius: 14px 14px 0 0;
+  padding: 1.25em;
+  width: 100%;
+  max-width: 480px;
+  max-height: 80dvh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75em;
+  @media (min-width: 600px) { border-radius: 14px; }
+}
+
+.additions-title {
+  font-size: 1em;
+  font-weight: 700;
+  color: #e6edf3;
+}
+
+.additions-prompt {
+  font-size: 0.82em;
+  color: #8b949e;
+  margin: 0;
+}
+
+.additions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35em;
+}
+
+.addition-choice {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.55em 0.75em;
+  background: #21262d;
+  border: 1px solid #30363d;
+  border-radius: 8px;
+  color: #c9d1d9;
+  font-size: 0.85em;
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 0.15s, background 0.15s;
+  &:hover { border-color: #58a6ff; }
+  &.selected { border-color: #e94560; background: rgba(233,69,96,0.1); color: #e6edf3; }
+}
+
+.addition-price {
+  font-size: 0.8em;
+  color: #3fb950;
+  font-weight: 700;
+}
+
+.additions-actions {
+  display: flex;
+  gap: 0.75em;
+  margin-top: 0.25em;
 }

@@ -11,16 +11,25 @@
     <div class="items-list">
       @for (item of items(); track $index) {
         <div class="item-row">
-          <div class="item-name">{{ item.productName }}
-            @if (item.flavor) { <span class="item-sub">· {{ item.flavor }}</span> }
-            @if (item.additions) { <span class="item-sub">· {{ item.additions }}</span> }
-          </div>
+          <div class="item-name">{{ item.productName }}</div>
           <div class="item-controls">
             <button class="qty-btn" (click)="updateQty($index, -1)">−</button>
             <span class="qty-val">{{ item.quantity }}</span>
             <button class="qty-btn" (click)="updateQty($index, +1)">+</button>
             <span class="item-price">{{ (item.unitPrice * item.quantity) | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
             <button class="remove-btn" (click)="removeItem($index)" title="Eliminar">✕</button>
+          </div>
+          <div class="item-extras">
+            <input class="item-extra-input"
+                   type="text"
+                   placeholder="Sabor (opcional)"
+                   [value]="item.flavor"
+                   (input)="updateItemField($index, 'flavor', $any($event.target).value)" />
+            <input class="item-extra-input"
+                   type="text"
+                   placeholder="Adiciones (opcional)"
+                   [value]="item.additions"
+                   (input)="updateItemField($index, 'additions', $any($event.target).value)" />
           </div>
         </div>
       }
@@ -170,3 +179,27 @@
 
   </div>
 </div>
+
+@if (pendingProduct()) {
+  <div class="additions-overlay" (click)="pendingProduct.set(null)">
+    <div class="additions-sheet" (click)="$event.stopPropagation()">
+      <div class="additions-title">{{ pendingProduct()!.name }}</div>
+      <p class="additions-prompt">Selecciona adiciones (opcional):</p>
+      <div class="additions-list">
+        @for (a of pendingProduct()!.additions!; track a.id) {
+          <button type="button"
+                  class="addition-choice"
+                  [class.selected]="pendingAdditionIds().has(a.id)"
+                  (click)="togglePendingAdditionId(a.id)">
+            <span>{{ a.name }}</span>
+            <span class="addition-price">+{{ a.effectivePrice | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
+          </button>
+        }
+      </div>
+      <div class="additions-actions">
+        <button class="btn-save" (click)="confirmAddProduct()">Agregar al pedido</button>
+        <button class="btn-cancel" (click)="pendingProduct.set(null)">Cancelar</button>
+      </div>
+    </div>
+  </div>
+}
