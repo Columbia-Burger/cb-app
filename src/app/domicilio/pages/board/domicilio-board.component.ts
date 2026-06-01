@@ -5,7 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { Subscription } from 'rxjs';
 import { isCurrentBusinessDayOrder } from '../../../shared/business-hours';
 import { DomicilioService } from '../../services/domicilio.service';
-import { OrderResponse, CatalogProduct, OrderItemRequest } from '../../../admin/models/admin.model';
+import { OrderResponse, OrderItemResponse, CatalogProduct, OrderItemRequest, UpdateOrderRequest } from '../../../admin/models/admin.model';
 import { OrderEvent, OrderEventsService } from '../../../services/order-events.service';
 
 interface MenuCategory { id: number; name: string; products: CatalogProduct[]; }
@@ -29,13 +29,29 @@ export class DomicilioBoardComponent implements OnInit, OnDestroy {
   private router = inject(Router);
 
   // ── Vista activa ──────────────────────────────────────────────
-  view = signal<'deliveries' | 'order'>('deliveries');
+  view = signal<'deliveries' | 'order' | 'edit'>('deliveries');
 
   // ── Domicilios ────────────────────────────────────────────────
   orders = signal<OrderResponse[]>([]);
   loadingDeliveries = signal(true);
   updating = new Set<number>();
   private eventSub?: Subscription;
+
+  // ── Editar pedido ─────────────────────────────────────────────
+  editingOrder = signal<OrderResponse | null>(null);
+  editItems = signal<OrderItemResponse[]>([]);
+  editNotes = signal('');
+  editShowSearch = signal(false);
+  editSearchTerm = signal('');
+  savingEdit = signal(false);
+  editError = signal('');
+
+  filteredEditProducts = computed(() => {
+    const q = this.editSearchTerm().toLowerCase();
+    return this.categories().flatMap(c => c.products)
+      .filter(p => p.available && (!q || p.name.toLowerCase().includes(q)))
+      .slice(0, 15);
+  });
 
   // ── Tomar pedido ──────────────────────────────────────────────
   loadingMenu = signal(true);
@@ -282,6 +298,14 @@ export class DomicilioBoardComponent implements OnInit, OnDestroy {
     return combo ? (product.comboPrice ?? 0) : 0;
   }
 
+  increaseQty(item: CartItem): void {
+    this.cart.update(items => items.map(i =>
+      i.product.id === item.product.id && i.flavor === item.flavor && i.additions === item.additions && i.combo === item.combo
+        ? { ...i, quantity: i.quantity + 1 }
+        : i
+    ));
+  }
+
   decreaseQty(item: CartItem): void {
     if (item.quantity <= 1) { this.removeFromCart(item); return; }
     this.cart.update(items => items.map(i =>
@@ -343,6 +367,75 @@ export class DomicilioBoardComponent implements OnInit, OnDestroy {
       error: () => {
         this.errorMsg.set('Error al crear el pedido. Intenta de nuevo.');
         this.submitting.set(false);
+      }
+    });
+  }
+
+  openEdit(order: OrderResponse): void {
+    this.editingOrder.set(order);
+    this.editItems.set(order.items.map(i => ({ ...i })));
+    this.editNotes.set(order.notes ?? '');
+    this.editShowSearch.set(false);
+    this.editSearchTerm.set('');
+    this.editError.set('');
+    if (this.categories().length === 0) {
+      this.switchToOrder();
+    }
+  }
+
+  closeEdit(): void {
+    this.editingOrder.set(null);
+  }
+
+  updateEditQty(index: number, delta: number): void {
+    this.editItems.update(list => {
+      const newQty = list[index].quantity + delta;
+      if (newQty < 1) return list.filter((_, i) => i !== index);
+      const next = [...list];
+      next[index] = { ...next[index], quantity: newQty };
+      return next;
+    });
+  }
+
+  addEditProduct(p: CatalogProduct): void {
+    this.editItems.update(list => {
+      const idx = list.findIndex(i => i.productName === p.name);
+      if (idx >= 0) {
+        const next = [...list];
+        next[idx] = { ...next[idx], quantity: next[idx].quantity + 1 };
+        return next;
+      }
+      return [...list, { id: 0, productId: p.id, productName: p.name, flavor: '', additions: '', quantity: 1, unitPrice: p.price, subtotal: p.price, note: '' }];
+    });
+    this.editShowSearch.set(false);
+    this.editSearchTerm.set('');
+  }
+
+  saveEdit(): void {
+    const order = this.editingOrder();
+    if (!order || this.editItems().length === 0) return;
+    this.savingEdit.set(true);
+    this.editError.set('');
+
+    const items: OrderItemRequest[] = this.editItems().map(i => ({
+      productId: i.productId,
+      productName: i.productName,
+      flavor: i.flavor || undefined,
+      additions: i.additions || undefined,
+      quantity: i.quantity,
+      unitPrice: i.unitPrice,
+      note: i.note || undefined,
+    }));
+
+    this.svc.updateOrder(order.id, { items, notes: this.editNotes() }).subscribe({
+      next: updated => {
+        this.orders.update(list => list.map(o => o.id === updated.id ? updated : o));
+        this.savingEdit.set(false);
+        this.editingOrder.set(null);
+      },
+      error: () => {
+        this.savingEdit.set(false);
+        this.editError.set('Error al guardar. Intenta de nuevo.');
       }
     });
   }

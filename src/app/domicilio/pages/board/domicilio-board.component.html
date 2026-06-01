@@ -21,6 +21,9 @@
         <button class="tab" [class.active]="view() === 'order'" (click)="switchToOrder()">
           🧾 Tomar Pedido
         </button>
+        <button class="tab" [class.active]="view() === 'edit'" (click)="view.set('edit')">
+          ✏️ Editar
+        </button>
       </div>
 
       <main class="board">
@@ -103,6 +106,41 @@
                             (click)="markDelivered(order)">
                       ✅ Entregado
                     </button>
+                  </div>
+                </div>
+              }
+            </div>
+          }
+        }
+
+        <!-- ── PESTAÑA EDITAR PEDIDO ── -->
+        @if (view() === 'edit') {
+          @if (orders().length === 0) {
+            <div class="empty">
+              <span class="empty-icon">✏️</span>
+              <p>No hay pedidos activos para editar</p>
+            </div>
+          } @else {
+            <div class="cards">
+              @for (order of orders(); track order.id) {
+                <div class="card">
+                  <div class="card-header">
+                    <div class="card-id">#{{ order.id }}</div>
+                    <div class="card-badge">{{ order.status === 'ON_THE_WAY' ? 'En camino' : order.status === 'PREPARING' ? 'Preparando' : 'Recibido' }}</div>
+                    <div class="card-time">{{ order.createdAt | date:'HH:mm' }}</div>
+                  </div>
+                  <div class="card-customer">{{ order.customerName }}</div>
+                  <ul class="items">
+                    @for (item of order.items; track item.id) {
+                      <li class="item">
+                        <span class="item-qty">{{ item.quantity }}×</span>
+                        <span class="item-name">{{ item.productName }}</span>
+                      </li>
+                    }
+                  </ul>
+                  <div class="card-footer">
+                    <span class="card-total">{{ order.total | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
+                    <button class="btn-edit" (click)="openEdit(order)">✏️ Editar</button>
                   </div>
                 </div>
               }
@@ -194,7 +232,7 @@
                         <div class="item-controls">
                           <button class="qty-btn" (click)="decreaseQty(item)">−</button>
                           <span class="qty">{{ item.quantity }}</span>
-                          <button class="qty-btn" (click)="item.quantity = item.quantity + 1">+</button>
+                          <button class="qty-btn" (click)="increaseQty(item)">+</button>
                           <button class="remove-btn" (click)="removeFromCart(item)">✕</button>
                         </div>
                         <input class="note-input" type="text" placeholder="Nota (opcional)"
@@ -237,6 +275,73 @@
         }
 
       </main>
+
+      @if (editingOrder()) {
+        <div class="flavor-overlay" (click)="closeEdit()">
+          <div class="flavor-sheet edit-sheet" (click)="$event.stopPropagation()">
+            <div class="flavor-header">Pedido #{{ editingOrder()!.id }} — {{ editingOrder()!.customerName }}</div>
+
+            <div class="edit-items">
+              @for (item of editItems(); track item.id + '-' + $index) {
+                <div class="edit-item">
+                  <div class="edit-item-info">
+                    <span class="edit-item-name">{{ item.productName }}</span>
+                    @if (item.flavor) { <span class="item-flavor">{{ item.flavor }}</span> }
+                    @if (item.additions) { <span class="item-flavor">+ {{ item.additions }}</span> }
+                  </div>
+                  <div class="edit-item-controls">
+                    <button class="qty-btn" (click)="updateEditQty($index, -1)">−</button>
+                    <span class="qty">{{ item.quantity }}</span>
+                    <button class="qty-btn" (click)="updateEditQty($index, 1)">+</button>
+                    <span class="edit-item-price">{{ item.unitPrice * item.quantity | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
+                  </div>
+                </div>
+              }
+            </div>
+
+            <button class="edit-add-btn" (click)="editShowSearch.set(!editShowSearch())">
+              {{ editShowSearch() ? '✕ Cerrar búsqueda' : '+ Agregar producto' }}
+            </button>
+
+            @if (editShowSearch()) {
+              <input class="edit-search"
+                     type="text"
+                     placeholder="Buscar producto..."
+                     [value]="editSearchTerm()"
+                     (input)="editSearchTerm.set($any($event.target).value)"
+                     (click)="$event.stopPropagation()" />
+              <div class="edit-product-list">
+                @for (p of filteredEditProducts(); track p.id) {
+                  <button class="edit-product-option" (click)="addEditProduct(p)">
+                    <span>{{ p.name }}</span>
+                    <span class="edit-product-price">{{ p.price | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
+                  </button>
+                }
+              </div>
+            }
+
+            <textarea class="edit-notes"
+                      placeholder="Notas del pedido..."
+                      [value]="editNotes()"
+                      (input)="editNotes.set($any($event.target).value)"
+                      (click)="$event.stopPropagation()"
+                      rows="2"></textarea>
+
+            @if (editError()) {
+              <div class="error-msg">{{ editError() }}</div>
+            }
+
+            <div class="flavor-options">
+              <button class="flavor-btn" style="background:#e94560;border-color:#e94560;color:#fff"
+                      [disabled]="savingEdit() || editItems().length === 0"
+                      (click)="saveEdit()">
+                {{ savingEdit() ? 'Guardando...' : 'Guardar cambios' }}
+              </button>
+              <button class="flavor-cancel" (click)="closeEdit()">Cancelar</button>
+            </div>
+          </div>
+        </div>
+      }
 
       @if (pendingProduct()) {
         <div class="flavor-overlay" (click)="pendingProduct.set(null)">

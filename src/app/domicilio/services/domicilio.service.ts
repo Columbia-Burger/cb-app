@@ -3,7 +3,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
-import { OrderResponse, OrderStatus, LoginRequest, LoginResponse, CatalogProduct, CreateOrderRequest, DeliveryZone } from '../../admin/models/admin.model';
+import { OrderResponse, OrderStatus, LoginRequest, LoginResponse, CatalogProduct, CreateOrderRequest, DeliveryZone, UpdateOrderRequest } from '../../admin/models/admin.model';
 import { ProductResponse } from '../../models/api.model';
 
 @Injectable({ providedIn: 'root' })
@@ -86,6 +86,12 @@ export class DomicilioService {
 
   createOrder(request: CreateOrderRequest): Observable<OrderResponse> {
     return this.http.post<OrderResponse>(`${this.base}/api/orders`, request, {
+      headers: this.authHeaders()
+    });
+  }
+
+  updateOrder(id: number, request: UpdateOrderRequest): Observable<OrderResponse> {
+    return this.http.patch<OrderResponse>(`${this.base}/api/orders/${id}`, request, {
       headers: this.authHeaders()
     });
   }
