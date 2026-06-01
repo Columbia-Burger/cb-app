@@ -286,16 +286,22 @@
             <div class="edit-items">
               @for (item of editItems(); track item.id + '-' + $index) {
                 <div class="edit-item">
-                  <div class="edit-item-info">
+                  <div class="edit-item-top">
                     <span class="edit-item-name">{{ item.productName }}</span>
-                    @if (item.flavor) { <span class="item-flavor">{{ item.flavor }}</span> }
-                    @if (item.additions) { <span class="item-flavor">+ {{ item.additions }}</span> }
+                    <span class="edit-item-price">{{ item.unitPrice * item.quantity | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
                   </div>
                   <div class="edit-item-controls">
                     <button class="qty-btn" (click)="updateEditQty($index, -1)">−</button>
                     <span class="qty">{{ item.quantity }}</span>
                     <button class="qty-btn" (click)="updateEditQty($index, 1)">+</button>
-                    <span class="edit-item-price">{{ item.unitPrice * item.quantity | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
+                  </div>
+                  <div class="edit-item-extras">
+                    <input class="edit-extra-input" type="text" placeholder="Sabor"
+                           [value]="item.flavor"
+                           (input)="updateEditItemField($index, 'flavor', $any($event.target).value)" />
+                    <input class="edit-extra-input" type="text" placeholder="Adiciones"
+                           [value]="item.additions"
+                           (input)="updateEditItemField($index, 'additions', $any($event.target).value)" />
                   </div>
                 </div>
               }

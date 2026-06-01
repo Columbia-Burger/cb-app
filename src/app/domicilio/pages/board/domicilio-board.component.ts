@@ -404,6 +404,14 @@ export class DomicilioBoardComponent implements OnInit, OnDestroy {
     this.editingOrder.set(null);
   }
 
+  updateEditItemField(index: number, field: 'flavor' | 'additions', value: string): void {
+    this.editItems.update(list => {
+      const next = [...list];
+      next[index] = { ...next[index], [field]: value };
+      return next;
+    });
+  }
+
   updateEditQty(index: number, delta: number): void {
     this.editItems.update(list => {
       const newQty = list[index].quantity + delta;
