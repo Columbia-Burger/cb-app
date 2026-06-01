@@ -351,6 +351,31 @@
         </div>
       }
 
+      @if (editPendingProduct()) {
+        <div class="flavor-overlay" (click)="editPendingProduct.set(null)">
+          <div class="flavor-sheet" (click)="$event.stopPropagation()">
+            <div class="flavor-header">{{ editPendingProduct()!.name }}</div>
+            <p class="flavor-prompt">Selecciona adiciones (opcional):</p>
+            <div class="addition-list">
+              @for (a of editPendingProduct()!.additions!; track a.id) {
+                <button type="button"
+                        class="addition-choice"
+                        [class.selected]="editPendingAdditionIds().has(a.id)"
+                        (click)="toggleEditAdditionId(a.id)">
+                  <span class="addition-name">{{ a.name }}</span>
+                  <span class="addition-price">+{{ a.effectivePrice | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
+                </button>
+              }
+            </div>
+            <div class="flavor-options" style="margin-top:0.75em">
+              <button class="flavor-btn" style="background:#e94560;border-color:#e94560;color:#fff"
+                      (click)="confirmEditProduct()">Agregar al pedido</button>
+              <button class="flavor-cancel" (click)="editPendingProduct.set(null)">Cancelar</button>
+            </div>
+          </div>
+        </div>
+      }
+
       @if (pendingProduct()) {
         <div class="flavor-overlay" (click)="pendingProduct.set(null)">
           <div class="flavor-sheet" (click)="$event.stopPropagation()">

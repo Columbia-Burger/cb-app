@@ -47,6 +47,8 @@ export class DomicilioBoardComponent implements OnInit, OnDestroy {
   editSearchTerm = signal('');
   savingEdit = signal(false);
   editError = signal('');
+  editPendingProduct = signal<CatalogProduct | null>(null);
+  editPendingAdditionIds = signal<Set<number>>(new Set());
 
   filteredEditProducts = computed(() => {
     const q = this.editSearchTerm().toLowerCase();
@@ -423,14 +425,42 @@ export class DomicilioBoardComponent implements OnInit, OnDestroy {
   }
 
   addEditProduct(p: CatalogProduct): void {
+    if (p.additions?.length) {
+      this.editPendingProduct.set(p);
+      this.editPendingAdditionIds.set(new Set());
+      this.editShowSearch.set(false);
+      return;
+    }
+    this.doAddEditProduct(p, '', 0);
+  }
+
+  toggleEditAdditionId(id: number): void {
+    this.editPendingAdditionIds.update(ids => {
+      const next = new Set(ids);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  }
+
+  confirmEditProduct(): void {
+    const p = this.editPendingProduct();
+    if (!p) return;
+    const selected = (p.additions ?? []).filter(a => this.editPendingAdditionIds().has(a.id));
+    const additionsStr = selected.map(a => a.name).join(', ');
+    const additionsPrice = selected.reduce((s, a) => s + a.effectivePrice, 0);
+    this.doAddEditProduct(p, additionsStr, additionsPrice);
+    this.editPendingProduct.set(null);
+  }
+
+  private doAddEditProduct(p: CatalogProduct, additions: string, additionsPrice: number): void {
     this.editItems.update(list => {
-      const idx = list.findIndex(i => i.productName === p.name);
+      const idx = list.findIndex(i => i.productName === p.name && i.additions === additions);
       if (idx >= 0) {
         const next = [...list];
         next[idx] = { ...next[idx], quantity: next[idx].quantity + 1 };
         return next;
       }
-      return [...list, { id: 0, productId: p.id, productName: p.name, flavor: '', additions: '', quantity: 1, unitPrice: p.price, subtotal: p.price, note: '' }];
+      return [...list, { id: 0, productId: p.id, productName: p.name, flavor: '', additions, quantity: 1, unitPrice: p.price + additionsPrice, subtotal: p.price + additionsPrice, note: '' }];
     });
     this.editShowSearch.set(false);
     this.editSearchTerm.set('');
