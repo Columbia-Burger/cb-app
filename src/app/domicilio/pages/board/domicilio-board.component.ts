@@ -3,7 +3,7 @@ import { Router } from '@angular/router';
 import { CurrencyPipe, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Subscription } from 'rxjs';
-import { isCurrentBusinessDayOrder } from '../../../shared/business-hours';
+import { isCurrentBusinessDayOrder, getCurrentBusinessDayStartParam } from '../../../shared/business-hours';
 import { DomicilioService } from '../../services/domicilio.service';
 import { OrderResponse, OrderItemResponse, CatalogProduct, OrderItemRequest, UpdateOrderRequest } from '../../../admin/models/admin.model';
 import { OrderEvent, OrderEventsService } from '../../../services/order-events.service';
@@ -38,6 +38,8 @@ export class DomicilioBoardComponent implements OnInit, OnDestroy {
   private eventSub?: Subscription;
 
   // ── Editar pedido ─────────────────────────────────────────────
+  editableOrders = signal<OrderResponse[]>([]);
+  loadingEditOrders = signal(false);
   editingOrder = signal<OrderResponse | null>(null);
   editItems = signal<OrderItemResponse[]>([]);
   editNotes = signal('');
@@ -118,6 +120,21 @@ export class DomicilioBoardComponent implements OnInit, OnDestroy {
 
   private setOrders(data: OrderResponse[]): void {
     this.orders.set(data.filter(order => isCurrentBusinessDayOrder(order.createdAt)));
+  }
+
+  loadEditableOrders(): void {
+    this.loadingEditOrders.set(true);
+    this.svc.getActiveOrders(getCurrentBusinessDayStartParam()).subscribe({
+      next: data => {
+        const active: OrderResponse['status'][] = ['RECEIVED', 'PREPARING', 'ON_THE_WAY'];
+        this.editableOrders.set(
+          data.filter(o => active.includes(o.status))
+               .sort((a, b) => a.id - b.id)
+        );
+        this.loadingEditOrders.set(false);
+      },
+      error: () => this.loadingEditOrders.set(false)
+    });
   }
 
   private applyOrderEvent(event: OrderEvent): void {
@@ -429,6 +446,7 @@ export class DomicilioBoardComponent implements OnInit, OnDestroy {
 
     this.svc.updateOrder(order.id, { items, notes: this.editNotes() }).subscribe({
       next: updated => {
+        this.editableOrders.update(list => list.map(o => o.id === updated.id ? updated : o));
         this.orders.update(list => list.map(o => o.id === updated.id ? updated : o));
         this.savingEdit.set(false);
         this.editingOrder.set(null);

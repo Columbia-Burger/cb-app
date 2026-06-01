@@ -21,7 +21,7 @@
         <button class="tab" [class.active]="view() === 'order'" (click)="switchToOrder()">
           🧾 Tomar Pedido
         </button>
-        <button class="tab" [class.active]="view() === 'edit'" (click)="view.set('edit')">
+        <button class="tab" [class.active]="view() === 'edit'" (click)="view.set('edit'); loadEditableOrders()">
           ✏️ Editar
         </button>
       </div>
@@ -115,14 +115,16 @@
 
         <!-- ── PESTAÑA EDITAR PEDIDO ── -->
         @if (view() === 'edit') {
-          @if (orders().length === 0) {
+          @if (loadingEditOrders()) {
+            <div class="empty">Cargando pedidos...</div>
+          } @else if (editableOrders().length === 0) {
             <div class="empty">
               <span class="empty-icon">✏️</span>
               <p>No hay pedidos activos para editar</p>
             </div>
           } @else {
             <div class="cards">
-              @for (order of orders(); track order.id) {
+              @for (order of editableOrders(); track order.id) {
                 <div class="card">
                   <div class="card-header">
                     <div class="card-id">#{{ order.id }}</div>

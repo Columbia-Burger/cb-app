@@ -90,6 +90,13 @@ export class DomicilioService {
     });
   }
 
+  getActiveOrders(from: string): Observable<OrderResponse[]> {
+    return this.http.get<OrderResponse[]>(
+      `${this.base}/api/orders?from=${encodeURIComponent(from)}`,
+      { headers: this.authHeaders() }
+    );
+  }
+
   updateOrder(id: number, request: UpdateOrderRequest): Observable<OrderResponse> {
     return this.http.patch<OrderResponse>(`${this.base}/api/orders/${id}`, request, {
       headers: this.authHeaders()
