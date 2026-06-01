@@ -81,8 +81,8 @@
 }
 
 .item-extra-input {
-  background: #161b22;
-  border: 1px solid #30363d;
+  background: #0d1117;
+  border: 1px solid #484f58;
   border-radius: 6px;
   color: #c9d1d9;
   font-size: 0.78em;
@@ -91,7 +91,7 @@
   width: 100%;
   font-family: inherit;
   &:focus { border-color: #58a6ff; }
-  &::placeholder { color: #484f58; }
+  &::placeholder { color: #6e7681; }
 }
 
 .item-name {
