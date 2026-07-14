@@ -4,12 +4,12 @@ import com.columbiaburger.api.dto.request.SeasonalSpecialRequest;
 import com.columbiaburger.api.dto.response.SeasonalSpecialResponse;
 import com.columbiaburger.api.entity.SeasonalSpecial;
 import com.columbiaburger.api.repository.SeasonalSpecialRepository;
+import com.columbiaburger.api.util.BogotaTime;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -31,7 +31,7 @@ public class SeasonalSpecialService {
     }
 
     public List<SeasonalSpecialResponse> findCurrentlyAvailable() {
-        LocalDate today = LocalDate.now();
+        var today = BogotaTime.today();
         return seasonalSpecialRepository
                 .findByActiveTrueAndSeasonStartLessThanEqualAndSeasonEndGreaterThanEqual(today, today)
                 .stream()

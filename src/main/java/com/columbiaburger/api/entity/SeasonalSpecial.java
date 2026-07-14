@@ -1,5 +1,6 @@
 package com.columbiaburger.api.entity;
 
+import com.columbiaburger.api.util.BogotaTime;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -43,10 +44,10 @@ public class SeasonalSpecial {
 
     @Builder.Default
     @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDateTime createdAt = LocalDateTime.now();
+    private LocalDateTime createdAt = BogotaTime.now();
 
     @PrePersist
     protected void onCreate() {
-        if (createdAt == null) createdAt = LocalDateTime.now();
+        if (createdAt == null) createdAt = BogotaTime.now();
     }
 }
