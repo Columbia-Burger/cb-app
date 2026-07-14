@@ -8,13 +8,13 @@ import com.columbiaburger.business.entity.InvoiceStatus;
 import com.columbiaburger.business.entity.OrderStatus;
 import com.columbiaburger.business.entity.Order;
 import com.columbiaburger.business.repository.OrderRepository;
+import com.columbiaburger.business.util.BogotaTime;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -59,7 +59,7 @@ public class InvoiceService {
         String number = buildInvoiceNumber();
         order.setInvoiceNumber(number);
         order.setInvoiceStatus(InvoiceStatus.INVOICED);
-        order.setInvoicedAt(LocalDateTime.now());
+        order.setInvoicedAt(BogotaTime.now());
 
         return orderService.toResponse(orderRepository.save(order));
     }
@@ -101,14 +101,14 @@ public class InvoiceService {
         order.setCufe(result.getCufe());
         order.setElectronicPaymentMethodCode(resolvePaymentMethodCode(req != null ? req.getPaymentMethodCode() : null));
         order.setInvoiceStatus(InvoiceStatus.INVOICED);
-        if (order.getInvoicedAt() == null) order.setInvoicedAt(LocalDateTime.now());
+        if (order.getInvoicedAt() == null) order.setInvoicedAt(BogotaTime.now());
         orderRepository.save(order);
 
         return result;
     }
 
     private String buildInvoiceNumber() {
-        int year = LocalDateTime.now().getYear();
+        int year = BogotaTime.today().getYear();
         String prefix = "CB-" + year + "-";
 
         // Find the highest sequential number for this year
