@@ -3,7 +3,7 @@ import { CurrencyPipe, DatePipe } from '@angular/common';
 import { AdminService } from '../../services/admin.service';
 import { OrderResponse, OrderStatus } from '../../models/admin.model';
 import { Subscription } from 'rxjs';
-import { getCurrentBusinessDayStartParam, isCurrentBusinessDayOrder } from '../../../shared/business-hours';
+import { getCurrentBusinessDayStartParam, isCurrentBusinessDayOrder, toBogotaDateKey } from '../../../shared/business-hours';
 import { OrderEvent, OrderEventsService } from '../../../services/order-events.service';
 
 interface KanbanColumn {
@@ -190,7 +190,7 @@ export class AdminPedidosComponent implements OnInit, AfterViewInit, OnDestroy {
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
-    const today = new Date().toISOString().substring(0, 10);
+    const today = toBogotaDateKey(new Date());
     a.href = url;
     a.download = `pedidos-${today}.csv`;
     a.click();

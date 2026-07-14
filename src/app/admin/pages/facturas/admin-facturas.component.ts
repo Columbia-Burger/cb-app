@@ -12,6 +12,7 @@ import {
 import { EditOrderModalComponent } from '../../components/edit-order-modal/edit-order-modal.component';
 import { ElectronicInvoiceModalComponent } from '../../components/electronic-invoice-modal/electronic-invoice-modal.component';
 import { PrintService } from '../../services/print.service';
+import { toBogotaDateKey } from '../../../shared/business-hours';
 
 type FilterTab = 'ALL' | 'PENDING' | 'INVOICED' | 'VOID';
 type ViewMode = 'OPERATIONS' | 'ELECTRONIC';
@@ -110,9 +111,9 @@ export class AdminFacturasComponent implements OnInit {
         return o.electronicPaymentMethodCode === paymentMethod;
       })
       .filter(o => {
-        const createdAt = o.createdAt?.slice(0, 10);
-        if (dateFrom && (!createdAt || createdAt < dateFrom)) return false;
-        if (dateTo && (!createdAt || createdAt > dateTo)) return false;
+        const invoiceDate = toBogotaDateKey(this.getInvoiceDateValue(o));
+        if (dateFrom && (!invoiceDate || invoiceDate < dateFrom)) return false;
+        if (dateTo && (!invoiceDate || invoiceDate > dateTo)) return false;
         return true;
       });
   });
@@ -342,6 +343,14 @@ export class AdminFacturasComponent implements OnInit {
       '47': 'Transferencia Bancolombia',
       '48': 'Pago con tarjeta'
     } as Record<string, string>)[code ?? ''] ?? 'Sin dato';
+  }
+
+  invoiceDate(order: OrderResponse): string | null {
+    return this.getInvoiceDateValue(order);
+  }
+
+  private getInvoiceDateValue(order: OrderResponse): string | null {
+    return order.invoicedAt || order.createdAt || null;
   }
 
   private saveBlobResponse(response: HttpResponse<Blob>, fallbackName: string): void {

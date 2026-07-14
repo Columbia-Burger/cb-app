@@ -89,7 +89,7 @@
                   <span class="badge" [attr.data-inv]="o.invoiceStatus">{{ statusLabel(o.invoiceStatus) }}</span>
                 </td>
                 <td class="cell-total">{{ o.total | currency:'COP':'symbol-narrow':'1.0-0' }}</td>
-                <td class="cell-date">{{ o.createdAt | date:'dd/MM/yy HH:mm' }}</td>
+                <td class="cell-date">{{ invoiceDate(o) | date:'dd/MM/yy HH:mm' }}</td>
                 <td class="cell-actions">
                   <button class="action-btn btn-print" [disabled]="printingId() === o.id" (click)="print(o)" title="Imprimir ticket">🖨️</button>
                   <button class="action-btn btn-edit" [disabled]="o.invoiceStatus === 'INVOICED'" (click)="editingOrder.set(o)" title="Editar pedido">✏️</button>
@@ -192,7 +192,7 @@
                   <span class="client-wa">{{ o.customerWhatsapp }}</span>
                 </td>
                 <td class="cell-total">{{ o.total | currency:'COP':'symbol-narrow':'1.0-0' }}</td>
-                <td class="cell-date">{{ o.createdAt | date:'dd/MM/yy HH:mm' }}</td>
+                <td class="cell-date">{{ invoiceDate(o) | date:'dd/MM/yy HH:mm' }}</td>
                 <td class="cell-actions">
                   <button class="action-btn btn-electronic" (click)="openElectronicDetail(o)" title="Ver detalle">👁️ Ver</button>
                   <button class="action-btn btn-pdf" (click)="downloadElectronicPdf(o.electronicInvoiceNumber!)" title="Descargar PDF">📄 PDF</button>

@@ -36,6 +36,29 @@ function toApiDateTime(date: Date): string {
   return date.toISOString().substring(0, 19);
 }
 
+export function toBogotaDateKey(value: string | Date | null | undefined): string {
+  if (!value) return '';
+  if (typeof value === 'string') {
+    const plainIsoMatch = value.match(/^(\d{4}-\d{2}-\d{2})T/);
+    if (plainIsoMatch) {
+      return plainIsoMatch[1];
+    }
+  }
+
+  const date = value instanceof Date ? value : new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return '';
+  }
+
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone: TIME_ZONE,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(date);
+}
+
 function getCurrentBogotaDayBounds(): { start: string; end: string } {
   const now = getBogotaParts();
   const startUtc = new Date(Date.UTC(now.year, now.month - 1, now.day, 5, 0, 0));
