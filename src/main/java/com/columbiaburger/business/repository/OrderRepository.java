@@ -2,6 +2,7 @@ package com.columbiaburger.business.repository;
 
 import com.columbiaburger.business.entity.Order;
 import com.columbiaburger.business.entity.OrderStatus;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -18,6 +19,15 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     List<Order> findByStatusAndCreatedAtAfterOrderByCreatedAtDesc(OrderStatus status, LocalDateTime from);
 
     List<Order> findByStatusInOrderByCreatedAtAsc(List<OrderStatus> statuses);
+
+    @EntityGraph(attributePaths = {"customer", "items"})
+    @Query("""
+            SELECT DISTINCT o FROM Order o
+            WHERE (o.invoicedAt >= :from AND o.invoicedAt < :to)
+               OR (o.invoicedAt IS NULL AND o.createdAt >= :from AND o.createdAt < :to)
+            ORDER BY o.createdAt DESC
+            """)
+    List<Order> findInvoicesForDay(@Param("from") LocalDateTime from, @Param("to") LocalDateTime to);
 
     long countByCreatedAtBetween(LocalDateTime from, LocalDateTime to);
     long countByStatus(OrderStatus status);

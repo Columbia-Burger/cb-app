@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -27,7 +28,9 @@ public class InvoiceService {
 
     @Transactional(readOnly = true)
     public List<OrderResponse> listInvoices() {
-        return orderRepository.findAllByOrderByCreatedAtDesc().stream()
+        LocalDateTime from = BogotaTime.today().atStartOfDay();
+        LocalDateTime to = from.plusDays(1);
+        return orderRepository.findInvoicesForDay(from, to).stream()
                 .map(orderService::toResponse)
                 .toList();
     }
