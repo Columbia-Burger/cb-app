@@ -64,7 +64,9 @@ public class InvoiceService {
         order.setInvoiceStatus(InvoiceStatus.INVOICED);
         order.setInvoicedAt(BogotaTime.now());
 
-        return orderService.toResponse(orderRepository.save(order));
+        // The entity is managed by this transaction, so Hibernate persists these changes on commit.
+        // Avoiding a second save also prevents a collection merge immediately after order creation.
+        return orderService.toResponse(order);
     }
 
     @Transactional

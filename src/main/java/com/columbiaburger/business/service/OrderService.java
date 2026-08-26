@@ -19,6 +19,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -65,9 +66,9 @@ public class OrderService {
         }
         if (changed) customerRepository.save(customer);
 
-        List<OrderItem> items = request.getItems().stream()
+        List<OrderItem> items = new ArrayList<>(request.getItems().stream()
                 .map(this::toOrderItem)
-                .toList();
+                .toList());
 
         BigDecimal itemsTotal = items.stream()
                 .map(i -> i.getUnitPrice().multiply(BigDecimal.valueOf(i.getQuantity())))
