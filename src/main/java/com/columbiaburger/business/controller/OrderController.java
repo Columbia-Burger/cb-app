@@ -5,8 +5,10 @@ import com.columbiaburger.business.dto.request.UpdateOrderRequest;
 import com.columbiaburger.business.dto.request.UpdateOrderStatusRequest;
 import com.columbiaburger.business.dto.response.OrderResponse;
 import com.columbiaburger.business.dto.response.OrderTrackingResponse;
+import com.columbiaburger.business.entity.OrderSource;
 import com.columbiaburger.business.entity.OrderStatus;
 import com.columbiaburger.business.security.JwtUtil;
+import com.columbiaburger.business.service.InvoiceService;
 import com.columbiaburger.business.service.OrderEventService;
 import com.columbiaburger.business.service.OrderService;
 import jakarta.validation.Valid;
@@ -25,12 +27,17 @@ import java.util.List;
 public class OrderController {
 
     private final OrderService orderService;
+    private final InvoiceService invoiceService;
     private final OrderEventService orderEventService;
     private final JwtUtil jwtUtil;
 
     @PostMapping
     public ResponseEntity<OrderResponse> create(@Valid @RequestBody CreateOrderRequest request) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(orderService.create(request));
+        OrderResponse order = orderService.create(request);
+        if (request.getSource() == OrderSource.WAITER) {
+            order = invoiceService.generateInvoice(order.getId());
+        }
+        return ResponseEntity.status(HttpStatus.CREATED).body(order);
     }
 
     @GetMapping
