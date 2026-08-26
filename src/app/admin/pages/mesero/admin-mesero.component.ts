@@ -2,6 +2,7 @@ import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { CurrencyPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AdminService } from '../../services/admin.service';
+import { PrintService } from '../../services/print.service';
 import { CatalogCategory, CatalogProduct, OrderItemRequest } from '../../models/admin.model';
 
 interface MenuCategory {
@@ -35,6 +36,7 @@ const COMBO_DRINK_NAMES = ['Gaseosa Postobón 400ml', 'Jugo Hit 500ml'];
 })
 export class AdminMeseroComponent implements OnInit {
   private adminService = inject(AdminService);
+  private printer = inject(PrintService);
 
   loading = signal(true);
   categories = signal<MenuCategory[]>([]);
@@ -305,7 +307,12 @@ export class AdminMeseroComponent implements OnInit {
       deliveryFee: type === 'llevar' ? (zone?.price ?? 0) : undefined,
       source: 'WAITER'
     }).subscribe({
-      next: (order) => {
+      next: async (order) => {
+        try {
+          await this.printer.printTicket(order);
+        } catch (error) {
+          console.error('No fue posible imprimir la factura del pedido.', error);
+        }
         this.successMsg.set(`Pedido #${order.id} — ${notes}`);
         this.cart.set([]);
         this.orderType.set('');

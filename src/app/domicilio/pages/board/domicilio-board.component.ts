@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { Subscription } from 'rxjs';
 import { isCurrentBusinessDayOrder, getCurrentBusinessDayStartParam } from '../../../shared/business-hours';
 import { DomicilioService } from '../../services/domicilio.service';
+import { PrintService } from '../../../admin/services/print.service';
 import { OrderResponse, OrderItemResponse, CatalogProduct, OrderItemRequest, UpdateOrderRequest } from '../../../admin/models/admin.model';
 import { OrderEvent, OrderEventsService } from '../../../services/order-events.service';
 
@@ -25,6 +26,7 @@ const COMBO_DRINK_NAMES = ['Gaseosa Postobón 400ml', 'Jugo Hit 500ml'];
 })
 export class DomicilioBoardComponent implements OnInit, OnDestroy {
   private svc = inject(DomicilioService);
+  private printer = inject(PrintService);
   private orderEvents = inject(OrderEventsService);
   private router = inject(Router);
 
@@ -375,7 +377,12 @@ export class DomicilioBoardComponent implements OnInit, OnDestroy {
       deliveryFee: type === 'llevar' ? (zone?.price ?? 0) : undefined,
       source: 'WAITER'
     }).subscribe({
-      next: order => {
+      next: async order => {
+        try {
+          await this.printer.printTicket(order);
+        } catch (error) {
+          console.error('No fue posible imprimir la factura del pedido.', error);
+        }
         this.successMsg.set(`Pedido #${order.id} — ${notes}`);
         this.cart.set([]);
         this.orderType.set('');
