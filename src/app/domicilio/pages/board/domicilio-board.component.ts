@@ -378,12 +378,17 @@ export class DomicilioBoardComponent implements OnInit, OnDestroy {
       source: 'WAITER'
     }).subscribe({
       next: async order => {
+        let printError = '';
         try {
           await this.printer.printTicket(order);
-        } catch (error) {
+        } catch (error: any) {
           console.error('No fue posible imprimir la factura del pedido.', error);
+          printError = error?.message ?? 'No se pudo enviar el pedido a la impresora.';
         }
         this.successMsg.set(`Pedido #${order.id} — ${notes}`);
+        if (printError) {
+          this.errorMsg.set(`Pedido creado, pero no se imprimió: ${printError}`);
+        }
         this.cart.set([]);
         this.orderType.set('');
         this.tableNumber = '';

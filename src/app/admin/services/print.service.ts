@@ -59,6 +59,7 @@ YtrJ4w9moKmJueFYAztff5A=
 export class PrintService {
 
   private connected = false;
+  private connecting: Promise<void> | null = null;
   private cryptoKey: CryptoKey | null = null;
 
   async listPrinters(): Promise<string[]> {
@@ -76,6 +77,9 @@ export class PrintService {
   }
 
   async printTicket(order: OrderResponse): Promise<void> {
+    if (!order.items?.length) {
+      throw new Error('El pedido no tiene productos para imprimir. Actualiza la lista e inténtalo de nuevo.');
+    }
     await this.ensureConnected();
     const printer = await this.resolvePrinter();
     const config = qz.configs.create(printer);
@@ -91,8 +95,26 @@ export class PrintService {
 
   private async ensureConnected(): Promise<void> {
     if (this.connected && qz.websocket.isActive()) return;
+    if (!this.connecting) {
+      this.connecting = this.connect();
+    }
+
+    try {
+      await this.connecting;
+    } finally {
+      this.connecting = null;
+    }
+  }
+
+  private async connect(): Promise<void> {
+    if (typeof qz === 'undefined') {
+      throw new Error('No se cargó el servicio de impresión. Recarga la página e inténtalo de nuevo.');
+    }
+
     this.setupSecurity();
-    await qz.websocket.connect();
+    if (!qz.websocket.isActive()) {
+      await qz.websocket.connect();
+    }
     this.connected = true;
   }
 

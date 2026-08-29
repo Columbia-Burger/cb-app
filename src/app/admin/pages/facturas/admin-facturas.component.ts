@@ -201,10 +201,6 @@ export class AdminFacturasComponent implements OnInit {
   }
 
   async print(order: OrderResponse): Promise<void> {
-    if (!this.printer.getSavedPrinter() && !this.selectedPrinter) {
-      this.error.set('Selecciona una impresora primero.');
-      return;
-    }
     if (this.selectedPrinter) this.printer.savePrinter(this.selectedPrinter);
     this.printingId.set(order.id);
     this.error.set('');
