@@ -36,7 +36,9 @@ public class OrderController {
         OrderResponse order = orderService.create(request);
         if (request.getSource() == OrderSource.WAITER || request.getSource() == OrderSource.DELIVERY) {
             order = invoiceService.generateInvoice(order.getId());
-            orderEventService.publishInvoiced(order);
+            if (request.isPrintAtAdmin()) {
+                orderEventService.publishInvoiced(order);
+            }
         }
         return ResponseEntity.status(HttpStatus.CREATED).body(order);
     }

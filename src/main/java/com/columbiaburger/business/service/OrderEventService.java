@@ -41,13 +41,18 @@ public class OrderEventService {
     }
 
     public void publishInvoiced(OrderResponse order) {
-        publish("ORDER_INVOICED", order);
+        publish("ORDER_INVOICED", order, true);
     }
 
     private void publish(String type, OrderResponse order) {
+        publish(type, order, false);
+    }
+
+    private void publish(String type, OrderResponse order, boolean printAtAdmin) {
         OrderEventResponse event = OrderEventResponse.builder()
                 .type(type)
                 .order(order)
+                .printAtAdmin(printAtAdmin)
                 .build();
 
         for (SseEmitter emitter : emitters) {

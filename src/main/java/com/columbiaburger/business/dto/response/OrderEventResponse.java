@@ -8,4 +8,5 @@ import lombok.Getter;
 public class OrderEventResponse {
     private String type;
     private OrderResponse order;
+    private boolean printAtAdmin;
 }

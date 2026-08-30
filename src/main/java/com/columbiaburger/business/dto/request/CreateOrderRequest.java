@@ -37,5 +37,7 @@ public class CreateOrderRequest {
 
     private String notes;
 
+    private boolean printAtAdmin;
+
     private OrderSource source;
 }
