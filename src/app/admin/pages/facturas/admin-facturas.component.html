@@ -21,6 +21,10 @@
         @if (printer.getSavedPrinter()) {
           <span class="printer-saved">{{ printer.getSavedPrinter() }}</span>
         }
+        <label class="remote-print-toggle" title="Imprime en este computador los pedidos creados desde Domicilio">
+          <input type="checkbox" [(ngModel)]="remoteAutoPrint" (ngModelChange)="saveRemoteAutoPrint()" />
+          Imprimir pedidos de Domicilio
+        </label>
       </div>
       <button class="refresh-btn" (click)="load()">Actualizar</button>
     </div>

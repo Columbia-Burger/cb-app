@@ -70,6 +70,21 @@
   gap: 0.5em;
 }
 
+.remote-print-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: #c9d1d9;
+  font-size: 0.78rem;
+  cursor: pointer;
+  white-space: nowrap;
+
+  input {
+    accent-color: #e94560;
+    cursor: pointer;
+  }
+}
+
 .printer-detect-btn {
   background: none;
   border: 1px dashed #30363d;

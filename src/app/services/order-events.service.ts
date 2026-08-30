@@ -4,7 +4,7 @@ import { environment } from '../../environments/environment';
 import { OrderResponse } from '../admin/models/admin.model';
 
 export interface OrderEvent {
-  type: 'ORDER_CREATED' | 'ORDER_UPDATED';
+  type: 'ORDER_CREATED' | 'ORDER_UPDATED' | 'ORDER_INVOICED';
   order: OrderResponse;
 }
 
@@ -26,8 +26,9 @@ export class OrderEventsService {
         this.zone.run(() => subscriber.next(JSON.parse(event.data) as OrderEvent));
       };
 
-      source.addEventListener('ORDER_CREATED', handleEvent);
-      source.addEventListener('ORDER_UPDATED', handleEvent);
+    source.addEventListener('ORDER_CREATED', handleEvent);
+    source.addEventListener('ORDER_UPDATED', handleEvent);
+    source.addEventListener('ORDER_INVOICED', handleEvent);
       source.onerror = () => {
         if (source.readyState === EventSource.CLOSED) {
           subscriber.complete();

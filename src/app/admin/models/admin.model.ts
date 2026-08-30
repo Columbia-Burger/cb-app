@@ -117,7 +117,7 @@ export interface TopProduct {
   totalRevenue: number;
 }
 
-export type OrderSource = 'WEB' | 'WHATSAPP' | 'WAITER';
+export type OrderSource = 'WEB' | 'WHATSAPP' | 'WAITER' | 'DELIVERY';
 
 export interface OrderItemRequest {
   productId: number;

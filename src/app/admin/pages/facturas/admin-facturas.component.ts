@@ -42,6 +42,7 @@ export class AdminFacturasComponent implements OnInit {
 
   printers = signal<string[]>([]);
   selectedPrinter = this.printer.getSavedPrinter() ?? '';
+  remoteAutoPrint = this.printer.isRemoteAutoPrintEnabled();
   loadingPrinters = signal(false);
 
   page = signal(1);
@@ -198,6 +199,10 @@ export class AdminFacturasComponent implements OnInit {
 
   savePrinter(): void {
     this.printer.savePrinter(this.selectedPrinter);
+  }
+
+  saveRemoteAutoPrint(): void {
+    this.printer.setRemoteAutoPrint(this.remoteAutoPrint);
   }
 
   async print(order: OrderResponse): Promise<void> {

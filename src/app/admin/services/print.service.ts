@@ -5,6 +5,7 @@ declare const qz: any;
 
 const COLS = 32;
 const PRINTER_KEY = 'cb_printer_name';
+const REMOTE_AUTO_PRINT_KEY = 'cb_remote_auto_print';
 
 const CERTIFICATE = `-----BEGIN CERTIFICATE-----
 MIIDITCCAgmgAwIBAgIUVa2V8sU1A0PmlqNi3oYvArpGr9EwDQYJKoZIhvcNAQEL
@@ -74,6 +75,14 @@ export class PrintService {
 
   savePrinter(name: string): void {
     localStorage.setItem(PRINTER_KEY, name);
+  }
+
+  isRemoteAutoPrintEnabled(): boolean {
+    return localStorage.getItem(REMOTE_AUTO_PRINT_KEY) === 'true';
+  }
+
+  setRemoteAutoPrint(enabled: boolean): void {
+    localStorage.setItem(REMOTE_AUTO_PRINT_KEY, String(enabled));
   }
 
   async printTicket(order: OrderResponse): Promise<void> {

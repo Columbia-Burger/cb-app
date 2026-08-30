@@ -5,7 +5,6 @@ import { FormsModule } from '@angular/forms';
 import { Subscription } from 'rxjs';
 import { isCurrentBusinessDayOrder, getCurrentBusinessDayStartParam } from '../../../shared/business-hours';
 import { DomicilioService } from '../../services/domicilio.service';
-import { PrintService } from '../../../admin/services/print.service';
 import { OrderResponse, OrderItemResponse, CatalogProduct, OrderItemRequest, UpdateOrderRequest } from '../../../admin/models/admin.model';
 import { OrderEvent, OrderEventsService } from '../../../services/order-events.service';
 
@@ -26,7 +25,6 @@ const COMBO_DRINK_NAMES = ['Gaseosa Postobón 400ml', 'Jugo Hit 500ml'];
 })
 export class DomicilioBoardComponent implements OnInit, OnDestroy {
   private svc = inject(DomicilioService);
-  private printer = inject(PrintService);
   private orderEvents = inject(OrderEventsService);
   private router = inject(Router);
 
@@ -375,20 +373,10 @@ export class DomicilioBoardComponent implements OnInit, OnDestroy {
       notes,
       deliveryZone: type === 'llevar' ? zone?.name : undefined,
       deliveryFee: type === 'llevar' ? (zone?.price ?? 0) : undefined,
-      source: 'WAITER'
+      source: 'DELIVERY'
     }).subscribe({
-      next: async order => {
-        let printError = '';
-        try {
-          await this.printer.printTicket(order);
-        } catch (error: any) {
-          console.error('No fue posible imprimir la factura del pedido.', error);
-          printError = error?.message ?? 'No se pudo enviar el pedido a la impresora.';
-        }
+      next: order => {
         this.successMsg.set(`Pedido #${order.id} — ${notes}`);
-        if (printError) {
-          this.errorMsg.set(`Pedido creado, pero no se imprimió: ${printError}`);
-        }
         this.cart.set([]);
         this.orderType.set('');
         this.tableNumber = '';
