@@ -40,6 +40,10 @@ public class OrderEventService {
         publish("ORDER_UPDATED", order);
     }
 
+    public void publishInvoiced(OrderResponse order) {
+        publish("ORDER_INVOICED", order);
+    }
+
     private void publish(String type, OrderResponse order) {
         OrderEventResponse event = OrderEventResponse.builder()
                 .type(type)

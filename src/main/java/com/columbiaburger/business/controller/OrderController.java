@@ -34,8 +34,9 @@ public class OrderController {
     @PostMapping
     public ResponseEntity<OrderResponse> create(@Valid @RequestBody CreateOrderRequest request) {
         OrderResponse order = orderService.create(request);
-        if (request.getSource() == OrderSource.WAITER) {
+        if (request.getSource() == OrderSource.WAITER || request.getSource() == OrderSource.DELIVERY) {
             order = invoiceService.generateInvoice(order.getId());
+            orderEventService.publishInvoiced(order);
         }
         return ResponseEntity.status(HttpStatus.CREATED).body(order);
     }
