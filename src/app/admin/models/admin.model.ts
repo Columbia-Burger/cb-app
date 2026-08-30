@@ -138,6 +138,7 @@ export interface CreateOrderRequest {
   deliveryFee?: number;
   deliveryZone?: string;
   notes?: string;
+  printAtAdmin?: boolean;
   source: OrderSource;
 }
 

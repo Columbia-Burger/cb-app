@@ -6,6 +6,7 @@ import { OrderResponse } from '../admin/models/admin.model';
 export interface OrderEvent {
   type: 'ORDER_CREATED' | 'ORDER_UPDATED' | 'ORDER_INVOICED';
   order: OrderResponse;
+  printAtAdmin?: boolean;
 }
 
 @Injectable({ providedIn: 'root' })

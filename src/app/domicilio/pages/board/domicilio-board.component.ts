@@ -373,7 +373,8 @@ export class DomicilioBoardComponent implements OnInit, OnDestroy {
       notes,
       deliveryZone: type === 'llevar' ? zone?.name : undefined,
       deliveryFee: type === 'llevar' ? (zone?.price ?? 0) : undefined,
-      source: 'DELIVERY'
+      printAtAdmin: true,
+      source: 'WAITER'
     }).subscribe({
       next: order => {
         this.successMsg.set(`Pedido #${order.id} — ${notes}`);

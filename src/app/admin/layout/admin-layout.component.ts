@@ -42,7 +42,7 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
     const order = event.order;
     if (
       event.type !== 'ORDER_INVOICED' ||
-      order.source !== 'DELIVERY' ||
+      !event.printAtAdmin ||
       this.printedOrderIds.has(order.id) ||
       !this.printer.isRemoteAutoPrintEnabled()
     ) return;
