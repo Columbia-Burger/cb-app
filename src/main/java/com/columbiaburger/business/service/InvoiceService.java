@@ -130,9 +130,9 @@ public class InvoiceService {
     }
 
     private String resolvePaymentMethodCode(String paymentMethodCode) {
-        return switch (paymentMethodCode) {
-            case "47", "48" -> paymentMethodCode;
-            default -> "10";
-        };
+        // Consumidor final puede llegar sin medio de pago; se asume efectivo
+        return "47".equals(paymentMethodCode) || "48".equals(paymentMethodCode)
+                ? paymentMethodCode
+                : "10";
     }
 }

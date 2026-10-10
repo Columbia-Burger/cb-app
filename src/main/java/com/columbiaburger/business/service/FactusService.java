@@ -175,10 +175,9 @@ public class FactusService {
     }
 
     private List<Map<String, Object>> buildPaymentDetails(Order order, String paymentMethodCode, BigDecimal amount) {
-        String resolvedPaymentMethodCode = switch (paymentMethodCode) {
-            case "47", "48" -> paymentMethodCode;
-            default -> "10";
-        };
+        String resolvedPaymentMethodCode = "47".equals(paymentMethodCode) || "48".equals(paymentMethodCode)
+                ? paymentMethodCode
+                : "10";
 
         return List.of(Map.of(
                 "payment_form", "1",
