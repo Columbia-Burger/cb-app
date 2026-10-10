@@ -233,6 +233,12 @@ public class OrderService {
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Pedido no encontrado"));
 
+        // Una vez reportado a la DIAN el pedido no puede cambiar, o dejaría de cuadrar con la factura electrónica
+        if (order.getElectronicInvoiceNumber() != null) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                    "El pedido ya tiene factura electrónica " + order.getElectronicInvoiceNumber() + " y no se puede editar");
+        }
+
         if (request.getNotes() != null) order.setNotes(request.getNotes());
         if (request.getDeliveryZone() != null) order.setDeliveryZone(request.getDeliveryZone());
         if (request.getDeliveryFee() != null) order.setDeliveryFee(request.getDeliveryFee());
