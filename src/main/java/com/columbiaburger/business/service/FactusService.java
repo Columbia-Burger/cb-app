@@ -18,6 +18,8 @@ import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.HashMap;
@@ -31,7 +33,7 @@ import java.util.stream.Collectors;
 public class FactusService {
 
     private static final String CONSUMIDOR_FINAL_ID = "222222222222";
-    private static final String BOGOTA_MUNICIPALITY_CODE = "11001";
+    private static final String DELIVERY_CODE_REFERENCE = "DOMICILIO";
     private static final String UNIT_MEASURE_CODE = "94";
     private static final String STANDARD_CODE = "999";
 
@@ -43,6 +45,15 @@ public class FactusService {
 
     @Value("${factus.numbering-range-id}")
     private int numberingRangeId;
+
+    @Value("${factus.tax-code}")
+    private String taxCode;
+
+    @Value("${factus.tax-rate}")
+    private String taxRate;
+
+    @Value("${factus.municipality-code}")
+    private String municipalityCode;
 
     public ElectronicInvoiceResponse createBill(Order order, String customerDocumentType, String paymentMethodCode,
                                                 String customerIdentification,
@@ -120,9 +131,12 @@ public class FactusService {
         payload.put("operation_type", "10");
         payload.put("observation", "Pedido #" + order.getId());
         payload.put("send_email", true);
+        List<InvoiceLine> lines = buildLines(order);
+        BigDecimal discountRate = discountRate(order, lines);
+
         payload.put("customer", customer);
-        payload.put("payment_details", buildPaymentDetails(order, paymentMethodCode));
-        payload.put("items", buildItems(order));
+        payload.put("payment_details", buildPaymentDetails(order, paymentMethodCode, payableAmount(lines, discountRate)));
+        payload.put("items", buildItems(lines, discountRate));
         return payload;
     }
 
@@ -133,7 +147,7 @@ public class FactusService {
         customer.put("identification_document_code", "13");
         customer.put("legal_organization_code", "2");
         customer.put("address", "No indica");
-        customer.put("municipality_code", BOGOTA_MUNICIPALITY_CODE);
+        customer.put("municipality_code", municipalityCode);
         customer.put("email", email.isBlank() ? "consumidor@final.com" : email);
         customer.put("phone", "0000000000");
         customer.put("tribute_code", "ZZ");
@@ -153,14 +167,14 @@ public class FactusService {
         customer.put("identification_document_code", isNit ? "31" : "13");
         customer.put("legal_organization_code", isNit ? "1" : "2");
         customer.put("address", "No indica");
-        customer.put("municipality_code", BOGOTA_MUNICIPALITY_CODE);
+        customer.put("municipality_code", municipalityCode);
         customer.put("email", email);
         customer.put("phone", "0000000000");
         customer.put("tribute_code", "ZZ");
         return customer;
     }
 
-    private List<Map<String, Object>> buildPaymentDetails(Order order, String paymentMethodCode) {
+    private List<Map<String, Object>> buildPaymentDetails(Order order, String paymentMethodCode, BigDecimal amount) {
         String resolvedPaymentMethodCode = switch (paymentMethodCode) {
             case "47", "48" -> paymentMethodCode;
             default -> "10";
@@ -169,20 +183,64 @@ public class FactusService {
         return List.of(Map.of(
                 "payment_form", "1",
                 "payment_method_code", resolvedPaymentMethodCode,
-                "amount", order.getTotal().setScale(2).toPlainString(),
+                "amount", amount.toPlainString(),
                 "reference_code", "pedido-" + order.getId()
         ));
     }
 
-    private List<Map<String, Object>> buildItems(Order order) {
-        List<Map<String, Object>> items = new ArrayList<>();
+    private record InvoiceLine(String codeReference, String name, BigDecimal quantity, BigDecimal price) {
+        BigDecimal gross() {
+            return price.multiply(quantity);
+        }
+    }
+
+    // El domicilio hace parte de order.total, así que va como una línea más de la factura
+    private List<InvoiceLine> buildLines(Order order) {
+        List<InvoiceLine> lines = new ArrayList<>();
         for (OrderItem item : order.getItems()) {
+            lines.add(new InvoiceLine(
+                    String.valueOf(item.getProductId()),
+                    item.getProductName(),
+                    BigDecimal.valueOf(item.getQuantity()),
+                    item.getUnitPrice()
+            ));
+        }
+        BigDecimal deliveryFee = order.getDeliveryFee();
+        if (deliveryFee != null && deliveryFee.signum() > 0) {
+            lines.add(new InvoiceLine(DELIVERY_CODE_REFERENCE, "Domicilio", BigDecimal.ONE, deliveryFee));
+        }
+        return lines;
+    }
+
+    // El descuento del pedido aplica sobre ítems + domicilio; se reparte como % uniforme en cada línea
+    private BigDecimal discountRate(Order order, List<InvoiceLine> lines) {
+        BigDecimal discount = order.getDiscount();
+        BigDecimal subtotal = lines.stream().map(InvoiceLine::gross).reduce(BigDecimal.ZERO, BigDecimal::add);
+        if (discount == null || discount.signum() <= 0 || subtotal.signum() <= 0) {
+            return BigDecimal.ZERO.setScale(2);
+        }
+        return discount.multiply(BigDecimal.valueOf(100))
+                .divide(subtotal, 2, RoundingMode.HALF_UP)
+                .min(BigDecimal.valueOf(100).setScale(2));
+    }
+
+    // Se calcula con el mismo % enviado a Factus para que el pago cuadre con la suma de las líneas
+    private BigDecimal payableAmount(List<InvoiceLine> lines, BigDecimal discountRate) {
+        BigDecimal factor = BigDecimal.ONE.subtract(discountRate.movePointLeft(2));
+        return lines.stream()
+                .map(line -> line.gross().multiply(factor).setScale(2, RoundingMode.HALF_UP))
+                .reduce(BigDecimal.ZERO.setScale(2), BigDecimal::add);
+    }
+
+    private List<Map<String, Object>> buildItems(List<InvoiceLine> lines, BigDecimal discountRate) {
+        List<Map<String, Object>> items = new ArrayList<>();
+        for (InvoiceLine line : lines) {
             Map<String, Object> payload = new HashMap<>();
-            payload.put("code_reference", String.valueOf(item.getProductId()));
-            payload.put("name", item.getProductName());
-            payload.put("quantity", String.format("%.2f", item.getQuantity().doubleValue()));
-            payload.put("price", item.getUnitPrice().setScale(2).toPlainString());
-            payload.put("discount_rate", "0.00");
+            payload.put("code_reference", line.codeReference());
+            payload.put("name", line.name());
+            payload.put("quantity", line.quantity().setScale(2, RoundingMode.HALF_UP).toPlainString());
+            payload.put("price", line.price().setScale(2, RoundingMode.HALF_UP).toPlainString());
+            payload.put("discount_rate", discountRate.toPlainString());
             payload.put("unit_measure_code", UNIT_MEASURE_CODE);
             payload.put("standard_code", STANDARD_CODE);
             payload.put("taxes", defaultTaxes());
@@ -193,8 +251,8 @@ public class FactusService {
 
     private List<Map<String, Object>> defaultTaxes() {
         return List.of(Map.of(
-                "code", "01",
-                "rate", "0.00"
+                "code", taxCode,
+                "rate", taxRate
         ));
     }
 
