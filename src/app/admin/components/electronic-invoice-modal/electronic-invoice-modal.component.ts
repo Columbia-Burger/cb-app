@@ -46,7 +46,7 @@ export class ElectronicInvoiceModalComponent {
     this.error.set('');
 
     const req: ElectronicInvoiceRequest = this.useConsumidorFinal()
-      ? {}
+      ? { paymentMethodCode: this.paymentMethodCode }
       : {
           customerDocumentType: this.documentType,
           paymentMethodCode: this.paymentMethodCode,

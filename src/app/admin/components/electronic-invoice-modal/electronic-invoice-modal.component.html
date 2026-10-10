@@ -15,16 +15,19 @@
         </button>
       </div>
 
+      <div class="fields">
+        <label class="field">
+          <span>Medio de pago</span>
+          <select [(ngModel)]="paymentMethodCode">
+            <option value="10">Efectivo</option>
+            <option value="47">Transferencia Bancolombia</option>
+            <option value="48">Pago con tarjeta</option>
+          </select>
+        </label>
+      </div>
+
       @if (!useConsumidorFinal()) {
         <div class="fields">
-          <label class="field">
-            <span>Medio de pago</span>
-            <select [(ngModel)]="paymentMethodCode">
-              <option value="10">Efectivo</option>
-              <option value="47">Transferencia Bancolombia</option>
-              <option value="48">Pago con tarjeta</option>
-            </select>
-          </label>
           <label class="field">
             <span>Tipo de documento</span>
             <select [(ngModel)]="documentType">
