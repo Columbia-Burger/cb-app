@@ -96,7 +96,8 @@
                 <td class="cell-date">{{ invoiceDate(o) | date:'dd/MM/yy HH:mm' }}</td>
                 <td class="cell-actions">
                   <button class="action-btn btn-print" [disabled]="printingId() === o.id" (click)="print(o)" title="Imprimir ticket">🖨️</button>
-                  <button class="action-btn btn-edit" [disabled]="o.invoiceStatus === 'INVOICED'" (click)="editingOrder.set(o)" title="Editar pedido">✏️</button>
+                  <button class="action-btn btn-edit" [disabled]="!!o.electronicInvoiceNumber" (click)="editingOrder.set(o)"
+                    [title]="o.electronicInvoiceNumber ? 'No se puede editar: ya tiene factura electronica' : 'Editar pedido / aplicar descuento'">✏️</button>
                   @if (o.invoiceStatus === 'PENDING') {
                     <button class="action-btn btn-generate" [disabled]="generatingId() === o.id" (click)="generate(o)" title="Generar factura interna">
                       {{ generatingId() === o.id ? '...' : '🧾' }}
