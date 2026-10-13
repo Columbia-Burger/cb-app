@@ -114,7 +114,7 @@ public class FactusService {
                                              String identification,
                                              String customerName, String customerEmail) {
         boolean isConsumidorFinal = identification == null || identification.isBlank();
-        String id = isConsumidorFinal ? CONSUMIDOR_FINAL_ID : identification.trim();
+        String id = isConsumidorFinal ? CONSUMIDOR_FINAL_ID : cleanIdentification(identification);
         String name = isConsumidorFinal ? "Consumidor Final" : safeName(customerName);
         String email = (customerEmail != null && !customerEmail.isBlank())
                 ? customerEmail.trim()
@@ -402,6 +402,11 @@ public class FactusService {
                     "No fue posible conectar con Factus: " + e.getMessage()
             );
         }
+    }
+
+    // Factus pide el NIT sin DV ni guion ("900.123.456-7" → "900123456"); el DV lo calcula Factus
+    private String cleanIdentification(String identification) {
+        return identification.split("-")[0].replaceAll("\\D", "");
     }
 
     private String safeName(String customerName) {
