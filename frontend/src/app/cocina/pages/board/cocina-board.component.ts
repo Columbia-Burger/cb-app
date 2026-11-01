@@ -7,11 +7,10 @@ import { OrderResponse, OrderStatus } from '../../../admin/models/admin.model';
 import { OrderEvent, OrderEventsService } from '../../../services/order-events.service';
 
 @Component({
-  selector: 'app-cocina-board',
-  standalone: true,
-  imports: [DatePipe, CurrencyPipe],
-  templateUrl: './cocina-board.component.html',
-  styleUrl: './cocina-board.component.scss',
+    selector: 'app-cocina-board',
+    imports: [DatePipe, CurrencyPipe],
+    templateUrl: './cocina-board.component.html',
+    styleUrl: './cocina-board.component.scss'
 })
 export class CocinaBoardComponent implements OnInit, OnDestroy {
   private svc = inject(CocinaService);

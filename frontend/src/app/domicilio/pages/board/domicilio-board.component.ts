@@ -17,11 +17,10 @@ const PICKUP_OPTION: ZoneOption = { name: 'Recoger aquí', price: 0 };
 const COMBO_DRINK_NAMES = ['Gaseosa Postobón 400ml', 'Jugo Hit 500ml'];
 
 @Component({
-  selector: 'app-domicilio-board',
-  standalone: true,
-  imports: [CurrencyPipe, DatePipe, FormsModule],
-  templateUrl: './domicilio-board.component.html',
-  styleUrl: './domicilio-board.component.scss',
+    selector: 'app-domicilio-board',
+    imports: [CurrencyPipe, DatePipe, FormsModule],
+    templateUrl: './domicilio-board.component.html',
+    styleUrl: './domicilio-board.component.scss'
 })
 export class DomicilioBoardComponent implements OnInit, OnDestroy {
   private svc = inject(DomicilioService);

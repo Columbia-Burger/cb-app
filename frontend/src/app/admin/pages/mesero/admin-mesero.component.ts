@@ -44,11 +44,10 @@ const COMBO_DRINK_NAMES = ['Gaseosa Postobón 400ml', 'Jugo Hit 500ml'];
 const LAST_COMBO_KEY = 'cb_mesero_last_combo';
 
 @Component({
-  selector: 'app-admin-mesero',
-  standalone: true,
-  imports: [CurrencyPipe, FormsModule],
-  templateUrl: './admin-mesero.component.html',
-  styleUrl: './admin-mesero.component.scss',
+    selector: 'app-admin-mesero',
+    imports: [CurrencyPipe, FormsModule],
+    templateUrl: './admin-mesero.component.html',
+    styleUrl: './admin-mesero.component.scss'
 })
 export class AdminMeseroComponent implements OnInit {
   private adminService = inject(AdminService);

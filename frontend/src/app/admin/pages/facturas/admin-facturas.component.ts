@@ -18,11 +18,10 @@ type FilterTab = 'ALL' | 'PENDING' | 'INVOICED' | 'VOID';
 type ViewMode = 'OPERATIONS' | 'ELECTRONIC';
 
 @Component({
-  selector: 'app-admin-facturas',
-  standalone: true,
-  imports: [CurrencyPipe, DatePipe, EditOrderModalComponent, ElectronicInvoiceModalComponent, FormsModule],
-  templateUrl: './admin-facturas.component.html',
-  styleUrl: './admin-facturas.component.scss',
+    selector: 'app-admin-facturas',
+    imports: [CurrencyPipe, DatePipe, EditOrderModalComponent, ElectronicInvoiceModalComponent, FormsModule],
+    templateUrl: './admin-facturas.component.html',
+    styleUrl: './admin-facturas.component.scss'
 })
 export class AdminFacturasComponent implements OnInit {
   private svc = inject(AdminService);

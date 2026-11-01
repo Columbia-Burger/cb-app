@@ -37,11 +37,10 @@ function shortDate(iso: string): string {
 }
 
 @Component({
-  selector: 'app-admin-reportes',
-  standalone: true,
-  imports: [CurrencyPipe, DatePipe, DecimalPipe, FormsModule, NgTemplateOutlet],
-  templateUrl: './admin-reportes.component.html',
-  styleUrl: './admin-reportes.component.scss',
+    selector: 'app-admin-reportes',
+    imports: [CurrencyPipe, DatePipe, DecimalPipe, FormsModule, NgTemplateOutlet],
+    templateUrl: './admin-reportes.component.html',
+    styleUrl: './admin-reportes.component.scss'
 })
 export class AdminReportesComponent implements OnInit, OnDestroy {
   private svc = inject(AdminService);

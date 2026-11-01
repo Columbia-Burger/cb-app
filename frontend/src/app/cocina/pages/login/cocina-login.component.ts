@@ -4,11 +4,10 @@ import { FormsModule } from '@angular/forms';
 import { CocinaService } from '../../services/cocina.service';
 
 @Component({
-  selector: 'app-cocina-login',
-  standalone: true,
-  imports: [FormsModule],
-  templateUrl: './cocina-login.component.html',
-  styleUrl: './cocina-login.component.scss',
+    selector: 'app-cocina-login',
+    imports: [FormsModule],
+    templateUrl: './cocina-login.component.html',
+    styleUrl: './cocina-login.component.scss'
 })
 export class CocinaLoginComponent {
   private svc = inject(CocinaService);

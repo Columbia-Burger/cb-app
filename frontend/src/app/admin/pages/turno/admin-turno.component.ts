@@ -6,11 +6,10 @@ import { ShiftResponse } from '../../models/admin.model';
 type PageState = 'loading' | 'no-shift' | 'active' | 'closed-summary';
 
 @Component({
-  selector: 'app-admin-turno',
-  standalone: true,
-  imports: [CurrencyPipe, DatePipe, NgClass],
-  templateUrl: './admin-turno.component.html',
-  styleUrl: './admin-turno.component.scss',
+    selector: 'app-admin-turno',
+    imports: [CurrencyPipe, DatePipe, NgClass],
+    templateUrl: './admin-turno.component.html',
+    styleUrl: './admin-turno.component.scss'
 })
 export class AdminTurnoComponent implements OnInit {
   private svc = inject(AdminService);

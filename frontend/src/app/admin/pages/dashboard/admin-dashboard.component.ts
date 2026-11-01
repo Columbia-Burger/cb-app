@@ -7,11 +7,10 @@ import { Chart, registerables } from 'chart.js';
 Chart.register(...registerables);
 
 @Component({
-  selector: 'app-admin-dashboard',
-  standalone: true,
-  imports: [CurrencyPipe, DecimalPipe],
-  templateUrl: './admin-dashboard.component.html',
-  styleUrl: './admin-dashboard.component.scss'
+    selector: 'app-admin-dashboard',
+    imports: [CurrencyPipe, DecimalPipe],
+    templateUrl: './admin-dashboard.component.html',
+    styleUrl: './admin-dashboard.component.scss'
 })
 export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   private adminService = inject(AdminService);

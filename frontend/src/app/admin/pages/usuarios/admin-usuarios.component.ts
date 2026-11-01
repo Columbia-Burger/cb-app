@@ -12,11 +12,10 @@ interface RoleOption {
 }
 
 @Component({
-  selector: 'app-admin-usuarios',
-  standalone: true,
-  imports: [DatePipe, FormsModule],
-  templateUrl: './admin-usuarios.component.html',
-  styleUrl: './admin-usuarios.component.scss',
+    selector: 'app-admin-usuarios',
+    imports: [DatePipe, FormsModule],
+    templateUrl: './admin-usuarios.component.html',
+    styleUrl: './admin-usuarios.component.scss'
 })
 export class AdminUsuariosComponent implements OnInit {
   private svc = inject(AdminService);

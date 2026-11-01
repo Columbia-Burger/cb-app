@@ -5,11 +5,10 @@ import { AdminService } from '../../services/admin.service';
 import { AdditionItem, CreateAdditionRequest } from '../../models/admin.model';
 
 @Component({
-  selector: 'app-admin-adiciones',
-  standalone: true,
-  imports: [CurrencyPipe, NgClass, FormsModule],
-  templateUrl: './admin-adiciones.component.html',
-  styleUrl: './admin-adiciones.component.scss'
+    selector: 'app-admin-adiciones',
+    imports: [CurrencyPipe, NgClass, FormsModule],
+    templateUrl: './admin-adiciones.component.html',
+    styleUrl: './admin-adiciones.component.scss'
 })
 export class AdminAdicionesComponent implements OnInit {
   private svc = inject(AdminService);

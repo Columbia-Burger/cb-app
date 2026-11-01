@@ -19,11 +19,10 @@ const DELIVERY_ZONES: DeliveryZone[] = [
 ];
 
 @Component({
-  selector: 'app-cart',
-  standalone: true,
-  imports: [FormsModule],
-  templateUrl: './cart.component.html',
-  styleUrl: './cart.component.scss',
+    selector: 'app-cart',
+    imports: [FormsModule],
+    templateUrl: './cart.component.html',
+    styleUrl: './cart.component.scss'
 })
 export class CartComponent {
   readonly cart = inject(CartService);

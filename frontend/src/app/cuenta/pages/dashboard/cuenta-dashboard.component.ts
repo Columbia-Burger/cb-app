@@ -23,11 +23,10 @@ const STATUS_CLASS: Record<string, string> = {
 };
 
 @Component({
-  selector: 'app-cuenta-dashboard',
-  standalone: true,
-  imports: [DatePipe, CurrencyPipe, NgClass],
-  templateUrl: './cuenta-dashboard.component.html',
-  styleUrl: './cuenta-dashboard.component.scss',
+    selector: 'app-cuenta-dashboard',
+    imports: [DatePipe, CurrencyPipe, NgClass],
+    templateUrl: './cuenta-dashboard.component.html',
+    styleUrl: './cuenta-dashboard.component.scss'
 })
 export class CuentaDashboardComponent implements OnInit {
   private svc = inject(CuentaService);

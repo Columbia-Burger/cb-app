@@ -9,11 +9,10 @@ import { CatalogService } from '../../services/catalog.service';
 import { MenuCategory, MenuItem, BaseOption, MenuAddition } from '../../models/menu.model';
 
 @Component({
-  selector: 'app-menu-page',
-  standalone: true,
-  imports: [RouterLink, FormsModule, HeaderComponent, FooterComponent, CartComponent],
-  templateUrl: './menu-page.component.html',
-  styleUrl: './menu-page.component.scss',
+    selector: 'app-menu-page',
+    imports: [RouterLink, FormsModule, HeaderComponent, FooterComponent, CartComponent],
+    templateUrl: './menu-page.component.html',
+    styleUrl: './menu-page.component.scss'
 })
 export class MenuPageComponent implements OnInit {
   readonly cart = inject(CartService);

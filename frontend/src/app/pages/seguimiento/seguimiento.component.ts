@@ -23,11 +23,10 @@ const STATUS_ORDER: Record<string, number> = {
 };
 
 @Component({
-  selector: 'app-seguimiento',
-  standalone: true,
-  imports: [CurrencyPipe, DatePipe],
-  templateUrl: './seguimiento.component.html',
-  styleUrl: './seguimiento.component.scss',
+    selector: 'app-seguimiento',
+    imports: [CurrencyPipe, DatePipe],
+    templateUrl: './seguimiento.component.html',
+    styleUrl: './seguimiento.component.scss'
 })
 export class SeguimientoComponent implements OnInit {
   private route = inject(ActivatedRoute);

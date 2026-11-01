@@ -5,11 +5,10 @@ import { AdminService } from '../../services/admin.service';
 import { CustomerResponse } from '../../models/admin.model';
 
 @Component({
-  selector: 'app-admin-clientes',
-  standalone: true,
-  imports: [DatePipe, FormsModule],
-  templateUrl: './admin-clientes.component.html',
-  styleUrl: './admin-clientes.component.scss'
+    selector: 'app-admin-clientes',
+    imports: [DatePipe, FormsModule],
+    templateUrl: './admin-clientes.component.html',
+    styleUrl: './admin-clientes.component.scss'
 })
 export class AdminClientesComponent implements OnInit {
   private adminService = inject(AdminService);

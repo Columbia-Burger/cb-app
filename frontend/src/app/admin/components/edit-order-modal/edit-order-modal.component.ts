@@ -7,11 +7,10 @@ import { OrderResponse, OrderItemResponse, OrderItemRequest, CatalogProduct } fr
 export interface EditItem extends OrderItemResponse {}
 
 @Component({
-  selector: 'app-edit-order-modal',
-  standalone: true,
-  imports: [FormsModule, CurrencyPipe],
-  templateUrl: './edit-order-modal.component.html',
-  styleUrl: './edit-order-modal.component.scss',
+    selector: 'app-edit-order-modal',
+    imports: [FormsModule, CurrencyPipe],
+    templateUrl: './edit-order-modal.component.html',
+    styleUrl: './edit-order-modal.component.scss'
 })
 export class EditOrderModalComponent implements OnInit {
   @Input() order!: OrderResponse;

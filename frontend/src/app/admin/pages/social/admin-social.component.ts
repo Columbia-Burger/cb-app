@@ -8,11 +8,10 @@ type ActiveTab = 'generator' | 'posts';
 type PostMode = 'phrase' | 'product';
 
 @Component({
-  selector: 'app-admin-social',
-  standalone: true,
-  imports: [FormsModule, DatePipe],
-  templateUrl: './admin-social.component.html',
-  styleUrl: './admin-social.component.scss',
+    selector: 'app-admin-social',
+    imports: [FormsModule, DatePipe],
+    templateUrl: './admin-social.component.html',
+    styleUrl: './admin-social.component.scss'
 })
 export class AdminSocialComponent implements OnInit {
   private svc = inject(AdminService);

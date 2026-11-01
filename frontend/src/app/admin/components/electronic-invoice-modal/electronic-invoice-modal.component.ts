@@ -4,11 +4,10 @@ import { ElectronicInvoiceRequest, ElectronicInvoiceResponse, OrderResponse } fr
 import { AdminService } from '../../services/admin.service';
 
 @Component({
-  selector: 'app-electronic-invoice-modal',
-  standalone: true,
-  imports: [FormsModule],
-  templateUrl: './electronic-invoice-modal.component.html',
-  styleUrl: './electronic-invoice-modal.component.scss',
+    selector: 'app-electronic-invoice-modal',
+    imports: [FormsModule],
+    templateUrl: './electronic-invoice-modal.component.html',
+    styleUrl: './electronic-invoice-modal.component.scss'
 })
 export class ElectronicInvoiceModalComponent {
   @Input() order!: OrderResponse;

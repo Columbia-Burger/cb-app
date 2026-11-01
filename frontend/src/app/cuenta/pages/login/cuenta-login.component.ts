@@ -6,11 +6,10 @@ import { CuentaService } from '../../services/cuenta.service';
 type Step = 'phone' | 'code';
 
 @Component({
-  selector: 'app-cuenta-login',
-  standalone: true,
-  imports: [FormsModule],
-  templateUrl: './cuenta-login.component.html',
-  styleUrl: './cuenta-login.component.scss',
+    selector: 'app-cuenta-login',
+    imports: [FormsModule],
+    templateUrl: './cuenta-login.component.html',
+    styleUrl: './cuenta-login.component.scss'
 })
 export class CuentaLoginComponent {
   private cuentaService = inject(CuentaService);

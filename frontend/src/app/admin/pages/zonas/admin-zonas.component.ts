@@ -5,11 +5,10 @@ import { AdminService } from '../../services/admin.service';
 import { DeliveryZone, CreateDeliveryZoneRequest } from '../../models/admin.model';
 
 @Component({
-  selector: 'app-admin-zonas',
-  standalone: true,
-  imports: [CurrencyPipe, NgClass, FormsModule],
-  templateUrl: './admin-zonas.component.html',
-  styleUrl: './admin-zonas.component.scss',
+    selector: 'app-admin-zonas',
+    imports: [CurrencyPipe, NgClass, FormsModule],
+    templateUrl: './admin-zonas.component.html',
+    styleUrl: './admin-zonas.component.scss'
 })
 export class AdminZonasComponent implements OnInit {
   private svc = inject(AdminService);

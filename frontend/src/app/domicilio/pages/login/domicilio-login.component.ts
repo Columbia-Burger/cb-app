@@ -4,11 +4,10 @@ import { FormsModule } from '@angular/forms';
 import { DomicilioService } from '../../services/domicilio.service';
 
 @Component({
-  selector: 'app-domicilio-login',
-  standalone: true,
-  imports: [FormsModule],
-  templateUrl: './domicilio-login.component.html',
-  styleUrl: './domicilio-login.component.scss',
+    selector: 'app-domicilio-login',
+    imports: [FormsModule],
+    templateUrl: './domicilio-login.component.html',
+    styleUrl: './domicilio-login.component.scss'
 })
 export class DomicilioLoginComponent {
   private svc = inject(DomicilioService);

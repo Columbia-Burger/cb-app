@@ -5,11 +5,10 @@ import { AdminService } from '../../services/admin.service';
 import { CatalogProduct, CatalogCategory, FlavorItem, AdditionItem, CategoryItem, CreateProductRequest } from '../../models/admin.model';
 
 @Component({
-  selector: 'app-admin-menu',
-  standalone: true,
-  imports: [CurrencyPipe, NgClass, FormsModule],
-  templateUrl: './admin-menu.component.html',
-  styleUrl: './admin-menu.component.scss',
+    selector: 'app-admin-menu',
+    imports: [CurrencyPipe, NgClass, FormsModule],
+    templateUrl: './admin-menu.component.html',
+    styleUrl: './admin-menu.component.scss'
 })
 export class AdminMenuComponent implements OnInit {
   private svc = inject(AdminService);

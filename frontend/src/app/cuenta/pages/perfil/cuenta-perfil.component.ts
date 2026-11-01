@@ -4,11 +4,10 @@ import { DatePipe } from '@angular/common';
 import { CuentaService, CustomerProfile } from '../../services/cuenta.service';
 
 @Component({
-  selector: 'app-cuenta-perfil',
-  standalone: true,
-  imports: [DatePipe],
-  templateUrl: './cuenta-perfil.component.html',
-  styleUrl: './cuenta-perfil.component.scss',
+    selector: 'app-cuenta-perfil',
+    imports: [DatePipe],
+    templateUrl: './cuenta-perfil.component.html',
+    styleUrl: './cuenta-perfil.component.scss'
 })
 export class CuentaPerfilComponent implements OnInit {
   private svc = inject(CuentaService);

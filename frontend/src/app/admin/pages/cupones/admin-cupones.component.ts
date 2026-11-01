@@ -15,11 +15,10 @@ export interface Coupon {
 }
 
 @Component({
-  selector: 'app-admin-cupones',
-  standalone: true,
-  imports: [DatePipe, DecimalPipe],
-  templateUrl: './admin-cupones.component.html',
-  styleUrl: './admin-cupones.component.scss',
+    selector: 'app-admin-cupones',
+    imports: [DatePipe, DecimalPipe],
+    templateUrl: './admin-cupones.component.html',
+    styleUrl: './admin-cupones.component.scss'
 })
 export class AdminCuponesComponent implements OnInit {
   private svc = inject(AdminService);

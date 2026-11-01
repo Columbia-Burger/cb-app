@@ -4,11 +4,10 @@ import { environment } from '../../../environments/environment';
 import { ContactFormComponent } from '../contact-form/contact-form.component';
 
 @Component({
-  selector: 'app-map-info',
-  standalone: true,
-  imports: [ContactFormComponent],
-  templateUrl: './map-info.component.html',
-  styleUrl: './map-info.component.scss',
+    selector: 'app-map-info',
+    imports: [ContactFormComponent],
+    templateUrl: './map-info.component.html',
+    styleUrl: './map-info.component.scss'
 })
 export class MapInfoComponent {
   readonly whatsappUrl = `https://wa.me/${environment.whatsappNumber}?text=${environment.whatsappText}`;

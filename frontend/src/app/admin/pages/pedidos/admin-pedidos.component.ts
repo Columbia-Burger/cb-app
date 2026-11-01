@@ -14,11 +14,10 @@ interface KanbanColumn {
 }
 
 @Component({
-  selector: 'app-admin-pedidos',
-  standalone: true,
-  imports: [CurrencyPipe, DatePipe],
-  templateUrl: './admin-pedidos.component.html',
-  styleUrl: './admin-pedidos.component.scss',
+    selector: 'app-admin-pedidos',
+    imports: [CurrencyPipe, DatePipe],
+    templateUrl: './admin-pedidos.component.html',
+    styleUrl: './admin-pedidos.component.scss'
 })
 export class AdminPedidosComponent implements OnInit, AfterViewInit, OnDestroy {
   private adminService = inject(AdminService);

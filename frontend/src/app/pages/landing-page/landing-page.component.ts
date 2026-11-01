@@ -8,18 +8,17 @@ import { WhatsappButtonComponent } from '../../components/whatsapp-button/whatsa
 import { FooterComponent } from '../../components/footer/footer.component';
 
 @Component({
-  selector: 'app-landing-page',
-  standalone: true,
-  imports: [
-    HeaderComponent,
-    HeroCarouselComponent,
-    FavoritesComponent,
-    SpecialComponent,
-    MapInfoComponent,
-    WhatsappButtonComponent,
-    FooterComponent,
-  ],
-  templateUrl: './landing-page.component.html',
-  styleUrl: './landing-page.component.scss',
+    selector: 'app-landing-page',
+    imports: [
+        HeaderComponent,
+        HeroCarouselComponent,
+        FavoritesComponent,
+        SpecialComponent,
+        MapInfoComponent,
+        WhatsappButtonComponent,
+        FooterComponent,
+    ],
+    templateUrl: './landing-page.component.html',
+    styleUrl: './landing-page.component.scss'
 })
 export class LandingPageComponent {}

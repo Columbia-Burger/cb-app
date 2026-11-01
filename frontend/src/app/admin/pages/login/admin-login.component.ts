@@ -4,11 +4,10 @@ import { FormsModule } from '@angular/forms';
 import { AdminService } from '../../services/admin.service';
 
 @Component({
-  selector: 'app-admin-login',
-  standalone: true,
-  imports: [FormsModule],
-  templateUrl: './admin-login.component.html',
-  styleUrl: './admin-login.component.scss'
+    selector: 'app-admin-login',
+    imports: [FormsModule],
+    templateUrl: './admin-login.component.html',
+    styleUrl: './admin-login.component.scss'
 })
 export class AdminLoginComponent {
   private adminService = inject(AdminService);
