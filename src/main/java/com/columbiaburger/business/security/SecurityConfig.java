@@ -10,8 +10,6 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter;
@@ -33,11 +31,6 @@ public class SecurityConfig {
 
     @Value("${app.cors.allowed-origins:http://localhost:4200}")
     private String allowedOrigins;
-
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
 
     @Bean
     public FilterRegistrationBean<JwtAuthFilter> jwtFilterRegistration(JwtAuthFilter filter) {
@@ -64,28 +57,37 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .dispatcherTypeMatchers(DispatcherType.ERROR).permitAll()
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                // ── Público ──
                 .requestMatchers("/api/auth/login").permitAll()
                 .requestMatchers("/api/auth/otp/**").permitAll()
                 .requestMatchers(req -> "POST".equals(req.getMethod()) && "/api/orders".equals(req.getRequestURI())).permitAll()
-                .requestMatchers(req -> "POST".equals(req.getMethod()) && "/api/customers".equals(req.getRequestURI())).permitAll()
-                .requestMatchers("/api/customers/whatsapp/**").permitAll()
                 .requestMatchers("/api/orders/*/tracking").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/orders/*/rating").permitAll()
-                .requestMatchers(HttpMethod.POST, "/api/orders/rate-by-whatsapp").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/coupons/validate").permitAll()
-                .requestMatchers("/api/orders/events").permitAll()
+                .requestMatchers("/api/orders/events").permitAll() // valida el token en el controlador (EventSource no envía headers)
                 .requestMatchers(HttpMethod.GET, "/api/products*").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/categories*").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/seasonal-specials*").permitAll()
+                // ── Cualquier sesión válida ──
+                .requestMatchers(HttpMethod.POST, "/api/auth/refresh").authenticated()
+                // ── Cliente (OTP) ──
                 .requestMatchers("/api/customers/me", "/api/customers/me/orders").hasRole("CUSTOMER")
+                // ── Personal ──
                 .requestMatchers("/api/orders/kitchen").hasAnyRole("ADMIN", "KITCHEN")
                 .requestMatchers("/api/orders/delivery").hasAnyRole("ADMIN", "DELIVERY")
                 .requestMatchers(HttpMethod.PATCH, "/api/orders/*/status").hasAnyRole("ADMIN", "KITCHEN", "DELIVERY")
+                .requestMatchers(HttpMethod.GET, "/api/admin/catalog/delivery-zones").hasAnyRole("ADMIN", "DELIVERY")
                 .requestMatchers(HttpMethod.PUT, "/api/orders/*").hasRole("ADMIN")
+                .requestMatchers("/api/admin", "/api/admin/**").hasRole("ADMIN")
+                .requestMatchers("/api/users", "/api/users/**").hasRole("ADMIN")
+                .requestMatchers("/api/customers", "/api/customers/**").hasRole("ADMIN")
+                .requestMatchers("/api/coupons", "/api/coupons/**").hasRole("ADMIN")
                 .requestMatchers("/api/social", "/api/social/**").hasRole("ADMIN")
                 .requestMatchers("/api/invoices", "/api/invoices/**").hasRole("ADMIN")
                 .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").hasRole("ADMIN")
-                .anyRequest().authenticated()
+                // Todo lo demás (p. ej. listar pedidos) solo para el personal: antes bastaba cualquier
+                // token, incluido el de un cliente obtenido por OTP.
+                .anyRequest().hasAnyRole("ADMIN", "KITCHEN", "DELIVERY")
             )
             .exceptionHandling(ex -> ex
                 .authenticationEntryPoint((request, response, authException) -> {

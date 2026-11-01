@@ -11,6 +11,7 @@ import com.columbiaburger.business.security.JwtUtil;
 import com.columbiaburger.business.service.InvoiceService;
 import com.columbiaburger.business.service.OrderEventService;
 import com.columbiaburger.business.service.OrderService;
+import com.columbiaburger.business.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -30,6 +31,7 @@ public class OrderController {
     private final InvoiceService invoiceService;
     private final OrderEventService orderEventService;
     private final JwtUtil jwtUtil;
+    private final UserService userService;
 
     @PostMapping
     public ResponseEntity<OrderResponse> create(@Valid @RequestBody CreateOrderRequest request) {
@@ -81,6 +83,10 @@ public class OrderController {
         String role = jwtUtil.extractRole(token);
         if (!List.of("ADMIN", "KITCHEN", "DELIVERY").contains(role)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Rol no autorizado");
+        }
+        String username = userService.resolveUsername(jwtUtil.extractSubject(token));
+        if (!userService.isSessionValid(username, role)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Usuario desactivado o con otro rol");
         }
 
         return orderEventService.subscribe();

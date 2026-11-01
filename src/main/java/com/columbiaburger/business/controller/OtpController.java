@@ -40,6 +40,6 @@ public class OtpController {
         );
 
         String token = jwtUtil.generateToken(whatsapp, "CUSTOMER");
-        return ResponseEntity.ok(new LoginResponse(token, whatsapp));
+        return ResponseEntity.ok(new LoginResponse(token, whatsapp, whatsapp, "CUSTOMER"));
     }
 }

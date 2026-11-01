@@ -1,6 +1,6 @@
 package com.columbiaburger.business.dto.request;
 
-import jakarta.validation.constraints.Email;
+import com.fasterxml.jackson.annotation.JsonAlias;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.Setter;
@@ -8,9 +8,10 @@ import lombok.Setter;
 @Getter @Setter
 public class LoginRequest {
 
+    /** "email" se acepta mientras quede algún frontend viejo enviando el correo. */
     @NotBlank
-    @Email
-    private String email;
+    @JsonAlias("email")
+    private String username;
 
     @NotBlank
     private String password;
