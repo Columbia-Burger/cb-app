@@ -1,234 +1,156 @@
 package com.columbiaburger.business.service;
 
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.*;
-import org.springframework.http.client.JdkClientHttpRequestFactory;
+import com.columbiaburger.catalog.dto.request.AdditionRequest;
+import com.columbiaburger.catalog.dto.request.ComboRequest;
+import com.columbiaburger.catalog.dto.request.DeliveryZoneRequest;
+import com.columbiaburger.catalog.dto.request.ProductRequest;
+import com.columbiaburger.catalog.service.AdditionService;
+import com.columbiaburger.catalog.service.CategoryService;
+import com.columbiaburger.catalog.service.DeliveryZoneService;
+import com.columbiaburger.catalog.service.FlavorService;
+import com.columbiaburger.catalog.service.ProductService;
+import com.columbiaburger.catalog.service.SeasonalSpecialService;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Validator;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.HttpClientErrorException;
-
-import org.springframework.web.client.RestTemplate;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
+/**
+ * Acceso al catálogo. Antes llamaba por HTTP al servicio cb-data-api; desde que el catálogo vive en
+ * esta misma app (paquete com.columbiaburger.catalog) llama a sus servicios directamente. Se mantiene
+ * la firma con JSON en texto para no cambiar a AdminController ni CatalogController.
+ */
 @Service
+@RequiredArgsConstructor
 public class CatalogProxyService {
 
-    private final RestTemplate restTemplate = new RestTemplate(new JdkClientHttpRequestFactory());
+    private final ProductService productService;
+    private final CategoryService categoryService;
+    private final SeasonalSpecialService seasonalSpecialService;
+    private final FlavorService flavorService;
+    private final AdditionService additionService;
+    private final DeliveryZoneService deliveryZoneService;
+    private final ObjectMapper objectMapper;
+    private final Validator validator;
 
-    @Value("${catalog.api.url}")
-    private String catalogApiUrl;
-
-    @Value("${catalog.api.key}")
-    private String catalogApiKey;
-
-    private HttpHeaders apiHeaders() {
-        HttpHeaders h = new HttpHeaders();
-        h.set("X-API-Key", catalogApiKey);
-        return h;
-    }
-
-    private HttpHeaders apiJsonHeaders() {
-        HttpHeaders h = apiHeaders();
-        h.setContentType(MediaType.APPLICATION_JSON);
-        return h;
-    }
+    // ── Productos ────────────────────────────────────────────────
 
     public String getProducts() {
         return getProducts(false);
     }
 
     public String getProducts(boolean availableOnly) {
-        ResponseEntity<String> response = restTemplate.exchange(
-                catalogApiUrl + "/api/products?availableOnly=" + availableOnly,
-                HttpMethod.GET, new HttpEntity<>(apiHeaders()), String.class);
-        return response.getBody();
-    }
-
-    public String getSeasonalSpecials(boolean currentOnly) {
-        ResponseEntity<String> response = restTemplate.exchange(
-                catalogApiUrl + "/api/seasonal-specials?currentOnly=" + currentOnly,
-                HttpMethod.GET, new HttpEntity<>(apiHeaders()), String.class);
-        return response.getBody();
-    }
-
-    public void toggleAvailable(Long productId) {
-        try {
-            restTemplate.exchange(
-                    catalogApiUrl + "/api/products/" + productId + "/toggle-available",
-                    HttpMethod.PATCH, new HttpEntity<>(apiHeaders()), Void.class);
-        } catch (HttpClientErrorException e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
-                    "Error al contactar el catálogo: " + e.getStatusCode());
-        }
-    }
-
-    public String getFlavors() {
-        ResponseEntity<String> response = restTemplate.exchange(
-                catalogApiUrl + "/api/flavors",
-                HttpMethod.GET, new HttpEntity<>(apiHeaders()), String.class);
-        return response.getBody();
-    }
-
-    public void updateProductFlavors(Long productId, List<Long> flavorIds) {
-        try {
-            restTemplate.exchange(
-                    catalogApiUrl + "/api/products/" + productId + "/flavors",
-                    HttpMethod.PATCH, new HttpEntity<>(flavorIds, apiJsonHeaders()), Void.class);
-        } catch (HttpClientErrorException e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
-                    "Error al contactar el catálogo: " + e.getStatusCode());
-        }
-    }
-
-    public String getCategories() {
-        try {
-            ResponseEntity<String> response = restTemplate.exchange(
-                    catalogApiUrl + "/api/categories",
-                    HttpMethod.GET, new HttpEntity<>(apiHeaders()), String.class);
-            return response.getBody();
-        } catch (HttpClientErrorException e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
-                    "Error al contactar el catálogo: " + e.getStatusCode());
-        }
-    }
-
-    public String getAdditions() {
-        try {
-            ResponseEntity<String> response = restTemplate.exchange(
-                    catalogApiUrl + "/api/additions",
-                    HttpMethod.GET, new HttpEntity<>(apiHeaders()), String.class);
-            return response.getBody();
-        } catch (HttpClientErrorException e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
-                    "Error al contactar el catálogo: " + e.getStatusCode());
-        }
-    }
-
-    public void updateProductAdditions(Long productId, List<Long> additionIds) {
-        try {
-            restTemplate.exchange(
-                    catalogApiUrl + "/api/products/" + productId + "/additions",
-                    HttpMethod.PATCH, new HttpEntity<>(additionIds, apiJsonHeaders()), Void.class);
-        } catch (HttpClientErrorException e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
-                    "Error al contactar el catálogo: " + e.getStatusCode());
-        }
+        return json(availableOnly ? productService.findAllAvailable() : productService.findAll());
     }
 
     public String createProduct(String body) {
-        try {
-            ResponseEntity<String> response = restTemplate.exchange(
-                    catalogApiUrl + "/api/products",
-                    HttpMethod.POST, new HttpEntity<>(body, apiJsonHeaders()), String.class);
-            return response.getBody();
-        } catch (HttpClientErrorException e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "Error al crear el producto: " + e.getStatusCode());
-        }
+        return json(productService.create(read(body, ProductRequest.class)));
+    }
+
+    public void toggleAvailable(Long productId) {
+        productService.toggleAvailable(productId);
+    }
+
+    public void updateProductFlavors(Long productId, List<Long> flavorIds) {
+        productService.updateFlavors(productId, flavorIds);
+    }
+
+    public void updateProductAdditions(Long productId, List<Long> additionIds) {
+        productService.updateAdditions(productId, additionIds);
     }
 
     public void setProductCombo(Long id, String body) {
-        try {
-            restTemplate.exchange(
-                    catalogApiUrl + "/api/products/" + id + "/combo",
-                    HttpMethod.PATCH, new HttpEntity<>(body, apiJsonHeaders()), Void.class);
-        } catch (HttpClientErrorException e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "Error al asignar el combo: " + e.getStatusCode());
-        }
+        productService.setCombo(id, read(body, ComboRequest.class));
     }
 
     public void clearProductCombo(Long id) {
-        try {
-            restTemplate.exchange(
-                    catalogApiUrl + "/api/products/" + id + "/combo",
-                    HttpMethod.DELETE, new HttpEntity<>(apiHeaders()), Void.class);
-        } catch (HttpClientErrorException e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
-                    "Error al quitar el combo: " + e.getStatusCode());
-        }
+        productService.clearCombo(id);
     }
 
-    public String getDeliveryZones(boolean activeOnly) {
-        try {
-            ResponseEntity<String> response = restTemplate.exchange(
-                    catalogApiUrl + "/api/delivery-zones?activeOnly=" + activeOnly,
-                    HttpMethod.GET, new HttpEntity<>(apiHeaders()), String.class);
-            return response.getBody();
-        } catch (HttpClientErrorException e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
-                    "Error al contactar el catálogo: " + e.getStatusCode());
-        }
+    // ── Categorías, especiales, sabores ──────────────────────────
+
+    public String getCategories() {
+        return json(categoryService.findAll());
     }
 
-    public String createDeliveryZone(String body) {
-        try {
-            ResponseEntity<String> response = restTemplate.exchange(
-                    catalogApiUrl + "/api/delivery-zones",
-                    HttpMethod.POST, new HttpEntity<>(body, apiJsonHeaders()), String.class);
-            return response.getBody();
-        } catch (HttpClientErrorException e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "Error al crear la zona: " + e.getStatusCode());
-        }
+    public String getSeasonalSpecials(boolean currentOnly) {
+        return json(currentOnly ? seasonalSpecialService.findCurrentlyAvailable() : seasonalSpecialService.findAll());
     }
 
-    public String updateDeliveryZone(Long id, String body) {
-        try {
-            ResponseEntity<String> response = restTemplate.exchange(
-                    catalogApiUrl + "/api/delivery-zones/" + id,
-                    HttpMethod.PUT, new HttpEntity<>(body, apiJsonHeaders()), String.class);
-            return response.getBody();
-        } catch (HttpClientErrorException e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "Error al actualizar la zona: " + e.getStatusCode());
-        }
+    public String getFlavors() {
+        return json(flavorService.findAll());
     }
 
-    public void toggleDeliveryZoneActive(Long id) {
-        try {
-            restTemplate.exchange(
-                    catalogApiUrl + "/api/delivery-zones/" + id + "/toggle-active",
-                    HttpMethod.PATCH, new HttpEntity<>(apiHeaders()), Void.class);
-        } catch (HttpClientErrorException e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
-                    "Error al contactar el catálogo: " + e.getStatusCode());
-        }
+    // ── Adiciones ────────────────────────────────────────────────
+
+    public String getAdditions() {
+        return json(additionService.findAll());
     }
 
     public String createAddition(String body) {
-        try {
-            ResponseEntity<String> response = restTemplate.exchange(
-                    catalogApiUrl + "/api/additions",
-                    HttpMethod.POST, new HttpEntity<>(body, apiJsonHeaders()), String.class);
-            return response.getBody();
-        } catch (HttpClientErrorException e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "Error al crear la adición: " + e.getStatusCode());
-        }
+        return json(additionService.create(read(body, AdditionRequest.class)));
     }
 
     public String updateAddition(Long id, String body) {
-        try {
-            ResponseEntity<String> response = restTemplate.exchange(
-                    catalogApiUrl + "/api/additions/" + id,
-                    HttpMethod.PUT, new HttpEntity<>(body, apiJsonHeaders()), String.class);
-            return response.getBody();
-        } catch (HttpClientErrorException e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "Error al actualizar la adición: " + e.getStatusCode());
-        }
+        return json(additionService.update(id, read(body, AdditionRequest.class)));
     }
 
     public void toggleAdditionActive(Long id) {
+        additionService.toggleActive(id);
+    }
+
+    // ── Zonas de domicilio ───────────────────────────────────────
+
+    public String getDeliveryZones(boolean activeOnly) {
+        return json(activeOnly ? deliveryZoneService.findAllActive() : deliveryZoneService.findAll());
+    }
+
+    public String createDeliveryZone(String body) {
+        return json(deliveryZoneService.create(read(body, DeliveryZoneRequest.class)));
+    }
+
+    public String updateDeliveryZone(Long id, String body) {
+        return json(deliveryZoneService.update(id, read(body, DeliveryZoneRequest.class)));
+    }
+
+    public void toggleDeliveryZoneActive(Long id) {
+        deliveryZoneService.toggleActive(id);
+    }
+
+    // ── Helpers ──────────────────────────────────────────────────
+
+    /** Lee el cuerpo y aplica las mismas validaciones que tenía el @Valid del controlador del catálogo. */
+    private <T> T read(String body, Class<T> type) {
+        T value;
         try {
-            restTemplate.exchange(
-                    catalogApiUrl + "/api/additions/" + id + "/toggle-active",
-                    HttpMethod.PATCH, new HttpEntity<>(apiHeaders()), Void.class);
-        } catch (HttpClientErrorException e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
-                    "Error al contactar el catálogo: " + e.getStatusCode());
+            value = objectMapper.readValue(body, type);
+        } catch (JsonProcessingException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Datos inválidos: " + e.getOriginalMessage());
+        }
+        Set<ConstraintViolation<T>> violations = validator.validate(value);
+        if (!violations.isEmpty()) {
+            String message = violations.stream()
+                    .map(v -> v.getPropertyPath() + ": " + v.getMessage())
+                    .sorted()
+                    .collect(Collectors.joining("; "));
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, message);
+        }
+        return value;
+    }
+
+    private String json(Object value) {
+        try {
+            return objectMapper.writeValueAsString(value);
+        } catch (JsonProcessingException e) {
+            throw new IllegalStateException("No se pudo serializar la respuesta del catálogo", e);
         }
     }
 }

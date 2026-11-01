@@ -25,4 +25,10 @@ public class GlobalExceptionHandler {
         body.put("message", e.getReason() != null ? e.getReason() : "");
         return ResponseEntity.status(e.getStatusCode()).body(body);
     }
+
+    /** Los servicios del catálogo señalan "no existe" con EntityNotFoundException. */
+    @ExceptionHandler(jakarta.persistence.EntityNotFoundException.class)
+    public ResponseEntity<Map<String, Object>> handleNotFound(jakarta.persistence.EntityNotFoundException e) {
+        return handleResponseStatus(new ResponseStatusException(org.springframework.http.HttpStatus.NOT_FOUND, e.getMessage()));
+    }
 }

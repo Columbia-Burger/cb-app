@@ -85,6 +85,8 @@ public class SecurityConfig {
                 .requestMatchers("/api/social", "/api/social/**").hasRole("ADMIN")
                 .requestMatchers("/api/invoices", "/api/invoices/**").hasRole("ADMIN")
                 .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").hasRole("ADMIN")
+                // ── Frontend de Angular (lo sirve esta misma app; ver SpaWebConfig) ──
+                .requestMatchers(req -> !req.getRequestURI().startsWith("/api/")).permitAll()
                 // Todo lo demás (p. ej. listar pedidos) solo para el personal: antes bastaba cualquier
                 // token, incluido el de un cliente obtenido por OTP.
                 .anyRequest().hasAnyRole("ADMIN", "KITCHEN", "DELIVERY")

@@ -10,7 +10,8 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const router = inject(Router);
   const adminService = inject(AdminService);
 
-  const isBusinessApi = req.url.startsWith(environment.businessApiUrl);
+  // Con businessApiUrl vacío (mismo dominio) el prefijo queda en '/api/'; nunca toca peticiones externas
+  const isBusinessApi = req.url.startsWith(`${environment.businessApiUrl}/api/`);
   // Login, OTP y renovación manejan sus propios errores
   const isAuthCall = req.url.startsWith(`${environment.businessApiUrl}/api/auth/`);
 
