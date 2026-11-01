@@ -1,0 +1,353 @@
+<div class="page">
+  <div class="page-header">
+    <div>
+      <h2 class="page-title">Facturas</h2>
+      <p class="page-sub">Administra facturas internas y consulta tu historial de facturas electronicas.</p>
+    </div>
+    <div class="header-actions">
+      <div class="printer-row">
+        @if (printers().length === 0) {
+          <button class="printer-detect-btn" [disabled]="loadingPrinters()" (click)="loadPrinters()">
+            {{ loadingPrinters() ? 'Buscando...' : 'Detectar impresora' }}
+          </button>
+        } @else {
+          <select class="printer-select" [(ngModel)]="selectedPrinter">
+            @for (p of printers(); track p) {
+              <option [value]="p">{{ p }}</option>
+            }
+          </select>
+          <button class="printer-save-btn" (click)="savePrinter()" title="Guardar impresora">OK</button>
+        }
+        @if (printer.getSavedPrinter()) {
+          <span class="printer-saved">{{ printer.getSavedPrinter() }}</span>
+        }
+        <label class="remote-print-toggle" title="Imprime en este computador los pedidos creados desde Domicilio">
+          <input type="checkbox" [(ngModel)]="remoteAutoPrint" (ngModelChange)="saveRemoteAutoPrint()" />
+          Imprimir pedidos de Domicilio
+        </label>
+      </div>
+      <button class="refresh-btn" (click)="load()">Actualizar</button>
+    </div>
+  </div>
+
+  <div class="mode-tabs">
+    <button class="mode-tab" [class.mode-tab--active]="viewMode() === 'OPERATIONS'" (click)="setViewMode('OPERATIONS')">
+      Operacion diaria
+    </button>
+    <button class="mode-tab" [class.mode-tab--active]="viewMode() === 'ELECTRONIC'" (click)="setViewMode('ELECTRONIC')">
+      Historial electronico
+      <span class="tab-badge">{{ electronicInvoices().length }}</span>
+    </button>
+  </div>
+
+  @if (error()) {
+    <div class="alert-error">{{ error() }}</div>
+  }
+
+  @if (viewMode() === 'OPERATIONS') {
+    <div class="tabs">
+      <button class="tab" [class.tab--active]="activeTab()==='ALL'" (click)="setTab('ALL')">Todos <span class="tab-badge">{{ counts().ALL }}</span></button>
+      <button class="tab" [class.tab--active]="activeTab()==='PENDING'" (click)="setTab('PENDING')">Pendientes <span class="tab-badge">{{ counts().PENDING }}</span></button>
+      <button class="tab" [class.tab--active]="activeTab()==='INVOICED'" (click)="setTab('INVOICED')">Facturados <span class="tab-badge">{{ counts().INVOICED }}</span></button>
+      <button class="tab" [class.tab--active]="activeTab()==='VOID'" (click)="setTab('VOID')">Anulados <span class="tab-badge">{{ counts().VOID }}</span></button>
+    </div>
+
+    @if (loading()) {
+      <div class="loading"><div class="spinner"></div> Cargando...</div>
+    } @else if (filtered().length === 0) {
+      <p class="empty">No hay registros en esta seccion.</p>
+    } @else {
+      <div class="table-wrap">
+        <table class="invoice-table">
+          <thead>
+            <tr>
+              <th>#Pedido</th>
+              <th>Factura</th>
+              <th>Cliente</th>
+              <th>Estado pedido</th>
+              <th>Estado factura</th>
+              <th>Total</th>
+              <th>Fecha</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (o of filtered(); track o.id) {
+              <tr [class.row--invoiced]="o.invoiceStatus === 'INVOICED'" [class.row--void]="o.invoiceStatus === 'VOID'">
+                <td class="cell-id">#{{ o.id }}</td>
+                <td class="cell-inv">
+                  @if (o.invoiceNumber) {
+                    <span class="inv-number">{{ o.invoiceNumber }}</span>
+                  } @else {
+                    <span class="inv-none">-</span>
+                  }
+                </td>
+                <td class="cell-client">
+                  <span class="client-name">{{ o.customerName }}</span>
+                  <span class="client-wa">{{ o.customerWhatsapp }}</span>
+                </td>
+                <td>
+                  <span class="badge badge--order" [attr.data-status]="o.status">{{ orderStatusLabel(o.status) }}</span>
+                </td>
+                <td>
+                  <span class="badge" [attr.data-inv]="o.invoiceStatus">{{ statusLabel(o.invoiceStatus) }}</span>
+                </td>
+                <td class="cell-total">{{ o.total | currency:'COP':'symbol-narrow':'1.0-0' }}</td>
+                <td class="cell-date">{{ invoiceDate(o) | date:'dd/MM/yy HH:mm' }}</td>
+                <td class="cell-actions">
+                  <button class="action-btn btn-print" [disabled]="printingId() === o.id" (click)="print(o)" title="Imprimir ticket">🖨️</button>
+                  <button class="action-btn btn-edit" [disabled]="!!o.electronicInvoiceNumber" (click)="editingOrder.set(o)"
+                    [title]="o.electronicInvoiceNumber ? 'No se puede editar: ya tiene factura electronica' : 'Editar pedido / aplicar descuento'">✏️</button>
+                  @if (o.invoiceStatus === 'PENDING') {
+                    <button class="action-btn btn-generate" [disabled]="generatingId() === o.id" (click)="generate(o)" title="Generar factura interna">
+                      {{ generatingId() === o.id ? '...' : '🧾' }}
+                    </button>
+                  }
+                  @if (!o.electronicInvoiceNumber) {
+                    <button class="action-btn btn-electronic" (click)="electronicOrder.set(o)" title="Generar factura electronica">⚡ FE</button>
+                  } @else {
+                    <button class="electronic-link" (click)="openElectronicDetail(o)" title="Ver factura electronica">
+                      {{ o.electronicInvoiceNumber }}
+                    </button>
+                  }
+                  @if (o.invoiceStatus === 'INVOICED') {
+                    <button class="action-btn btn-void" [disabled]="voidingId() === o.id" (click)="voidOrder(o)" title="Anular factura">🚫</button>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      @if (totalPages() > 1) {
+        <div class="paginator">
+          <button class="page-btn" [disabled]="page() === 1" (click)="page.set(page() - 1)">Anterior</button>
+          <span class="page-info">{{ page() }} / {{ totalPages() }}</span>
+          <button class="page-btn" [disabled]="page() === totalPages()" (click)="page.set(page() + 1)">Siguiente</button>
+        </div>
+      }
+    }
+  } @else {
+    <div class="electronic-toolbar">
+      <input
+        class="search-input"
+        [ngModel]="electronicSearch()"
+        (ngModelChange)="electronicSearch.set($event)"
+        placeholder="Buscar por numero FE, pedido, cliente, CUFE o whatsapp"
+      />
+      <span class="search-meta">{{ electronicInvoices().length }} facturas electronicas</span>
+    </div>
+
+    <div class="electronic-filters">
+      <label class="filter-field">
+        <span>Cliente</span>
+        <input
+          [ngModel]="electronicCustomerFilter()"
+          (ngModelChange)="electronicCustomerFilter.set($event)"
+          placeholder="Nombre o whatsapp"
+        />
+      </label>
+      <label class="filter-field">
+        <span>Desde</span>
+        <input type="date" [ngModel]="electronicDateFrom()" (ngModelChange)="electronicDateFrom.set($event)" />
+      </label>
+      <label class="filter-field">
+        <span>Hasta</span>
+        <input type="date" [ngModel]="electronicDateTo()" (ngModelChange)="electronicDateTo.set($event)" />
+      </label>
+      <label class="filter-field">
+        <span>Medio de pago</span>
+        <select [ngModel]="electronicPaymentMethodFilter()" (ngModelChange)="electronicPaymentMethodFilter.set($event)">
+          <option value="ALL">Todos</option>
+          <option value="10">Efectivo</option>
+          <option value="47">Transferencia Bancolombia</option>
+          <option value="48">Pago con tarjeta</option>
+          <option value="UNKNOWN">Sin dato</option>
+        </select>
+      </label>
+    </div>
+
+    @if (loading()) {
+      <div class="loading"><div class="spinner"></div> Cargando...</div>
+    } @else if (electronicInvoices().length === 0) {
+      <p class="empty">No hay facturas electronicas generadas todavia.</p>
+    } @else {
+      <div class="table-wrap">
+        <table class="invoice-table invoice-table--electronic">
+          <thead>
+            <tr>
+              <th>FE</th>
+              <th>#Pedido</th>
+              <th>Factura interna</th>
+              <th>Cliente</th>
+              <th>Total</th>
+              <th>Fecha</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (o of electronicInvoices(); track o.id) {
+              <tr>
+                <td><span class="inv-number">{{ o.electronicInvoiceNumber }}</span></td>
+                <td class="cell-id">#{{ o.id }}</td>
+                <td>{{ o.invoiceNumber || '-' }}</td>
+                <td class="cell-client">
+                  <span class="client-name">{{ o.customerName }}</span>
+                  <span class="client-wa">{{ o.customerWhatsapp }}</span>
+                </td>
+                <td class="cell-total">{{ o.total | currency:'COP':'symbol-narrow':'1.0-0' }}</td>
+                <td class="cell-date">{{ invoiceDate(o) | date:'dd/MM/yy HH:mm' }}</td>
+                <td class="cell-actions">
+                  <button class="action-btn btn-electronic" (click)="openElectronicDetail(o)" title="Ver detalle">👁️ Ver</button>
+                  <button class="action-btn btn-pdf" (click)="downloadElectronicPdf(o.electronicInvoiceNumber!)" title="Descargar PDF">📄 PDF</button>
+                  <button class="action-btn btn-xml" (click)="downloadElectronicXml(o.electronicInvoiceNumber!)" title="Descargar XML">📋 XML</button>
+                  <span class="payment-chip">{{ paymentMethodLabel(o.electronicPaymentMethodCode) }}</span>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  }
+</div>
+
+@if (selectedElectronicNumber()) {
+  <div class="detail-overlay" (click)="closeElectronicDetail()">
+    <div class="detail-modal" (click)="$event.stopPropagation()">
+      <div class="detail-header">
+        <div>
+          <h3>Factura electronica {{ selectedElectronicNumber() }}</h3>
+          @if (electronicDetail()) {
+            <p>{{ detailCustomerName() }} · CUFE {{ electronicDetail()!.cufe }}</p>
+          }
+        </div>
+        <button class="modal-close" (click)="closeElectronicDetail()">✕</button>
+      </div>
+
+      @if (loadingElectronicDetail()) {
+        <div class="loading"><div class="spinner"></div> Cargando detalle...</div>
+      } @else if (electronicDetailError()) {
+        <div class="alert-error">{{ electronicDetailError() }}</div>
+      } @else if (electronicDetail()) {
+        <div class="detail-actions">
+          <button class="detail-action-btn btn-pdf" [disabled]="downloadingPdf()" (click)="downloadElectronicPdf(electronicDetail()!.number)">
+            📄 {{ downloadingPdf() ? 'Descargando...' : 'PDF' }}
+          </button>
+          <button class="detail-action-btn btn-xml" [disabled]="downloadingXml()" (click)="downloadElectronicXml(electronicDetail()!.number)">
+            📋 {{ downloadingXml() ? 'Descargando...' : 'XML' }}
+          </button>
+          @if (electronicDetail()!.publicUrl) {
+            <button class="detail-action-btn" (click)="openPublicUrl()">🔗 Vista publica</button>
+          }
+          @if (electronicDetail()!.qrUrl) {
+            <button class="detail-action-btn" (click)="openQrUrl()">📱 QR</button>
+          }
+          <button class="detail-action-btn btn-email" (click)="resendElectronicInvoiceEmail()">✉️ Reenviar correo</button>
+        </div>
+
+        <div class="detail-grid">
+          <section class="detail-card">
+            <h4>General</h4>
+            <p><strong>Documento:</strong> {{ electronicDetail()!.documentName || '-' }}</p>
+            <p><strong>Operacion:</strong> {{ electronicDetail()!.operationTypeName || '-' }}</p>
+            <p><strong>Referencia:</strong> {{ electronicDetail()!.referenceCode || '-' }}</p>
+            <p><strong>Estado DIAN:</strong> {{ electronicDetail()!.validated ? 'Validada' : 'Pendiente' }}</p>
+            <p><strong>Creada:</strong> {{ electronicDetail()!.createdAt || '-' }}</p>
+            <p><strong>Validada:</strong> {{ electronicDetail()!.validatedAt || '-' }}</p>
+            <p><strong>Observacion:</strong> {{ electronicDetail()!.observation || '-' }}</p>
+          </section>
+
+          <section class="detail-card">
+            <h4>Cliente</h4>
+            <p><strong>Nombre:</strong> {{ detailCustomerName() }}</p>
+            <p><strong>Documento:</strong> {{ electronicDetail()!.customer.documentName || electronicDetail()!.customer.documentCode }} {{ electronicDetail()!.customer.identification }}</p>
+            <p><strong>Correo:</strong> {{ electronicDetail()!.customer.email || '-' }}</p>
+            <p><strong>Telefono:</strong> {{ electronicDetail()!.customer.phone || '-' }}</p>
+            <p><strong>Direccion:</strong> {{ electronicDetail()!.customer.address || '-' }}</p>
+            <p><strong>Municipio:</strong> {{ electronicDetail()!.customer.municipality || '-' }} {{ electronicDetail()!.customer.department ? ' / ' + electronicDetail()!.customer.department : '' }}</p>
+            <p><strong>Tributo:</strong> {{ electronicDetail()!.customer.tributeName || electronicDetail()!.customer.tributeCode || '-' }}</p>
+          </section>
+
+          <section class="detail-card">
+            <h4>Pago y totales</h4>
+            <p><strong>Forma de pago:</strong> {{ electronicDetail()!.payment.formName || electronicDetail()!.payment.formCode || '-' }}</p>
+            <p><strong>Medio de pago:</strong> {{ electronicDetail()!.payment.methodName || electronicDetail()!.payment.methodCode || '-' }}</p>
+            <p><strong>Bruto:</strong> {{ electronicDetail()!.totals.grossValue || '-' }}</p>
+            <p><strong>Base gravable:</strong> {{ electronicDetail()!.totals.taxableAmount || '-' }}</p>
+            <p><strong>Impuestos:</strong> {{ electronicDetail()!.totals.taxAmount || '-' }}</p>
+            <p><strong>Descuento:</strong> {{ electronicDetail()!.totals.discountAmount || '-' }}</p>
+            <p><strong>Total:</strong> {{ electronicDetail()!.totals.total || '-' }}</p>
+          </section>
+        </div>
+
+        <section class="detail-card detail-card--items">
+          <h4>Items</h4>
+          <div class="table-wrap">
+            <table class="invoice-table invoice-table--detail">
+              <thead>
+                <tr>
+                  <th>Referencia</th>
+                  <th>Item</th>
+                  <th>Cantidad</th>
+                  <th>Precio</th>
+                  <th>Total</th>
+                  <th>Impuestos</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (item of electronicDetail()!.items; track item.codeReference + item.name) {
+                  <tr>
+                    <td>{{ item.codeReference || '-' }}</td>
+                    <td>{{ item.name }}</td>
+                    <td>{{ item.quantity || '-' }}</td>
+                    <td>{{ item.price || '-' }}</td>
+                    <td>{{ item.total || '-' }}</td>
+                    <td>{{ item.taxSummary || '-' }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </section>
+      }
+    </div>
+  </div>
+}
+
+@if (editingOrder()) {
+  <app-edit-order-modal
+    [order]="editingOrder()!"
+    (saved)="onOrderSaved($event)"
+    (cancelled)="editingOrder.set(null)"
+  />
+}
+
+@if (electronicOrder()) {
+  <app-electronic-invoice-modal
+    [order]="electronicOrder()!"
+    (done)="onElectronicDone($event, electronicOrder()!)"
+    (cancelled)="electronicOrder.set(null)"
+  />
+}
+
+@if (confirmVoidOrder()) {
+  <div class="detail-overlay" (click)="cancelVoidOrder()">
+    <div class="confirm-modal" (click)="$event.stopPropagation()">
+      <div class="confirm-badge">Anular factura</div>
+      <h3>¿Confirmas la anulación?</h3>
+      <p>
+        Vas a anular la factura interna <strong>{{ confirmVoidOrder()!.invoiceNumber }}</strong>
+        del pedido <strong>#{{ confirmVoidOrder()!.id }}</strong> a nombre de
+        <strong>{{ confirmVoidOrder()!.customerName }}</strong>.
+      </p>
+      <div class="confirm-actions">
+        <button class="btn-cancel" (click)="cancelVoidOrder()">Cancelar</button>
+        <button class="btn-danger" [disabled]="voidingId() === confirmVoidOrder()!.id" (click)="confirmVoidInvoice()">
+          {{ voidingId() === confirmVoidOrder()!.id ? 'Anulando...' : 'Sí, anular factura' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}

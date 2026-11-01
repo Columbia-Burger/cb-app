@@ -1,0 +1,89 @@
+<div class="modal-overlay" (click)="cancelled.emit()">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3 class="modal-title">Factura electronica - Pedido #{{ order.id }}</h3>
+      <button class="modal-close" (click)="cancelled.emit()">X</button>
+    </div>
+
+    <div class="modal-body">
+      <div class="toggle-row">
+        <button class="toggle-btn" [class.active]="useConsumidorFinal()" (click)="useConsumidorFinal.set(true)">
+          Consumidor Final
+        </button>
+        <button class="toggle-btn" [class.active]="!useConsumidorFinal()" (click)="useConsumidorFinal.set(false)">
+          Con datos del cliente
+        </button>
+      </div>
+
+      <div class="field">
+        <span>Medio de pago</span>
+        <div class="chip-group">
+          @for (m of paymentMethods; track m.code) {
+            <button type="button" class="chip" [class.chip--active]="paymentMethodCode === m.code" (click)="paymentMethodCode = m.code">
+              <span class="chip-icon">{{ m.icon }}</span>
+              <span class="chip-label">{{ m.label }}</span>
+            </button>
+          }
+        </div>
+      </div>
+
+      @if (!useConsumidorFinal()) {
+        <div class="fields">
+          <div class="field">
+            <span>Tipo de documento</span>
+            <div class="chip-group">
+              @for (d of documentTypes; track d.code) {
+                <button type="button" class="chip" [class.chip--active]="documentType === d.code" (click)="documentType = d.code">
+                  <span class="chip-icon">{{ d.icon }}</span>
+                  <span class="chip-label">{{ d.label }}</span>
+                </button>
+              }
+            </div>
+          </div>
+          <label class="field">
+            <span>{{ identificationLabel }}</span>
+            @if (documentType === 'NIT') {
+              <div class="nit-row">
+                <input [(ngModel)]="identification" inputmode="numeric" placeholder="Ej: 900123456" />
+                <div class="dv-box" [class.dv-box--error]="dvMismatch" title="Dígito de verificación">
+                  <small>DV</small>
+                  <strong>{{ computedDv ?? '–' }}</strong>
+                </div>
+              </div>
+              @if (dvMismatch) {
+                <small class="hint hint--error">El DV que escribiste ({{ typedDv }}) no coincide; para este NIT es {{ computedDv }}.</small>
+              } @else {
+                <small class="hint">Escribe el NIT sin el dígito de verificación. El DV se calcula solo; compáralo con el RUT.</small>
+              }
+            } @else {
+              <input [(ngModel)]="identification" inputmode="numeric" placeholder="Ej: 1234567890" />
+            }
+          </label>
+          <label class="field">
+            <span>{{ customerNameLabel }}</span>
+            <input [(ngModel)]="customerName" [placeholder]="documentType === 'NIT' ? 'Ej: Empresa SAS' : 'Ej: Juan Perez'" />
+          </label>
+          <label class="field">
+            <span>Correo (para envio)</span>
+            <input [(ngModel)]="customerEmail" type="email" placeholder="cliente@correo.com" />
+          </label>
+        </div>
+      } @else {
+        <p class="consumidor-info">
+          Se emitira a nombre de <strong>Consumidor Final</strong> con identificacion <strong>222222222222</strong>.
+        </p>
+      }
+
+      @if (error()) {
+        <div class="alert-error">{{ error() }}</div>
+      }
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-cancel" (click)="cancelled.emit()">Cancelar</button>
+      <button class="btn-submit" [disabled]="loading()" (click)="submit()">
+        {{ loading() ? 'Generando...' : 'Generar factura electronica' }}
+      </button>
+    </div>
+  </div>
+</div>

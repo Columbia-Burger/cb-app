@@ -1,0 +1,203 @@
+<div class="page">
+  <div class="page-header">
+    <div>
+      <h2 class="page-title">Social Media</h2>
+      <p class="page-sub">Genera y gestiona contenido para Instagram con IA</p>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab" [class.tab--active]="activeTab() === 'generator'" (click)="activeTab.set('generator')">
+      ✨ Generador
+    </button>
+    <button class="tab" [class.tab--active]="activeTab() === 'posts'" (click)="activeTab.set('posts')">
+      📋 Posts <span class="tab-badge">{{ posts().length }}</span>
+    </button>
+  </div>
+
+  <!-- ── GENERATOR TAB ── -->
+  @if (activeTab() === 'generator') {
+    <div class="generator-layout">
+
+      <!-- Form -->
+      <div class="gen-card">
+        <h3 class="gen-card__title">Nuevo contenido</h3>
+
+        <!-- Mode toggle -->
+        <div class="mode-toggle">
+          <button class="mode-btn" [class.mode-btn--active]="postMode() === 'phrase'" (click)="switchMode('phrase')">
+            📝 Frase
+          </button>
+          <button class="mode-btn" [class.mode-btn--active]="postMode() === 'product'" (click)="switchMode('product')">
+            🍔 Producto
+          </button>
+        </div>
+
+        <!-- PHRASE MODE -->
+        @if (postMode() === 'phrase') {
+          <div class="form-field">
+            <label>Frase para el card *</label>
+            <input type="text" class="input" placeholder="ej. El amor entra por el estómago 🍔" [value]="topic()" (input)="topic.set($any($event.target).value)" />
+            <span class="field-hint">Esta frase aparecerá en la imagen del post.</span>
+          </div>
+        }
+
+        <!-- PRODUCT MODE -->
+        @if (postMode() === 'product') {
+          @if (menuProducts().length > 0) {
+            <div class="form-field">
+              <label>Seleccionar del menú</label>
+              <select class="input" (change)="selectProduct(menuProducts()[$any($event.target).value])">
+                <option value="" disabled selected>— Elige un plato —</option>
+                @for (p of menuProducts(); track p.id; let i = $index) {
+                  <option [value]="i">{{ p.categoryName }} · {{ p.name }}</option>
+                }
+              </select>
+            </div>
+          }
+
+          <div class="form-field">
+            <label>Tema o frase adicional *</label>
+            <input type="text" class="input" placeholder="ej. Hamburguesa BBQ doble, promo 2x1..." [value]="topic()" (input)="topic.set($any($event.target).value)" />
+          </div>
+
+          <div class="form-field">
+            <label>URL de imagen (opcional)</label>
+            <input type="url" class="input" placeholder="https://res.cloudinary.com/..." [value]="imageUrl()" (input)="imageUrl.set($any($event.target).value)" />
+            <span class="field-hint">Si no pones URL, se genera un card automático.</span>
+          </div>
+
+          <div class="form-field">
+            <label>Tono</label>
+            <select class="input" [value]="tone()" (change)="tone.set($any($event.target).value)">
+              @for (t of toneOptions; track t) {
+                <option [value]="t">{{ t }}</option>
+              }
+            </select>
+          </div>
+        }
+
+        @if (generateError()) {
+          <div class="alert-error">⚠️ {{ generateError() }}</div>
+        }
+
+        <button class="btn btn--primary btn--full" [disabled]="generating() || !topic().trim()" (click)="generate()">
+          @if (generating()) { <span class="spinner-sm"></span> Generando... }
+          @else { ✨ Generar con IA }
+        </button>
+      </div>
+
+      <!-- Preview / Editor -->
+      @if (generatedPost()) {
+        <div class="gen-card gen-card--preview">
+          <h3 class="gen-card__title">Vista previa — editar antes de guardar</h3>
+
+          @if (editImageUrl()) {
+            <img class="preview-img" [src]="editImageUrl()" alt="preview" />
+          }
+
+          <div class="form-field">
+            <label>Caption</label>
+            <textarea class="input textarea" rows="6" [value]="editCaption()" (input)="editCaption.set($any($event.target).value)"></textarea>
+          </div>
+
+          <div class="form-field">
+            <label>Hashtags</label>
+            <input type="text" class="input" [value]="editHashtags()" (input)="editHashtags.set($any($event.target).value)" />
+          </div>
+
+          <div class="form-field">
+            <label>URL de imagen</label>
+            <input type="url" class="input" [value]="editImageUrl()" (input)="editImageUrl.set($any($event.target).value)" />
+          </div>
+
+          <div class="form-field">
+            <label>Programar publicación (opcional)</label>
+            <input type="datetime-local" class="input" [value]="editScheduledAt()" (input)="editScheduledAt.set($any($event.target).value)" />
+            <span class="field-hint">Si apruebas con fecha, se publicará automáticamente a esa hora.</span>
+          </div>
+
+          <div class="preview-actions">
+            <button class="btn btn--ghost" [disabled]="saving()" (click)="discardGenerated()">
+              🗑 Descartar
+            </button>
+            <button class="btn btn--secondary" [disabled]="saving()" (click)="savePost('DRAFT')">
+              @if (saving()) { Guardando... } @else { 💾 Guardar borrador }
+            </button>
+            <button class="btn btn--primary" [disabled]="saving()" (click)="savePost('APPROVED')">
+              @if (saving()) { Guardando... } @else { ✅ Aprobar }
+            </button>
+          </div>
+        </div>
+      }
+    </div>
+  }
+
+  <!-- ── POSTS TAB ── -->
+  @if (activeTab() === 'posts') {
+    <div class="posts-section">
+
+      <!-- Filter -->
+      <div class="filter-row">
+        @for (f of (['ALL','DRAFT','APPROVED','PUBLISHED','FAILED']); track f) {
+          <button class="filter-btn" [class.filter-btn--active]="filterStatus() === f" (click)="filterStatus.set($any(f))">
+            {{ f === 'ALL' ? 'Todos' : statusLabel($any(f)) }}
+          </button>
+        }
+        <button class="btn btn--sm btn--ghost ml-auto" (click)="loadPosts()">↻ Actualizar</button>
+      </div>
+
+      @if (listError()) {
+        <div class="alert-error">⚠️ {{ listError() }}</div>
+      }
+
+      @if (loadingPosts()) {
+        <div class="loading"><div class="spinner"></div> Cargando...</div>
+      } @else if (filteredPosts().length === 0) {
+        <p class="empty">No hay posts en esta sección.</p>
+      } @else {
+        <div class="posts-grid">
+          @for (post of filteredPosts(); track post.id) {
+            <div class="post-card" [class]="'post-card--' + post.status.toLowerCase()">
+
+              @if (post.imageUrl) {
+                <img class="post-card__img" [src]="post.imageUrl" [alt]="post.topic" />
+              }
+
+              <div class="post-card__body">
+                <div class="post-card__topic">{{ post.topic }}</div>
+                <p class="post-card__caption">{{ post.caption }}</p>
+                <p class="post-card__hashtags">{{ post.hashtags }}</p>
+
+                <div class="post-card__meta">
+                  <span class="status-badge status-badge--{{ post.status.toLowerCase() }}">{{ statusLabel(post.status) }}</span>
+                  <span class="post-date">{{ post.createdAt | date:'dd/MM/yy HH:mm' }}</span>
+                </div>
+
+                @if (post.errorMessage) {
+                  <p class="post-error">{{ post.errorMessage }}</p>
+                }
+              </div>
+
+              <div class="post-card__actions">
+                @if (post.status === 'DRAFT') {
+                  <button class="btn btn--sm btn--secondary" (click)="approvePost(post)">✅ Aprobar</button>
+                }
+                @if (post.status === 'APPROVED') {
+                  <button class="btn btn--sm btn--primary" [disabled]="publishingId() === post.id" (click)="publish(post)">
+                    @if (publishingId() === post.id) { Publicando... } @else { 📲 Publicar }
+                  </button>
+                }
+                <button class="btn btn--sm btn--danger" [disabled]="deletingId() === post.id" (click)="deletePost(post)">
+                  @if (deletingId() === post.id) { ... } @else { 🗑 }
+                </button>
+              </div>
+
+            </div>
+          }
+        </div>
+      }
+    </div>
+  }
+</div>

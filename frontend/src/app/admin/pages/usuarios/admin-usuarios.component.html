@@ -1,0 +1,132 @@
+<div class="page">
+  <div class="page-header">
+    <div>
+      <h2 class="page-title">Usuarios</h2>
+      <p class="page-sub">Cuentas del personal para entrar al panel, la cocina y la app de domicilios</p>
+    </div>
+    <button class="btn btn--primary" (click)="openCreate()">+ Nuevo usuario</button>
+  </div>
+
+  @if (notice()) {
+    <div class="alert-ok">✓ {{ notice() }}</div>
+  }
+
+  @if (loading()) {
+    <div class="loading"><div class="spinner"></div> Cargando...</div>
+  } @else if (loadError()) {
+    <div class="alert-error">⚠️ {{ loadError() }}</div>
+  } @else {
+    <p class="count">{{ activeCount() }} activos · {{ users().length }} en total</p>
+
+    <div class="user-grid">
+      @for (u of users(); track u.id) {
+        <div class="user-card" [class.user-card--inactive]="!u.active">
+          <div class="user-card__top">
+            <div class="avatar" [attr.data-role]="u.role">{{ u.displayName.charAt(0).toUpperCase() }}</div>
+            <div class="user-card__id">
+              <div class="user-card__name">
+                {{ u.displayName }}
+                @if (isSelf(u)) { <span class="you">Tú</span> }
+              </div>
+              <div class="user-card__username">&#64;{{ u.username }}</div>
+            </div>
+            <span class="status" [class.status--off]="!u.active">{{ u.active ? 'Activo' : 'Inactivo' }}</span>
+          </div>
+
+          <div class="user-card__meta">
+            <span class="role-badge" [attr.data-role]="u.role">{{ roleOf(u.role).icon }} {{ roleOf(u.role).label }}</span>
+            <span class="last-login">
+              @if (u.lastLoginAt) {
+                Último ingreso {{ u.lastLoginAt | date:'dd/MM/yy HH:mm' }}
+              } @else {
+                Nunca ha ingresado
+              }
+            </span>
+          </div>
+
+          <div class="user-card__actions">
+            <button class="btn btn--ghost btn--sm" (click)="openEdit(u)">✏️ Editar</button>
+            @if (!isSelf(u)) {
+              <button class="btn btn--sm" [class.btn--danger]="u.active" [class.btn--ghost]="!u.active"
+                      [disabled]="togglingId() === u.id" (click)="toggleActive(u)">
+                {{ togglingId() === u.id ? '...' : (u.active ? 'Desactivar' : 'Activar') }}
+              </button>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>
+
+@if (formOpen()) {
+  <div class="overlay" (click)="closeForm()">
+    <div class="sheet" (click)="$event.stopPropagation()">
+      <div class="sheet__header">
+        <h3>{{ editing() ? 'Editar usuario' : 'Nuevo usuario' }}</h3>
+        <button class="sheet__close" (click)="closeForm()" aria-label="Cerrar">✕</button>
+      </div>
+
+      <div class="sheet__body">
+        <div class="form-field">
+          <label for="u-name">Nombre</label>
+          <input id="u-name" class="input" [(ngModel)]="displayName" (blur)="suggestUsername()"
+                 placeholder="Ej: Juan Pérez" maxlength="80" />
+        </div>
+
+        <div class="form-field">
+          <label for="u-user">Usuario</label>
+          @if (editing()) {
+            <div class="readonly">&#64;{{ username }} <small>(no se puede cambiar)</small></div>
+          } @else {
+            <input id="u-user" class="input" [(ngModel)]="username" (input)="normalizeUsername()"
+                   placeholder="Ej: juan.perez" maxlength="30"
+                   autocapitalize="none" autocorrect="off" spellcheck="false" autocomplete="off" />
+            <small class="hint">Minúsculas, números, punto o guion. Con esto inicia sesión.</small>
+          }
+        </div>
+
+        <div class="form-field">
+          <label>Rol</label>
+          <div class="role-chips">
+            @for (r of roles; track r.code) {
+              <button type="button" class="role-chip" [class.role-chip--active]="role === r.code"
+                      [disabled]="!!editing() && isSelf(editing()!) && role !== r.code"
+                      (click)="role = r.code">
+                <span class="role-chip__icon">{{ r.icon }}</span>
+                <span class="role-chip__label">{{ r.label }}</span>
+                <span class="role-chip__hint">{{ r.hint }}</span>
+              </button>
+            }
+          </div>
+          @if (editing() && isSelf(editing()!)) {
+            <small class="hint">No puedes cambiar tu propio rol.</small>
+          }
+        </div>
+
+        <div class="form-field">
+          <label for="u-pass">{{ editing() ? 'Nueva contraseña' : 'Contraseña' }}</label>
+          <div class="pass-wrap">
+            <input id="u-pass" class="input" [type]="showPassword ? 'text' : 'password'" [(ngModel)]="password"
+                   [placeholder]="editing() ? 'Déjala vacía para no cambiarla' : 'Mínimo 6 caracteres'"
+                   autocomplete="new-password" />
+            <button type="button" class="pass-toggle" (click)="showPassword = !showPassword">
+              {{ showPassword ? 'Ocultar' : 'Ver' }}
+            </button>
+          </div>
+        </div>
+
+        @if (formError()) {
+          <div class="alert-error">⚠️ {{ formError() }}</div>
+        }
+      </div>
+
+      <div class="sheet__footer">
+        <button class="btn btn--ghost" (click)="closeForm()">Cancelar</button>
+        <button class="btn btn--primary" [disabled]="saving()" (click)="save()">
+          {{ saving() ? 'Guardando...' : (editing() ? 'Guardar cambios' : 'Crear usuario') }}
+        </button>
+      </div>
+    </div>
+  </div>
+}

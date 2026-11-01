@@ -1,0 +1,134 @@
+<section class="section-form-sm">
+  <div class="cb-form-container">
+    <h2 class="text-center title-form">Formulario de Contacto</h2>
+
+    <form [formGroup]="contactForm" (ngSubmit)="onSubmit()" novalidate>
+
+      <!-- Nombre -->
+      <div class="mb-3">
+        <label for="from_name" class="form-label">Nombre</label>
+        <input
+          type="text"
+          class="form-control"
+          id="from_name"
+          formControlName="from_name"
+          placeholder="Ingresa tu nombre"
+          [class.is-invalid]="isInvalid('from_name')"
+        />
+        @if (isInvalid('from_name')) {
+          <div class="invalid-feedback">Por favor, ingresa tu nombre.</div>
+        }
+      </div>
+
+      <!-- Asunto -->
+      <div class="mb-3">
+        <label for="asunto" class="form-label">Asunto</label>
+        <input
+          type="text"
+          class="form-control"
+          id="asunto"
+          formControlName="asunto"
+          placeholder="Asunto del mensaje"
+          [class.is-invalid]="isInvalid('asunto')"
+        />
+        @if (isInvalid('asunto')) {
+          <div class="invalid-feedback">Por favor, ingresa el asunto.</div>
+        }
+      </div>
+
+      <!-- Email -->
+      <div class="mb-3">
+        <label for="email_id" class="form-label">Email</label>
+        <input
+          type="email"
+          class="form-control"
+          id="email_id"
+          formControlName="email_id"
+          placeholder="Ingresa tu email"
+          [class.is-invalid]="isInvalid('email_id')"
+        />
+        @if (isInvalid('email_id')) {
+          <div class="invalid-feedback">
+            Por favor, ingresa un correo electrónico válido.
+          </div>
+        }
+      </div>
+
+      <!-- Teléfono -->
+      <div class="mb-3">
+        <label for="phone" class="form-label">Teléfono</label>
+        <input
+          type="tel"
+          class="form-control"
+          id="phone"
+          formControlName="phone"
+          placeholder="Ingresa tu teléfono"
+          [class.is-invalid]="isInvalid('phone')"
+        />
+        @if (isInvalid('phone')) {
+          <div class="invalid-feedback">
+            Por favor, ingresa un número de teléfono válido (10 dígitos).
+          </div>
+        }
+      </div>
+
+      <!-- Mensaje -->
+      <div class="mb-3">
+        <label for="message" class="form-label">Mensaje</label>
+        <textarea
+          class="form-control"
+          id="message"
+          formControlName="message"
+          rows="4"
+          placeholder="Escribe tu mensaje aquí"
+          [class.is-invalid]="isInvalid('message')"
+        ></textarea>
+        @if (isInvalid('message')) {
+          <div class="invalid-feedback">Por favor, ingresa tu mensaje.</div>
+        }
+      </div>
+
+      <button type="submit" class="btn btn-primary" [disabled]="isSubmitting">
+        {{ isSubmitting ? 'Enviando...' : 'Enviar' }}
+      </button>
+    </form>
+
+    <!-- Modal de resultado -->
+    <div
+      class="modal fade"
+      id="emailModal"
+      tabindex="-1"
+      aria-labelledby="emailModalLabel"
+      aria-hidden="true"
+      #emailModal
+    >
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="emailModalLabel">Resultado del Envío</h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <div [class]="modalIsSuccess ? 'alert alert-success' : 'alert alert-danger'">
+              {{ modalMessage }}
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-bs-dismiss="modal"
+            >
+              Cerrar
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

@@ -1,0 +1,189 @@
+* { box-sizing: border-box; }
+
+.page {
+  min-height: 100vh;
+  background: #0d1117;
+  color: #c9d1d9;
+  padding: 1.5em 1em 3em;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 0.75em;
+  margin-bottom: 2em;
+  max-width: 480px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.logo {
+  width: 48px; height: 48px;
+  border-radius: 12px;
+  background: #fff;
+  padding: 4px;
+  object-fit: contain;
+  box-shadow: 0 2px 12px rgba(233,69,96,0.25);
+}
+.brand-name { display: block; font-weight: 700; font-size: 1em; color: #e6edf3; }
+.brand-sub  { display: block; font-size: 0.75em; color: #8b949e; }
+
+.centered {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1em;
+  padding: 4em 1em;
+  color: #8b949e;
+}
+.spinner {
+  width: 32px; height: 32px;
+  border: 3px solid #21262d;
+  border-top-color: #e94560;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.error-box { color: #f85149; }
+.error-icon { font-size: 2em; }
+
+.card {
+  max-width: 480px;
+  margin: 0 auto;
+  background: #161b22;
+  border: 1px solid #21262d;
+  border-radius: 16px;
+  padding: 1.5em;
+}
+
+.order-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1.5em;
+  gap: 1em;
+  flex-wrap: wrap;
+}
+.order-greeting { margin: 0 0 0.2em; font-size: 1em; color: #e6edf3; }
+.order-id { margin: 0; font-size: 0.8em; color: #8b949e; }
+.order-time { font-size: 0.78em; color: #8b949e; text-align: right; }
+
+.cancelled-banner {
+  background: rgba(248,81,73,0.12);
+  color: #f85149;
+  border: 1px solid rgba(248,81,73,0.25);
+  border-radius: 10px;
+  padding: 0.85em 1em;
+  text-align: center;
+  font-weight: 600;
+  margin-bottom: 1.5em;
+}
+
+/* Timeline */
+.timeline {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 1em;
+  padding: 0 0.25em;
+}
+.timeline-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4em;
+  flex: 1;
+  position: relative;
+}
+.step-icon-wrap {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  position: relative;
+}
+.step-icon {
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  background: #21262d;
+  border: 2px solid #30363d;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1em;
+  flex-shrink: 0;
+  transition: all 0.3s;
+  z-index: 1;
+}
+.timeline-step.done .step-icon {
+  background: rgba(63,185,80,0.15);
+  border-color: #3fb950;
+}
+.timeline-step.active .step-icon {
+  background: rgba(233,69,96,0.15);
+  border-color: #e94560;
+  box-shadow: 0 0 0 4px rgba(233,69,96,0.15);
+}
+.step-line {
+  flex: 1;
+  height: 2px;
+  background: #30363d;
+  transition: background 0.3s;
+}
+.step-line.done { background: #3fb950; }
+.step-label {
+  font-size: 0.65em;
+  color: #8b949e;
+  text-align: center;
+  line-height: 1.3;
+  max-width: 60px;
+}
+.timeline-step.done .step-label,
+.timeline-step.active .step-label { color: #c9d1d9; }
+
+.status-pill {
+  text-align: center;
+  font-size: 0.8em;
+  font-weight: 600;
+  padding: 0.4em 1em;
+  border-radius: 20px;
+  margin: 0.75em auto 1.5em;
+  width: fit-content;
+}
+.status-received   { background: rgba(88,166,255,0.12); color: #58a6ff; }
+.status-preparing  { background: rgba(255,166,0,0.12);  color: #f0b429; }
+.status-on_the_way { background: rgba(63,185,80,0.12);  color: #3fb950; }
+.status-delivered  { background: rgba(63,185,80,0.18);  color: #3fb950; }
+.status-cancelled  { background: rgba(248,81,73,0.12);  color: #f85149; }
+
+.section { margin-top: 1.25em; }
+.section-title {
+  font-size: 0.8em;
+  font-weight: 700;
+  color: #8b949e;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin: 0 0 0.75em;
+}
+
+.items-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.5em; }
+.item-row { display: flex; align-items: center; gap: 0.5em; font-size: 0.88em; }
+.item-qty { color: #e94560; font-weight: 700; min-width: 1.8em; }
+.item-name { color: #e6edf3; flex: 1; }
+.item-flavor { color: #8b949e; font-size: 0.85em; }
+
+.totals { border-top: 1px solid #21262d; padding-top: 1em; }
+.total-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85em;
+  color: #8b949e;
+  margin-bottom: 0.4em;
+}
+.total-row.grand { font-weight: 700; font-size: 1em; color: #e6edf3; margin-top: 0.5em; }
+
+.delivery-zone {
+  margin: 1em 0 0;
+  font-size: 0.8em;
+  color: #8b949e;
+  text-align: center;
+}

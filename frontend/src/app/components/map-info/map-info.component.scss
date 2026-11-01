@@ -1,0 +1,207 @@
+$brand-orange: #f3a51f;
+$brand-dark: #1a1a1a;
+
+// ── Sección contenedor ───────────────────────────────────────────────────────
+.section-contact {
+  margin: 3rem 2rem;
+  background-color: $brand-dark;
+  border-radius: 1.6rem;
+  padding: 3.2rem 2.8rem;
+  display: flex;
+  flex-direction: column;
+  gap: 3rem;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.18);
+}
+
+// ── Header ───────────────────────────────────────────────────────────────────
+.contact-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.2rem;
+  text-align: center;
+}
+
+.badge-contact {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  background-color: $brand-orange;
+  color: $brand-dark;
+  font-size: 1.2rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 0.5rem 1.4rem;
+  border-radius: 2rem;
+}
+
+.contact-title {
+  font-size: clamp(3rem, 5vw, 4.8rem);
+  font-weight: 900;
+  line-height: 1.1;
+  color: #ffffff;
+  margin: 0;
+  text-transform: uppercase;
+
+  &--highlight {
+    color: $brand-orange;
+  }
+}
+
+// ── Body: dos columnas ───────────────────────────────────────────────────────
+.contact-body {
+  display: flex;
+  flex-direction: column;
+  gap: 3rem;
+
+  @media (min-width: 900px) {
+    flex-direction: row;
+    align-items: flex-start;
+  }
+}
+
+// ── Columna info + mapa ──────────────────────────────────────────────────────
+.contact-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.info-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2rem;
+
+  .info-block {
+    flex: 1;
+    min-width: 18rem;
+  }
+}
+
+.info-block {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.4rem;
+
+  &__icon {
+    width: 4rem;
+    height: 4rem;
+    border-radius: 50%;
+    background-color: $brand-orange;
+    color: $brand-dark;
+    font-size: 1.6rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  &__label {
+    font-size: 1.1rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: $brand-orange;
+    margin: 0 0 0.4rem;
+  }
+
+  &__value {
+    font-size: 1.4rem;
+    color: rgba(255, 255, 255, 0.85);
+    margin: 0;
+    line-height: 1.6;
+  }
+}
+
+.btn-whatsapp-info {
+  display: inline-flex;
+  align-items: center;
+  padding: 1rem 2.4rem;
+  background-color: #25d366;
+  color: #fff;
+  font-size: 1.5rem;
+  font-weight: 700;
+  text-decoration: none;
+  border-radius: 3rem;
+  transition: background-color 0.2s, transform 0.2s;
+  align-self: flex-start;
+
+  &:hover {
+    background-color: #1ebe5d;
+    color: #fff;
+    transform: translateY(-2px);
+  }
+}
+
+.map-wrapper {
+  border-radius: 1.2rem;
+  overflow: hidden;
+  border: 2px solid rgba(255, 255, 255, 0.08);
+
+  iframe {
+    width: 100%;
+    height: 24rem;
+    display: block;
+  }
+}
+
+// ── Columna formulario ───────────────────────────────────────────────────────
+.contact-form-wrapper {
+  flex: 1;
+}
+
+// ── Pantallas grandes (≥ 1920px, monitores de 24" en adelante) ───────────────
+@media (min-width: 1920px) {
+  .section-contact {
+    padding: 4.8rem 4rem;
+    gap: 4rem;
+  }
+
+  .badge-contact {
+    font-size: 1.6rem;
+    padding: 0.7rem 2rem;
+  }
+
+  .contact-title {
+    font-size: 6.4rem;
+  }
+
+  .contact-body {
+    gap: 4rem;
+  }
+
+  .contact-info {
+    gap: 2.8rem;
+  }
+
+  .info-block {
+    gap: 1.8rem;
+
+    &__icon {
+      width: 5.2rem;
+      height: 5.2rem;
+      font-size: 2.2rem;
+    }
+
+    &__label {
+      font-size: 1.4rem;
+      margin-bottom: 0.6rem;
+    }
+
+    &__value {
+      font-size: 1.8rem;
+    }
+  }
+
+  .btn-whatsapp-info {
+    font-size: 1.9rem;
+    padding: 1.2rem 3rem;
+  }
+
+  .map-wrapper iframe {
+    height: 40rem;
+  }
+}

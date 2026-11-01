@@ -1,0 +1,78 @@
+
+    <div class="page">
+      <div class="page-header">
+        <div>
+          <h2 class="page-title">Zonas de domicilio</h2>
+          <p class="page-sub">Barrios y tarifas de entrega disponibles para los pedidos</p>
+        </div>
+        <button class="create-btn" (click)="openModal()">+ Nueva zona</button>
+      </div>
+
+      @if (loading()) {
+        <div class="loading"><div class="spinner"></div> Cargando...</div>
+      } @else if (zones().length === 0) {
+        <p class="empty">No hay zonas registradas.</p>
+      } @else {
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Nombre</th>
+                <th>Tarifa</th>
+                <th>Estado</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (z of zones(); track z.id) {
+                <tr [class.inactive-row]="!z.active">
+                  <td class="name-cell">{{ z.name }}</td>
+                  <td class="fee-cell">{{ z.deliveryFee | currency:'COP':'symbol-narrow':'1.0-0' }}</td>
+                  <td>
+                    <span class="badge" [ngClass]="z.active ? 'badge-on' : 'badge-off'">
+                      {{ z.active ? 'Activa' : 'Inactiva' }}
+                    </span>
+                  </td>
+                  <td class="actions-cell">
+                    <button class="action-btn" (click)="openModal(z)">✏️</button>
+                    <button class="action-btn toggle-action"
+                            [class.deactivate]="z.active"
+                            (click)="toggleActive(z)"
+                            [disabled]="toggling().has(z.id)">
+                      {{ z.active ? 'Desactivar' : 'Activar' }}
+                    </button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+
+      @if (showModal()) {
+        <div class="overlay" (click)="closeModal()">
+          <div class="sheet" (click)="$event.stopPropagation()">
+            <div class="sheet-title">{{ editingId() ? 'Editar zona' : 'Nueva zona' }}</div>
+            <div class="form">
+              <label class="field">
+                <span class="label">Nombre *</span>
+                <input type="text" [(ngModel)]="form.name" placeholder="Ej: Danubio Azul" />
+              </label>
+              <label class="field">
+                <span class="label">Tarifa de domicilio (COP) *</span>
+                <input type="number" [(ngModel)]="form.deliveryFee" placeholder="0" min="0" />
+              </label>
+              @if (formError()) {
+                <p class="form-error">⚠️ {{ formError() }}</p>
+              }
+            </div>
+            <div class="sheet-actions">
+              <button class="btn-save" [disabled]="saving()" (click)="submit()">
+                {{ saving() ? 'Guardando...' : (editingId() ? 'Guardar cambios' : 'Crear') }}
+              </button>
+              <button class="btn-cancel" (click)="closeModal()">Cancelar</button>
+            </div>
+          </div>
+        </div>
+      }
+    </div>

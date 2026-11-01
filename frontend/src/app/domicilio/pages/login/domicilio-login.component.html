@@ -1,0 +1,29 @@
+
+    <div class="page">
+      <div class="card">
+        <img src="assets/logo.png" alt="Columbia Burger" class="logo" />
+        <h1 class="title">Domiciliario</h1>
+        <p class="sub">Columbia Burger</p>
+
+        <form (ngSubmit)="login()" class="form">
+          <div class="field">
+            <label>Usuario</label>
+            <input type="text" [(ngModel)]="username" name="username" placeholder="Tu usuario"
+                   autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false" />
+          </div>
+          <div class="field">
+            <label>Contraseña</label>
+            <input type="password" [(ngModel)]="password" name="password"
+                   placeholder="••••••••" autocomplete="current-password" />
+          </div>
+
+          @if (error()) {
+            <p class="error">{{ error() }}</p>
+          }
+
+          <button type="submit" class="btn" [disabled]="loading()">
+            {{ loading() ? 'Entrando...' : 'Entrar' }}
+          </button>
+        </form>
+      </div>
+    </div>

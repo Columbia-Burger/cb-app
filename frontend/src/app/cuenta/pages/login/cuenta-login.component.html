@@ -1,0 +1,69 @@
+
+    <div class="shell">
+      <div class="card">
+        <!-- Header -->
+        <div class="card-header">
+          <img src="assets/logo.png" alt="Columbia Burger" class="logo" />
+          <h1 class="brand">Columbia Burger</h1>
+          <p class="subtitle">Portal de clientes</p>
+        </div>
+
+        <!-- Step indicator -->
+        <div class="steps">
+          <div class="step" [class.done]="step() === 'code'">
+            <span class="step-dot">{{ step() === 'code' ? '✓' : '1' }}</span>
+            <span>Teléfono</span>
+          </div>
+          <div class="step-line"></div>
+          <div class="step" [class.active]="step() === 'code'">
+            <span class="step-dot">2</span>
+            <span>Código</span>
+          </div>
+        </div>
+
+        @if (step() === 'phone') {
+          <div class="form-group">
+            <label>Tu número de WhatsApp</label>
+            <div class="phone-input">
+              <span class="prefix">+57</span>
+              <input
+                type="tel"
+                [(ngModel)]="phone"
+                placeholder="3001234567"
+                maxlength="10"
+                (keydown.enter)="sendOtp()"
+                autofocus
+              />
+            </div>
+            <p class="hint">Te enviaremos un código de verificación por WhatsApp</p>
+          </div>
+          <button class="btn-primary" (click)="sendOtp()" [disabled]="loading()">
+            @if (loading()) { <span class="spinner"></span> Enviando... } @else { Enviar código →}
+          </button>
+        }
+
+        @if (step() === 'code') {
+          <div class="form-group">
+            <label>Código de verificación</label>
+            <input
+              type="text"
+              [(ngModel)]="code"
+              placeholder="000000"
+              maxlength="6"
+              class="code-input"
+              (keydown.enter)="verifyOtp()"
+              autofocus
+            />
+            <p class="hint">Código enviado a +57 {{ phone }}</p>
+          </div>
+          <button class="btn-primary" (click)="verifyOtp()" [disabled]="loading()">
+            @if (loading()) { <span class="spinner"></span> Verificando... } @else { Ingresar →}
+          </button>
+          <button class="btn-link" (click)="step.set('phone')">← Cambiar número</button>
+        }
+
+        @if (error()) {
+          <p class="error-msg">{{ error() }}</p>
+        }
+      </div>
+    </div>
