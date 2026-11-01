@@ -59,10 +59,17 @@ export function toBogotaDateKey(value: string | Date | null | undefined): string
   }).format(date);
 }
 
+/** El día de operación va de 5:00 a. m. a 5:00 a. m.: lo vendido después de medianoche es del día anterior. */
+const BUSINESS_DAY_START_HOUR = 5;
+
 function getCurrentBogotaDayBounds(): { start: string; end: string } {
   const now = getBogotaParts();
-  const startUtc = new Date(Date.UTC(now.year, now.month - 1, now.day, 5, 0, 0));
-  const endUtc = new Date(Date.UTC(now.year, now.month - 1, now.day + 1, 5, 0, 0));
+  // Entre medianoche y las 5 a. m. sigue siendo el día de operación de ayer
+  const day = now.hour < BUSINESS_DAY_START_HOUR ? now.day - 1 : now.day;
+  // Los timestamps se guardan en hora de Bogotá: se arma "AAAA-MM-DDT05:00:00" con Date.UTC
+  // solo para formatear la fecha sin que interfiera la zona horaria del dispositivo
+  const startUtc = new Date(Date.UTC(now.year, now.month - 1, day, BUSINESS_DAY_START_HOUR, 0, 0));
+  const endUtc = new Date(Date.UTC(now.year, now.month - 1, day + 1, BUSINESS_DAY_START_HOUR, 0, 0));
   return {
     start: toApiDateTime(startUtc),
     end: toApiDateTime(endUtc),
