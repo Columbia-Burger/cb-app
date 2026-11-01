@@ -10,8 +10,8 @@ import com.columbiaburger.catalog.service.DeliveryZoneService;
 import com.columbiaburger.catalog.service.FlavorService;
 import com.columbiaburger.catalog.service.ProductService;
 import com.columbiaburger.catalog.service.SeasonalSpecialService;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validator;
 import lombok.RequiredArgsConstructor;
@@ -132,7 +132,7 @@ public class CatalogProxyService {
         T value;
         try {
             value = objectMapper.readValue(body, type);
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Datos inválidos: " + e.getOriginalMessage());
         }
         Set<ConstraintViolation<T>> violations = validator.validate(value);
@@ -149,7 +149,7 @@ public class CatalogProxyService {
     private String json(Object value) {
         try {
             return objectMapper.writeValueAsString(value);
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             throw new IllegalStateException("No se pudo serializar la respuesta del catálogo", e);
         }
     }
