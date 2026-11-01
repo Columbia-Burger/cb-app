@@ -11,6 +11,7 @@ import { environment } from '../../../environments/environment';
 export class HeaderComponent {
   private readonly router = inject(Router);
 
+  readonly customerPortalEnabled = environment.customerPortalEnabled;
   readonly whatsappUrl = `https://wa.me/${environment.whatsappNumber}?text=${environment.whatsappText}`;
 
   scrolled = false;

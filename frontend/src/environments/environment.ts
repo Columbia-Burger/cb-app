@@ -2,6 +2,8 @@ export const environment = {
   production: false,
   apiUrl: 'https://columbia-burger.up.railway.app',
   businessApiUrl: 'https://columbia-burger.up.railway.app',
+  // Portal de clientes (/cuenta): apagado mientras no haya canal para enviar el código OTP
+  customerPortalEnabled: false,
   whatsappNumber: '573228262989',
   whatsappText: 'Hola,%20quiero%20hacer%20un%20pedido',
   emailjs: {

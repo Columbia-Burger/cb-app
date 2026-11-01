@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { LandingPageComponent } from './pages/landing-page/landing-page.component';
+import { environment } from '../environments/environment';
 
 export const routes: Routes = [
   { path: '', component: LandingPageComponent },
@@ -13,11 +14,14 @@ export const routes: Routes = [
     loadChildren: () =>
       import('./admin/admin.routes').then(m => m.adminRoutes)
   },
-  {
-    path: 'cuenta',
-    loadChildren: () =>
-      import('./cuenta/cuenta.routes').then(m => m.cuentaRoutes)
-  },
+  // Con el portal apagado, los enlaces viejos a /cuenta llevan al inicio
+  environment.customerPortalEnabled
+    ? {
+        path: 'cuenta',
+        loadChildren: () =>
+          import('./cuenta/cuenta.routes').then(m => m.cuentaRoutes)
+      }
+    : { path: 'cuenta', redirectTo: '', pathMatch: 'prefix' },
   {
     path: 'cocina',
     loadChildren: () =>
