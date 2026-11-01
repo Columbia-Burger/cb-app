@@ -107,7 +107,18 @@ public class OrderController {
     @PutMapping("/{id}")
     public ResponseEntity<OrderResponse> updateOrder(
             @PathVariable Long id,
-            @Valid @RequestBody UpdateOrderRequest request) {
+            @Valid @RequestBody UpdateOrderRequest request,
+            org.springframework.security.core.Authentication authentication) {
+        boolean isAdmin = authentication.getAuthorities().stream()
+                .anyMatch(a -> "ROLE_ADMIN".equals(a.getAuthority()));
+        if (!isAdmin) {
+            // El domiciliario solo corrige productos y notas; precios especiales siguen siendo del admin
+            request.setDiscountPercentage(null);
+            request.setDiscountFixed(null);
+            request.setCouponCode(null);
+            request.setDeliveryFee(null);
+            request.setDeliveryZone(null);
+        }
         return ResponseEntity.ok(orderService.updateOrder(id, request));
     }
 

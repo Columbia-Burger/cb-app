@@ -99,7 +99,7 @@ export class DomicilioService {
   }
 
   updateOrder(id: number, request: UpdateOrderRequest): Observable<OrderResponse> {
-    return this.http.patch<OrderResponse>(`${this.base}/api/orders/${id}`, request, {
+    return this.http.put<OrderResponse>(`${this.base}/api/orders/${id}`, request, {
       headers: this.authHeaders()
     });
   }
