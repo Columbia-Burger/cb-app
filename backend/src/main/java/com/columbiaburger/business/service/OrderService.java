@@ -1,0 +1,342 @@
+package com.columbiaburger.business.service;
+
+import com.columbiaburger.business.dto.request.CreateOrderRequest;
+import com.columbiaburger.business.dto.request.OrderItemRequest;
+import com.columbiaburger.business.dto.request.UpdateOrderRequest;
+import com.columbiaburger.business.dto.response.OrderItemResponse;
+import com.columbiaburger.business.dto.response.OrderResponse;
+import com.columbiaburger.business.dto.response.OrderTrackingResponse;
+import com.columbiaburger.business.entity.*;
+import com.columbiaburger.business.entity.OrderSource;
+import com.columbiaburger.business.repository.CustomerRepository;
+import com.columbiaburger.business.repository.OrderItemRepository;
+import com.columbiaburger.business.repository.OrderRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
+
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.ArrayList;
+import java.util.List;
+
+@Service
+@RequiredArgsConstructor
+public class OrderService {
+
+    private final OrderRepository orderRepository;
+    private final OrderItemRepository orderItemRepository;
+    private final CustomerRepository customerRepository;
+    private final OrderEventService orderEventService;
+    private final WhatsAppService whatsAppService;
+    private final CouponService couponService;
+
+    @Transactional
+    public OrderResponse create(CreateOrderRequest request) {
+        Customer customer = customerRepository.findByWhatsapp(request.getCustomerWhatsapp())
+                .orElseGet(() -> customerRepository.save(
+                        Customer.builder()
+                                .name(request.getCustomerName())
+                                .whatsapp(request.getCustomerWhatsapp())
+                                .neighborhood(request.getCustomerNeighborhood())
+                                .address(request.getCustomerAddress())
+                                .build()
+                ));
+        // Update name/neighborhood/address if provided and changed
+        boolean changed = false;
+        if (request.getCustomerName() != null && !request.getCustomerName().isBlank()
+                && !request.getCustomerName().equals(customer.getName())) {
+            customer.setName(request.getCustomerName()); changed = true;
+        }
+        if (request.getCustomerNeighborhood() != null && !request.getCustomerNeighborhood().isBlank()
+                && !request.getCustomerNeighborhood().equals(customer.getNeighborhood())) {
+            customer.setNeighborhood(request.getCustomerNeighborhood()); changed = true;
+        }
+        if (request.getCustomerAddress() != null && !request.getCustomerAddress().isBlank()
+                && !request.getCustomerAddress().equals(customer.getAddress())) {
+            customer.setAddress(request.getCustomerAddress()); changed = true;
+        }
+        if (request.getCustomerLatitude() != null) {
+            customer.setLatitude(request.getCustomerLatitude()); changed = true;
+        }
+        if (request.getCustomerLongitude() != null) {
+            customer.setLongitude(request.getCustomerLongitude()); changed = true;
+        }
+        if (changed) customerRepository.save(customer);
+
+        List<OrderItem> items = new ArrayList<>(request.getItems().stream()
+                .map(this::toOrderItem)
+                .toList());
+
+        BigDecimal itemsTotal = items.stream()
+                .map(i -> i.getUnitPrice().multiply(BigDecimal.valueOf(i.getQuantity())))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        BigDecimal deliveryFee = request.getDeliveryFee() != null ? request.getDeliveryFee() : BigDecimal.ZERO;
+        BigDecimal total = itemsTotal.add(deliveryFee);
+
+        Order order = Order.builder()
+                .customer(customer)
+                .total(total)
+                .deliveryFee(deliveryFee)
+                .deliveryZone(request.getDeliveryZone())
+                .notes(request.getNotes())
+                .source(request.getSource() != null ? request.getSource() : OrderSource.WEB)
+                .build();
+
+        items.forEach(item -> item.setOrder(order));
+        order.setItems(items);
+
+        Order saved = orderRepository.save(order);
+        OrderResponse response = toResponse(saved);
+        orderEventService.publishCreated(response);
+        return response;
+    }
+
+    @Transactional(readOnly = true)
+    public List<OrderResponse> findByCustomerId(Long customerId) {
+        return orderRepository.findByCustomerIdOrderByCreatedAtDesc(customerId).stream()
+                .map(this::toResponse).toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<OrderResponse> findAll() {
+        return orderRepository.findAllByOrderByCreatedAtDesc().stream()
+                .map(this::toResponse).toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<OrderResponse> findByStatus(OrderStatus status) {
+        return orderRepository.findByStatusOrderByCreatedAtDesc(status).stream()
+                .map(this::toResponse).toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<OrderResponse> findFromDate(OrderStatus status, java.time.LocalDateTime from) {
+        if (status != null) {
+            return orderRepository.findByStatusAndCreatedAtAfterOrderByCreatedAtDesc(status, from).stream()
+                    .map(this::toResponse).toList();
+        }
+        return orderRepository.findByCreatedAtAfterOrderByCreatedAtDesc(from).stream()
+                .map(this::toResponse).toList();
+    }
+
+    @Transactional(readOnly = true)
+    public OrderResponse findById(Long id) {
+        return orderRepository.findById(id)
+                .map(this::toResponse)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Pedido no encontrado"));
+    }
+
+    @Transactional(readOnly = true)
+    public List<OrderResponse> getKitchenOrders() {
+        return orderRepository.findByStatusInOrderByCreatedAtAsc(
+                List.of(OrderStatus.RECEIVED, OrderStatus.PREPARING)
+        ).stream().map(this::toResponse).toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<OrderResponse> getDeliveryOrders() {
+        return orderRepository.findByStatusInOrderByCreatedAtAsc(
+                List.of(OrderStatus.ON_THE_WAY)
+        ).stream().map(this::toResponse).toList();
+    }
+
+    @Transactional(readOnly = true)
+    public OrderTrackingResponse getTracking(Long id) {
+        Order order = orderRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Pedido no encontrado"));
+
+        String firstName = order.getCustomer().getName();
+        if (firstName != null && firstName.contains(" ")) {
+            firstName = firstName.substring(0, firstName.indexOf(" "));
+        }
+
+        List<OrderTrackingResponse.TrackingItem> items = order.getItems() == null ? List.of() :
+                order.getItems().stream()
+                        .map(i -> OrderTrackingResponse.TrackingItem.builder()
+                                .productName(i.getProductName())
+                                .flavor(i.getFlavor())
+                                .quantity(i.getQuantity())
+                                .build())
+                        .toList();
+
+        return OrderTrackingResponse.builder()
+                .id(order.getId())
+                .customerFirstName(firstName)
+                .status(order.getStatus())
+                .total(order.getTotal())
+                .deliveryFee(order.getDeliveryFee())
+                .deliveryZone(order.getDeliveryZone())
+                .createdAt(order.getCreatedAt())
+                .items(items)
+                .build();
+    }
+
+    @Transactional
+    public OrderResponse updateStatus(Long id, OrderStatus status) {
+        Order order = orderRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Pedido no encontrado"));
+        order.setStatus(status);
+        Order saved = orderRepository.save(order);
+        orderEventService.publishUpdated(toResponse(saved));
+
+        String whatsapp = saved.getCustomer().getWhatsapp();
+        String firstName = firstName(saved.getCustomer().getName());
+
+        if (status == OrderStatus.ON_THE_WAY) {
+            whatsAppService.sendText(whatsapp,
+                    "¡Hola " + firstName + "! 🛵 Tu pedido de Columbia Burger ya está en camino. ¡Mantente pendiente, pronto llega a tu puerta! 🚪");
+        } else if (status == OrderStatus.DELIVERED && !Boolean.TRUE.equals(saved.getRatingRequestSent())) {
+            whatsAppService.sendText(whatsapp,
+                    "¡Hola " + firstName + "! ✅ Tu pedido fue entregado. ¿Cómo estuvo?\n" +
+                    "Responde con un número del 1️⃣ al 5️⃣ para calificarnos ⭐");
+            saved.setRatingRequestSent(true);
+            orderRepository.save(saved);
+        }
+
+        return toResponse(saved);
+    }
+
+    @Transactional
+    public OrderResponse rateOrder(Long id, int rating) {
+        if (rating < 1 || rating > 5) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Calificación debe ser entre 1 y 5");
+        }
+        Order order = orderRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Pedido no encontrado"));
+        order.setRating(rating);
+        return toResponse(orderRepository.save(order));
+    }
+
+    @Transactional
+    public void rateByWhatsapp(String whatsapp, int rating) {
+        if (rating < 1 || rating > 5) return;
+        orderRepository.findDeliveredUnratedByWhatsapp(whatsapp)
+                .stream().findFirst()
+                .ifPresent(order -> {
+                    order.setRating(rating);
+                    orderRepository.save(order);
+                });
+    }
+
+    private static String firstName(String fullName) {
+        if (fullName == null || fullName.isBlank()) return "cliente";
+        int space = fullName.indexOf(' ');
+        return space > 0 ? fullName.substring(0, space) : fullName;
+    }
+
+    @Transactional
+    public OrderResponse updateOrder(Long id, UpdateOrderRequest request) {
+        Order order = orderRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Pedido no encontrado"));
+
+        // Una vez reportado a la DIAN el pedido no puede cambiar, o dejaría de cuadrar con la factura electrónica
+        if (order.getElectronicInvoiceNumber() != null) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                    "El pedido ya tiene factura electrónica " + order.getElectronicInvoiceNumber() + " y no se puede editar");
+        }
+
+        if (request.getNotes() != null) order.setNotes(request.getNotes());
+        if (request.getDeliveryZone() != null) order.setDeliveryZone(request.getDeliveryZone());
+        if (request.getDeliveryFee() != null) order.setDeliveryFee(request.getDeliveryFee());
+
+        if (request.getItems() != null && !request.getItems().isEmpty()) {
+            order.getItems().clear();
+            List<OrderItem> newItems = request.getItems().stream().map(this::toOrderItem).toList();
+            newItems.forEach(item -> item.setOrder(order));
+            order.getItems().addAll(newItems);
+        }
+
+        BigDecimal fee = order.getDeliveryFee() != null ? order.getDeliveryFee() : BigDecimal.ZERO;
+        BigDecimal itemsTotal = order.getItems().stream()
+                .map(i -> i.getUnitPrice().multiply(BigDecimal.valueOf(i.getQuantity())))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal subtotal = itemsTotal.add(fee);
+
+        if (request.getDiscountPercentage() != null || request.getDiscountFixed() != null) {
+            BigDecimal pctAmt = request.getDiscountPercentage() != null
+                    ? subtotal.multiply(request.getDiscountPercentage())
+                            .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP)
+                    : BigDecimal.ZERO;
+            BigDecimal fixedAmt = request.getDiscountFixed() != null ? request.getDiscountFixed() : BigDecimal.ZERO;
+            BigDecimal totalDiscount = pctAmt.add(fixedAmt).min(subtotal).max(BigDecimal.ZERO);
+            order.setDiscount(totalDiscount);
+        }
+
+        if (request.getCouponCode() != null && !request.getCouponCode().isBlank()) {
+            String newCode = request.getCouponCode().trim().toUpperCase();
+            boolean alreadyApplied = newCode.equalsIgnoreCase(order.getCouponCode());
+            order.setCouponCode(newCode);
+            if (!alreadyApplied) {
+                couponService.incrementUsage(newCode);
+            }
+        }
+
+        BigDecimal discount = order.getDiscount() != null ? order.getDiscount() : BigDecimal.ZERO;
+        order.setTotal(subtotal.subtract(discount).max(BigDecimal.ZERO));
+
+        OrderResponse response = toResponse(orderRepository.save(order));
+        orderEventService.publishUpdated(response);
+        return response;
+    }
+
+    private OrderItem toOrderItem(OrderItemRequest req) {
+        return OrderItem.builder()
+                .productId(req.getProductId())
+                .productName(req.getProductName())
+                .flavor(req.getFlavor())
+                .additions(req.getAdditions())
+                .quantity(req.getQuantity())
+                .unitPrice(req.getUnitPrice())
+                .note(req.getNote())
+                .build();
+    }
+
+    public OrderResponse toResponse(Order o) {
+        List<OrderItemResponse> items = o.getItems() == null ? List.of() :
+                o.getItems().stream().map(this::toItemResponse).toList();
+
+        return OrderResponse.builder()
+                .id(o.getId())
+                .customerId(o.getCustomer().getId())
+                .customerName(o.getCustomer().getName())
+                .customerWhatsapp(o.getCustomer().getWhatsapp())
+                .status(o.getStatus())
+                .total(o.getTotal())
+                .deliveryFee(o.getDeliveryFee())
+                .deliveryZone(o.getDeliveryZone())
+                .notes(o.getNotes())
+                .customerLatitude(o.getCustomer().getLatitude())
+                .customerLongitude(o.getCustomer().getLongitude())
+                .source(o.getSource())
+                .createdAt(o.getCreatedAt())
+                .items(items)
+                .invoiceStatus(o.getInvoiceStatus())
+                .invoiceNumber(o.getInvoiceNumber())
+                .invoicedAt(o.getInvoicedAt())
+                .couponCode(o.getCouponCode())
+                .discount(o.getDiscount())
+                .rating(o.getRating())
+                .electronicInvoiceNumber(o.getElectronicInvoiceNumber())
+                .cufe(o.getCufe())
+                .electronicPaymentMethodCode(o.getElectronicPaymentMethodCode())
+                .build();
+    }
+
+    private OrderItemResponse toItemResponse(OrderItem i) {
+        return OrderItemResponse.builder()
+                .id(i.getId())
+                .productId(i.getProductId())
+                .productName(i.getProductName())
+                .flavor(i.getFlavor())
+                .additions(i.getAdditions())
+                .quantity(i.getQuantity())
+                .unitPrice(i.getUnitPrice())
+                .subtotal(i.getUnitPrice().multiply(BigDecimal.valueOf(i.getQuantity())))
+                .note(i.getNote())
+                .build();
+    }
+}
