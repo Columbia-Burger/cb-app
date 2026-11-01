@@ -353,3 +353,54 @@ export interface OrderTrackingResponse {
   createdAt: string;
   items: TrackingItem[];
 }
+
+// ── Reportes por rango ──────────────────────────────────────────
+export interface ReportGroupRow { key: string; orders: number; revenue: number; }
+export interface ReportDayRow { date: string; orders: number; revenue: number; }
+export interface ReportHourRow { hour: number; orders: number; revenue: number; }
+export interface ReportProductRow { name: string; quantity: number; revenue: number; }
+export interface ReportCouponRow { code: string; uses: number; discount: number; }
+export interface ReportShiftRow {
+  id: number;
+  openedAt: string | null;
+  closedAt: string | null;
+  active: boolean;
+  orders: number;
+  revenue: number;
+  initialCash: number | null;
+  finalCash: number | null;
+  expectedCash: number | null;
+  difference: number | null;
+}
+
+export interface ReportResponse {
+  from: string;
+  to: string;
+  summary: {
+    orders: number;
+    revenue: number;
+    averageTicket: number;
+    discounts: number;
+    deliveryFees: number;
+    itemsSold: number;
+    ordersWithDiscount: number;
+    cancelledOrders: number;
+    cancelledAmount: number;
+    electronicInvoices: number;
+    electronicInvoicedAmount: number;
+    averageRating: number | null;
+    ratedOrders: number;
+    bestDay: string | null;
+    bestDayRevenue: number | null;
+  };
+  previous: { from: string; to: string; orders: number; revenue: number; averageTicket: number; };
+  daily: ReportDayRow[];
+  bySource: ReportGroupRow[];
+  byStatus: ReportGroupRow[];
+  byHour: ReportHourRow[];
+  byWeekday: ReportGroupRow[];
+  topProducts: ReportProductRow[];
+  electronicByPaymentMethod: ReportGroupRow[];
+  coupons: ReportCouponRow[];
+  shifts: ReportShiftRow[];
+}

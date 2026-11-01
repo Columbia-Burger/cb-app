@@ -9,7 +9,7 @@ import {
   CreateOrderRequest, UpdateOrderRequest, CatalogProduct, FlavorItem, AdditionItem, ShiftResponse, DailyStatResponse,
   SourceStatResponse, HourlyStatResponse, CategoryItem, CreateProductRequest, CreateAdditionRequest,
   DeliveryZone, CreateDeliveryZoneRequest, SocialPost, GeneratePostRequest, UpdatePostRequest, PostStatus,
-  ElectronicInvoiceDetailResponse, StaffUser, StaffUserRequest
+  ElectronicInvoiceDetailResponse, StaffUser, StaffUserRequest, ReportResponse
 } from '../models/admin.model';
 import { ProductResponse } from '../../models/api.model';
 
@@ -382,6 +382,23 @@ export class AdminService {
 
   validateCoupon(code: string, total: number): Observable<{ code: string; type: 'PERCENTAGE' | 'FIXED'; value: number; discountAmount: number }> {
     return this.http.post<any>(`${this.base}/api/coupons/validate`, { code, total }, { headers: this.authHeaders() });
+  }
+
+  // ── Reportes por rango ───────────────────────────────────────
+  getReport(from: string, to: string): Observable<ReportResponse> {
+    return this.http.get<ReportResponse>(`${this.base}/api/admin/reports`, {
+      headers: this.authHeaders(),
+      params: { from, to },
+    });
+  }
+
+  exportReport(from: string, to: string): Observable<HttpResponse<Blob>> {
+    return this.http.get(`${this.base}/api/admin/reports/export`, {
+      headers: this.authHeaders(),
+      params: { from, to },
+      observe: 'response',
+      responseType: 'blob',
+    });
   }
 
   // ── Usuarios ─────────────────────────────────────────────────
