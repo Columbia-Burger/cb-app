@@ -2,7 +2,10 @@
   <div class="page-header">
     <div>
       <h2 class="page-title">Facturas</h2>
-      <p class="page-sub">Administra facturas internas y consulta tu historial de facturas electronicas.</p>
+      <p class="page-sub">Administra facturas internas y consulta tu historial de facturas electrónicas.</p>
+      @if (rangeLabel()) {
+        <p class="range-label">{{ rangeLabel() }}</p>
+      }
     </div>
     <div class="header-actions">
       <div class="printer-row">

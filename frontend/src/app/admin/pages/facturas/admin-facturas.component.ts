@@ -132,9 +132,24 @@ export class AdminFacturasComponent implements OnInit {
     this.error.set('');
   }
 
+  /** Qué rango muestra la lista: el turno abierto (aunque pase la medianoche) o el día. */
+  rangeLabel = signal('');
+
   load(): void {
     this.loading.set(true);
     this.page.set(1);
+    this.svc.getCurrentShift().subscribe({
+      next: shift => {
+        if ('openedAt' in shift && shift.active && shift.openedAt) {
+          const opened = new Date(shift.openedAt);
+          const when = new Intl.DateTimeFormat('es-CO', { weekday: 'short', day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' }).format(opened);
+          this.rangeLabel.set(`Turno abierto desde ${when} — se incluyen las ventas después de medianoche hasta que cierres caja.`);
+        } else {
+          this.rangeLabel.set('Sin turno abierto: se muestran las facturas de hoy.');
+        }
+      },
+      error: () => this.rangeLabel.set(''),
+    });
     this.svc.getInvoices().subscribe({
       next: data => {
         this.orders.set(data);

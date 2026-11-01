@@ -563,3 +563,15 @@
     padding: 1em;
   }
 }
+
+.range-label {
+  display: inline-block;
+  margin: 0.6em 0 0;
+  padding: 0.35em 0.75em;
+  border-radius: 999px;
+  background: rgb(var(--accent-rgb) / 0.1);
+  border: 1px solid rgb(var(--accent-rgb) / 0.25);
+  color: var(--accent);
+  font-size: 0.8em;
+  font-weight: 500;
+}

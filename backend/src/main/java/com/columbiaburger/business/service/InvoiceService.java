@@ -8,6 +8,7 @@ import com.columbiaburger.business.entity.InvoiceStatus;
 import com.columbiaburger.business.entity.OrderStatus;
 import com.columbiaburger.business.entity.Order;
 import com.columbiaburger.business.repository.OrderRepository;
+import com.columbiaburger.business.repository.ShiftRepository;
 import com.columbiaburger.business.util.BogotaTime;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -25,11 +26,21 @@ public class InvoiceService {
     private final OrderRepository orderRepository;
     private final OrderService orderService;
     private final FactusService factusService;
+    private final ShiftRepository shiftRepository;
 
+    /**
+     * Facturas de la operación en curso. Con un turno abierto se listan desde el día en que se
+     * abrió hasta ahora, para que pasada la medianoche se sigan viendo y se pueda cerrar la caja;
+     * sin turno abierto, las del día.
+     */
     @Transactional(readOnly = true)
     public List<OrderResponse> listInvoices() {
-        LocalDateTime from = BogotaTime.today().atStartOfDay();
-        LocalDateTime to = from.plusDays(1);
+        LocalDateTime now = BogotaTime.now();
+        LocalDateTime from = shiftRepository.findByActiveTrue()
+                .map(shift -> shift.getOpenedAt().toLocalDate().atStartOfDay())
+                .orElse(now.toLocalDate().atStartOfDay());
+        // Margen para pedidos creados mientras se arma la respuesta
+        LocalDateTime to = now.plusHours(1);
         return orderRepository.findInvoicesForDay(from, to).stream()
                 .map(orderService::toResponse)
                 .toList();
