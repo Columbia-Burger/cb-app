@@ -1,0 +1,170 @@
+<div class="layout">
+
+  <!-- Menú -->
+  <div class="menu-panel">
+    <div class="category-tabs">
+      @for (cat of categories(); track cat.id) {
+        <button type="button" class="tab-btn" [class.active]="selectedCat() === cat.id" (click)="selectedCat.set(cat.id)">
+          {{ cat.name }}
+        </button>
+      }
+    </div>
+
+    <div class="products-grid">
+      @for (p of currentProducts(); track p.id) {
+        <button type="button" class="product-card" [class.unavailable]="!p.available"
+                [class.in-cart]="quantityInCart(p) > 0" (click)="addToCart(p)">
+          @if (quantityInCart(p) > 0) {
+            <span class="product-qty">{{ quantityInCart(p) }}</span>
+          }
+          <span class="product-name">{{ p.name }}</span>
+          <span class="product-price">{{ p.price | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
+          @if (p.flavors?.length) {
+            <span class="product-meta">Elige sabor</span>
+          } @else if (hasExtras(p)) {
+            <span class="product-meta">Combo / adiciones opcionales</span>
+          }
+        </button>
+      } @empty {
+        <p class="empty-cart">No hay productos en esta categoría.</p>
+      }
+    </div>
+  </div>
+
+  <!-- Pedido -->
+  <div class="cart-panel" #cartPanel>
+    <h3 class="cart-title">
+      Pedido
+      @if (itemCount() > 0) { <span class="cart-count">{{ itemCount() }}</span> }
+    </h3>
+
+    <ng-content select="[builderHeader]" />
+
+    @if (cart().length === 0) {
+      <div class="empty-cart">Toca un producto para agregarlo</div>
+    } @else {
+      <div class="cart-items">
+        @for (item of cart(); track item.uid) {
+          <div class="cart-item" [class.flash]="flashUid() === item.uid">
+            <div class="item-info">
+              <div class="item-text">
+                <span class="item-name">{{ item.quantity }}× {{ item.product.name }}</span>
+                @if (item.flavor) {
+                  <div class="item-flavor-tag">{{ item.flavor }}</div>
+                }
+              </div>
+              <span class="item-price">{{ itemUnitPrice(item) * item.quantity | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
+            </div>
+
+            @if (hasExtras(item.product)) {
+              <div class="extras-row">
+                @if (item.product.comboDescription) {
+                  <button type="button" class="extra-chip" [class.on]="!!item.combo" (click)="openCombo(item)">
+                    @if (item.combo) { ✓ Combo: {{ comboLabel(item) }} } @else { ＋ Combo }
+                  </button>
+                }
+                @if (item.product.additions?.length) {
+                  <button type="button" class="extra-chip extra-chip--add" [class.on]="item.additionIds.length > 0" (click)="openAdditions(item)">
+                    @if (item.additionIds.length) { ✓ {{ additionsLabel(item) }} } @else { ＋ Adición }
+                  </button>
+                }
+              </div>
+            }
+
+            <div class="item-controls">
+              <button type="button" class="qty-btn" (click)="decreaseQty(item)" aria-label="Quitar uno">−</button>
+              <span class="qty">{{ item.quantity }}</span>
+              <button type="button" class="qty-btn" (click)="increaseQty(item)" aria-label="Agregar uno">+</button>
+              <input class="note-input" type="text" placeholder="Nota (opcional)"
+                     [ngModel]="item.note" (ngModelChange)="setNote(item, $event)" />
+              <button type="button" class="remove-btn" (click)="removeFromCart(item)" aria-label="Eliminar">✕</button>
+            </div>
+          </div>
+        }
+      </div>
+    }
+
+    <ng-content select="[builderFooter]" />
+  </div>
+</div>
+
+@if (itemCount() > 0) {
+  <button type="button" class="mobile-cart-bar" (click)="cartPanel.scrollIntoView({ behavior: 'smooth', block: 'start' })">
+    <span>Ver pedido <strong>({{ itemCount() }})</strong></span>
+    <span>{{ total() + deliveryFee() | currency:'COP':'symbol-narrow':'1.0-0' }} →</span>
+  </button>
+}
+
+<!-- Sabor: único paso obligatorio -->
+@if (pendingProduct(); as product) {
+  <div class="sheet-overlay" (click)="pendingProduct.set(null)">
+    <div class="sheet" (click)="$event.stopPropagation()">
+      <div class="sheet-header">{{ product.name }}</div>
+      <p class="sheet-prompt">Elige el sabor</p>
+      <div class="chip-grid">
+        @for (f of product.flavors!; track f.id) {
+          <button type="button" class="pick-chip" (click)="pickFlavor(f.name)">{{ f.name }}</button>
+        }
+      </div>
+      <button type="button" class="sheet-cancel" (click)="pendingProduct.set(null)">Cancelar</button>
+    </div>
+  </div>
+}
+
+<!-- Combo / adiciones de una línea -->
+@if (editor(); as ed) {
+  @if (editingItem(); as item) {
+    <div class="sheet-overlay" (click)="editor.set(null)">
+      <div class="sheet" (click)="$event.stopPropagation()">
+        <div class="sheet-header">{{ item.product.name }}{{ item.flavor ? ' · ' + item.flavor : '' }}</div>
+
+        @if (item.quantity > 1) {
+          <div class="scope-toggle">
+            <button type="button" [class.active]="!ed.applyToAll" (click)="setEditor({ applyToAll: false })">Solo 1</button>
+            <button type="button" [class.active]="ed.applyToAll" (click)="setEditor({ applyToAll: true })">Las {{ item.quantity }}</button>
+          </div>
+        }
+
+        @if (ed.kind === 'combo') {
+          <p class="sheet-prompt">
+            Combo: {{ item.product.comboDescription }}
+            @if (item.product.comboPrice) { · +{{ item.product.comboPrice | currency:'COP':'symbol-narrow':'1.0-0' }} }
+          </p>
+          <p class="section-label">Bebida</p>
+          <div class="chip-grid">
+            @for (d of comboDrinks(); track d.label) {
+              <button type="button" class="pick-chip" [class.active]="ed.drink === d.label" (click)="pickDrink(d.label)">{{ d.label }}</button>
+            }
+          </div>
+          @if (editorDrinkFlavors().length) {
+            <p class="section-label">Sabor de la bebida</p>
+            <div class="chip-grid">
+              @for (f of editorDrinkFlavors(); track f) {
+                <button type="button" class="pick-chip" [class.active]="ed.drinkFlavor === f" (click)="setEditor({ drinkFlavor: f })">{{ f }}</button>
+              }
+            </div>
+          }
+        } @else {
+          <p class="sheet-prompt">Marca las adiciones</p>
+          <div class="addition-list">
+            @for (a of item.product.additions!; track a.id) {
+              <button type="button" class="addition-choice" [class.selected]="ed.additionIds.has(a.id)" (click)="toggleAddition(a.id)">
+                <span class="addition-check">{{ ed.additionIds.has(a.id) ? '✓' : '' }}</span>
+                <span class="addition-name">{{ a.name }}</span>
+                <span class="addition-price">+{{ a.effectivePrice | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
+              </button>
+            }
+          </div>
+        }
+
+        <div class="sheet-footer">
+          <span class="sheet-price">{{ editorUnitPreview() | currency:'COP':'symbol-narrow':'1.0-0' }} c/u</span>
+          @if (ed.kind === 'combo' && item.combo) {
+            <button type="button" class="sheet-secondary" (click)="removeCombo()">Quitar combo</button>
+          }
+          <button type="button" class="sheet-primary" [disabled]="ed.kind === 'combo' && !canSaveCombo()" (click)="saveExtras()">Listo</button>
+        </div>
+      </div>
+    </div>
+  }
+}

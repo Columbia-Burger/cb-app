@@ -1,461 +1,290 @@
-
-    <div class="shell">
-      <header class="topbar">
-        <div class="topbar-brand">
-          <img src="assets/logo.png" alt="CB" class="topbar-logo" />
-          <span>Domiciliario</span>
-        </div>
-        <div class="topbar-right">
-          <button class="logout-btn" (click)="logout()">Salir</button>
-        </div>
-      </header>
-
-      <!-- Tabs -->
-      <div class="tabs">
-        <button class="tab" [class.active]="view() === 'deliveries'" (click)="view.set('deliveries')">
-          🛵 Domicilios
-          @if (orders().length > 0) {
-            <span class="tab-badge">{{ orders().length }}</span>
-          }
-        </button>
-        <button class="tab" [class.active]="view() === 'order'" (click)="switchToOrder()">
-          🧾 Tomar Pedido
-        </button>
-        <button class="tab" [class.active]="view() === 'edit'" (click)="view.set('edit'); loadEditableOrders()">
-          ✏️ Editar
-        </button>
+<div class="shell">
+  <header class="topbar">
+    <div class="topbar-brand">
+      <img src="assets/icons/favicon-48.png" alt="" class="topbar-logo" />
+      <div class="brand-text">
+        <span class="brand-name">Domicilios</span>
+        <span class="brand-sub">Columbia Burger</span>
       </div>
+    </div>
+    <button type="button" class="icon-btn" (click)="logout()" title="Cerrar sesión" aria-label="Cerrar sesión">
+      <app-icon name="logout" />
+    </button>
+  </header>
 
-      <main class="board">
+  <nav class="tabs" aria-label="Secciones">
+    <button type="button" class="tab" [class.active]="view() === 'deliveries'" (click)="view.set('deliveries')">
+      <app-icon name="truck" />
+      <span>En camino</span>
+      @if (orders().length > 0) { <span class="tab-badge">{{ orders().length }}</span> }
+    </button>
+    <button type="button" class="tab" [class.active]="view() === 'order'" (click)="switchToOrder()">
+      <app-icon name="new-order" />
+      <span>Tomar pedido</span>
+    </button>
+    <button type="button" class="tab" [class.active]="view() === 'edit'" (click)="switchToEdit()">
+      <app-icon name="pencil" />
+      <span>Editar</span>
+    </button>
+  </nav>
 
-        <!-- ── PESTAÑA DOMICILIOS ── -->
-        @if (view() === 'deliveries') {
-          @if (loadingDeliveries()) {
-            <div class="empty">Cargando pedidos...</div>
-          } @else if (orders().length === 0) {
-            <div class="empty">
-              <span class="empty-icon">🛵</span>
-              <p>Sin pedidos en camino</p>
-            </div>
-          } @else {
-            <div class="cards">
-              @for (order of orders(); track order.id) {
-                <div class="card">
-                  <div class="card-header">
-                    <div class="card-id">#{{ order.id }}</div>
-                    <div class="card-badge">En camino</div>
-                    <div class="card-time">{{ order.createdAt | date:'HH:mm' }}</div>
-                  </div>
+  <main class="board" [class.board--wide]="view() === 'order'">
 
-                  <div class="card-customer">{{ order.customerName }}</div>
+    <!-- ── EN CAMINO ── -->
+    @if (view() === 'deliveries') {
+      @if (loadingDeliveries()) {
+        <div class="empty">Cargando pedidos…</div>
+      } @else if (orders().length === 0) {
+        <div class="empty">
+          <span class="empty-icon"><app-icon name="truck" [size]="36" /></span>
+          <p>No hay pedidos en camino</p>
+          <small>Cuando cocina marque un pedido como listo aparecerá aquí.</small>
+        </div>
+      } @else {
+        <div class="cards">
+          @for (order of orders(); track order.id) {
+            <article class="dcard">
+              <div class="dcard__head">
+                <span class="dcard__id">#{{ order.id }}</span>
+                <span class="pill pill--route">En camino</span>
+                <span class="dcard__time">{{ order.createdAt | date:'HH:mm' }}</span>
+              </div>
 
-                  @if (order.customerWhatsapp) {
-                    <div class="card-contact">
-                      <span class="contact-number">📱 {{ order.customerWhatsapp }}</span>
-                      <div class="contact-btns">
-                        <a class="contact-btn contact-btn--call"
-                           [href]="'tel:' + order.customerWhatsapp"
-                           title="Llamar">
-                          📞 Llamar
-                        </a>
-                        <a class="contact-btn contact-btn--wa"
-                           [href]="waLink(order.customerWhatsapp)"
-                           target="_blank" rel="noopener"
-                           title="WhatsApp">
-                          💬 WhatsApp
-                        </a>
-                      </div>
-                    </div>
-                  }
+              <div class="dcard__customer">{{ order.customerName }}</div>
 
+              @if (isPhone(order.customerWhatsapp)) {
+                <div class="contact">
+                  <a class="contact__btn" [href]="'tel:' + order.customerWhatsapp">
+                    <app-icon name="phone" [size]="16" /> Llamar
+                  </a>
+                  <a class="contact__btn contact__btn--wa" [href]="waLink(order.customerWhatsapp)" target="_blank" rel="noopener">
+                    <app-icon name="chat" [size]="16" /> WhatsApp
+                  </a>
+                </div>
+              }
+
+              @if (order.deliveryZone || (order.customerLatitude && order.customerLongitude)) {
+                <div class="where">
                   @if (order.deliveryZone) {
-                    <div class="card-address">
-                      <span>📍</span>
-                      <span>{{ order.deliveryZone }}</span>
-                    </div>
+                    <span class="where__zone"><app-icon name="pin" [size]="16" /> {{ order.deliveryZone }}</span>
                   }
-
                   @if (order.customerLatitude && order.customerLongitude) {
-                    <a class="maps-btn"
-                       [href]="'https://www.google.com/maps?q=' + order.customerLatitude + ',' + order.customerLongitude"
-                       target="_blank" rel="noopener">
-                      🗺️ Ver en Google Maps
+                    <a class="where__map" target="_blank" rel="noopener"
+                       [href]="'https://www.google.com/maps?q=' + order.customerLatitude + ',' + order.customerLongitude">
+                      <app-icon name="map" [size]="16" /> Abrir mapa
                     </a>
                   }
-
-                  <ul class="items">
-                    @for (item of order.items; track item.id) {
-                      <li class="item">
-                        <span class="item-qty">{{ item.quantity }}×</span>
-                        <span class="item-name">{{ item.productName }}</span>
-                        @if (item.flavor) {
-                          <span class="item-flavor">{{ item.flavor }}</span>
-                        }
-                      </li>
-                    }
-                  </ul>
-
-                  @if (order.notes) {
-                    <div class="card-notes">💳 {{ order.notes }}</div>
-                  }
-
-                  <div class="card-footer">
-                    <span class="card-total">{{ order.total | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
-                    <button class="btn-delivered"
-                            [disabled]="updating.has(order.id)"
-                            (click)="markDelivered(order)">
-                      ✅ Entregado
-                    </button>
-                  </div>
                 </div>
               }
-            </div>
-          }
-        }
 
-        <!-- ── PESTAÑA EDITAR PEDIDO ── -->
-        @if (view() === 'edit') {
-          @if (loadingEditOrders()) {
-            <div class="empty">Cargando pedidos...</div>
-          } @else if (editableOrders().length === 0) {
-            <div class="empty">
-              <span class="empty-icon">✏️</span>
-              <p>No hay pedidos activos para editar</p>
-            </div>
-          } @else {
-            <div class="cards">
-              @for (order of editableOrders(); track order.id) {
-                <div class="card">
-                  <div class="card-header">
-                    <div class="card-id">#{{ order.id }}</div>
-                    <div class="card-badge">{{ order.status === 'ON_THE_WAY' ? 'En camino' : order.status === 'PREPARING' ? 'Preparando' : 'Recibido' }}</div>
-                    <div class="card-time">{{ order.createdAt | date:'HH:mm' }}</div>
-                  </div>
-                  <div class="card-customer">{{ order.customerName }}</div>
-                  <ul class="items">
-                    @for (item of order.items; track item.id) {
-                      <li class="item">
-                        <span class="item-qty">{{ item.quantity }}×</span>
-                        <span class="item-name">{{ item.productName }}</span>
-                      </li>
-                    }
-                  </ul>
-                  <div class="card-footer">
-                    <span class="card-total">{{ order.total | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
-                    <button class="btn-edit" (click)="openEdit(order)">✏️ Editar</button>
-                  </div>
-                </div>
+              <ul class="items">
+                @for (item of order.items; track item.id) {
+                  <li class="items__row">
+                    <span class="items__qty">{{ item.quantity }}×</span>
+                    <span class="items__name">{{ item.productName }}</span>
+                    @if (item.flavor) { <span class="items__flavor">{{ item.flavor }}</span> }
+                  </li>
+                }
+              </ul>
+
+              @if (order.notes) {
+                <div class="note"><app-icon name="note" [size]="15" /> {{ order.notes }}</div>
               }
-            </div>
-          }
-        }
 
-        <!-- ── PESTAÑA TOMAR PEDIDO ── -->
-        @if (view() === 'order') {
-          @if (loadingMenu()) {
-            <div class="empty">Cargando menú...</div>
-          } @else {
-            <div class="order-layout">
-
-              <!-- Menú -->
-              <div class="menu-panel">
-                <div class="category-tabs">
-                  @for (cat of categories(); track cat.id) {
-                    <button class="tab-btn"
-                            [class.active]="selectedCat() === cat.id"
-                            (click)="selectedCat.set(cat.id)">
-                      {{ cat.name }}
-                    </button>
-                  }
-                </div>
-                <div class="products-grid">
-                  @for (p of currentProducts(); track p.id) {
-                    <div class="product-card" [class.unavailable]="!p.available" (click)="addToCart(p)">
-                      <div class="product-name">{{ p.name }}</div>
-                      <div class="product-price">{{ p.price | currency:'COP':'symbol-narrow':'1.0-0' }}</div>
-                    </div>
-                  }
-                </div>
-              </div>
-
-              <!-- Carrito -->
-              <div class="cart-panel">
-                <h3 class="cart-title">Pedido</h3>
-
-                <div class="fields">
-                  <div class="order-type-picker">
-                    <button class="type-btn" [class.selected]="orderType() === 'mesa'" (click)="orderType.set('mesa')">🪑 Mesa</button>
-                    <button class="type-btn" [class.selected]="orderType() === 'llevar'" (click)="orderType.set('llevar')">🥡 Para llevar</button>
-                  </div>
-                  @if (orderType() === 'mesa') {
-                    <select [(ngModel)]="tableNumber">
-                      <option value="">Selecciona una mesa...</option>
-                      <option>Barra 1</option>
-                      <option>Barra 2</option>
-                      <option>Barra 3</option>
-                      <option>Barra 4</option>
-                      <option>Mesa 1</option>
-                      <option>Mesa 2</option>
-                    </select>
-                  }
-                  @if (orderType() === 'llevar') {
-                    <select [ngModel]="selectedZoneName()" (ngModelChange)="selectedZoneName.set($event)">
-                      <option value="">Selecciona ubicación...</option>
-                      @for (z of deliveryZones(); track z.name) {
-                        <option [value]="z.name">
-                          {{ z.name }}{{ z.price > 0 ? ' — ' + (z.price | currency:'COP':'symbol-narrow':'1.0-0') : '' }}
-                        </option>
-                      }
-                    </select>
-                  }
-                </div>
-
-                @if (cart().length === 0) {
-                  <div class="empty-cart">Agrega productos al pedido</div>
-                } @else {
-                  <div class="cart-items">
-                    @for (item of cart(); track item.product.id + '-' + item.flavor + '-' + item.additions + '-' + item.combo) {
-                      <div class="cart-item">
-                        <div class="item-info">
-                          <div>
-                            <span class="item-name">{{ item.product.name }}</span>
-                            @if (item.flavor) {
-                              <div class="item-flavor-tag">{{ item.flavor }}</div>
-                            }
-                            @if (item.additions) {
-                              <div class="item-additions-tag">+ {{ item.additions }}</div>
-                            }
-                            @if (item.combo) {
-                              <div class="item-combo-tag">🍟 {{ item.combo }}</div>
-                            }
-                          </div>
-                          <span class="item-price">{{ itemUnitPrice(item) * item.quantity | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
-                        </div>
-                        <div class="item-controls">
-                          <button class="qty-btn" (click)="decreaseQty(item)">−</button>
-                          <span class="qty">{{ item.quantity }}</span>
-                          <button class="qty-btn" (click)="increaseQty(item)">+</button>
-                          <button class="remove-btn" (click)="removeFromCart(item)">✕</button>
-                        </div>
-                        <input class="note-input" type="text" placeholder="Nota (opcional)"
-                               [(ngModel)]="item.note" />
-                      </div>
-                    }
-                  </div>
-
-                  @if (orderType() === 'llevar' && (selectedZone()?.price ?? 0) > 0) {
-                    <div class="cart-subtotal">
-                      <span>Subtotal</span>
-                      <span>{{ total() | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
-                    </div>
-                    <div class="cart-delivery">
-                      <span>Domicilio ({{ selectedZone()!.name }})</span>
-                      <span>+ {{ selectedZone()!.price | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
-                    </div>
-                  }
-                  <div class="cart-total">
-                    <span>Total</span>
-                    <span>{{ grandTotal() | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
-                  </div>
-
-                  <button class="submit-btn"
-                          [disabled]="submitting() || !orderType() || (orderType() === 'mesa' && !tableNumber) || (orderType() === 'llevar' && !selectedZoneName())"
-                          (click)="submitOrder()">
-                    {{ submitting() ? 'Enviando...' : 'Confirmar Pedido' }}
-                  </button>
-                }
-
-                @if (successMsg()) {
-                  <div class="success-msg">{{ successMsg() }}</div>
-                }
-                @if (errorMsg()) {
-                  <div class="error-msg">{{ errorMsg() }}</div>
-                }
-              </div>
-            </div>
-          }
-        }
-
-      </main>
-
-      @if (editingOrder()) {
-        <div class="flavor-overlay" (click)="closeEdit()">
-          <div class="flavor-sheet edit-sheet" (click)="$event.stopPropagation()">
-            <div class="flavor-header">Pedido #{{ editingOrder()!.id }} — {{ editingOrder()!.customerName }}</div>
-
-            <div class="edit-items">
-              @for (item of editItems(); track item.id + '-' + $index) {
-                <div class="edit-item">
-                  <div class="edit-item-top">
-                    <span class="edit-item-name">{{ item.productName }}</span>
-                    <span class="edit-item-price">{{ item.unitPrice * item.quantity | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
-                  </div>
-                  <div class="edit-item-controls">
-                    <button class="qty-btn" (click)="updateEditQty($index, -1)">−</button>
-                    <span class="qty">{{ item.quantity }}</span>
-                    <button class="qty-btn" (click)="updateEditQty($index, 1)">+</button>
-                  </div>
-                  <div class="edit-item-extras">
-                    <input class="edit-extra-input" type="text" placeholder="Sabor"
-                           [value]="item.flavor"
-                           (input)="updateEditItemField($index, 'flavor', $any($event.target).value)" />
-                    <input class="edit-extra-input" type="text" placeholder="Adiciones"
-                           [value]="item.additions"
-                           (input)="updateEditItemField($index, 'additions', $any($event.target).value)" />
-                  </div>
-                </div>
-              }
-            </div>
-
-            <button class="edit-add-btn" (click)="editShowSearch.set(!editShowSearch())">
-              {{ editShowSearch() ? '✕ Cerrar búsqueda' : '+ Agregar producto' }}
-            </button>
-
-            @if (editShowSearch()) {
-              <input class="edit-search"
-                     type="text"
-                     placeholder="Buscar producto..."
-                     [value]="editSearchTerm()"
-                     (input)="editSearchTerm.set($any($event.target).value)"
-                     (click)="$event.stopPropagation()" />
-              <div class="edit-product-list">
-                @for (p of filteredEditProducts(); track p.id) {
-                  <button class="edit-product-option" (click)="addEditProduct(p)">
-                    <span>{{ p.name }}</span>
-                    <span class="edit-product-price">{{ p.price | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
-                  </button>
-                }
-              </div>
-            }
-
-            <textarea class="edit-notes"
-                      placeholder="Notas del pedido..."
-                      [value]="editNotes()"
-                      (input)="editNotes.set($any($event.target).value)"
-                      (click)="$event.stopPropagation()"
-                      rows="2"></textarea>
-
-            @if (editError()) {
-              <div class="error-msg">{{ editError() }}</div>
-            }
-
-            <div class="flavor-options">
-              <button class="flavor-btn" style="background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:600"
-                      [disabled]="savingEdit() || editItems().length === 0"
-                      (click)="saveEdit()">
-                {{ savingEdit() ? 'Guardando...' : 'Guardar cambios' }}
-              </button>
-              <button class="flavor-cancel" (click)="closeEdit()">Cancelar</button>
-            </div>
-          </div>
-        </div>
-      }
-
-      @if (editPendingProduct()) {
-        <div class="flavor-overlay" (click)="editPendingProduct.set(null)">
-          <div class="flavor-sheet" (click)="$event.stopPropagation()">
-            <div class="flavor-header">{{ editPendingProduct()!.name }}</div>
-            <p class="flavor-prompt">Selecciona adiciones (opcional):</p>
-            <div class="addition-list">
-              @for (a of editPendingProduct()!.additions!; track a.id) {
-                <button type="button"
-                        class="addition-choice"
-                        [class.selected]="editPendingAdditionIds().has(a.id)"
-                        (click)="toggleEditAdditionId(a.id)">
-                  <span class="addition-name">{{ a.name }}</span>
-                  <span class="addition-price">+{{ a.effectivePrice | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
+              <div class="dcard__foot">
+                <span class="dcard__total">{{ order.total | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
+                <button type="button" class="btn-primary" [disabled]="updating.has(order.id)" (click)="markDelivered(order)">
+                  <app-icon name="check" [size]="18" /> Entregado
                 </button>
-              }
-            </div>
-            <div class="flavor-options" style="margin-top:0.75em">
-              <button class="flavor-btn" style="background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:600"
-                      (click)="confirmEditProduct()">Agregar al pedido</button>
-              <button class="flavor-cancel" (click)="editPendingProduct.set(null)">Cancelar</button>
-            </div>
-          </div>
+              </div>
+            </article>
+          }
         </div>
       }
+    }
 
-      @if (pendingProduct()) {
-        <div class="flavor-overlay" (click)="pendingProduct.set(null)">
-          <div class="flavor-sheet" (click)="$event.stopPropagation()">
-            <div class="flavor-header">{{ pendingProduct()!.name }}</div>
-            <p class="flavor-prompt">Selecciona el sabor:</p>
-            <div class="flavor-options">
-              @for (f of pendingProduct()!.flavors!; track f.id) {
-                <button class="flavor-btn" (click)="pickFlavor(f.name)">{{ f.name }}</button>
-              }
+    <!-- ── TOMAR PEDIDO ── -->
+    @if (view() === 'order') {
+      @if (loadingMenu()) {
+        <div class="empty">Cargando menú…</div>
+      } @else {
+        <p class="hint">Toca un producto para agregarlo. Combo y adiciones se marcan en el pedido solo si el cliente los pide.</p>
+        <app-order-builder #builder [products]="products()" [deliveryFee]="deliveryFee()">
+          <div builderHeader class="ob-fields">
+            <div class="ob-types">
+              <button type="button" class="ob-type" [class.selected]="orderType() === 'mesa'" (click)="orderType.set('mesa')">🪑 Mesa</button>
+              <button type="button" class="ob-type" [class.selected]="orderType() === 'llevar'" (click)="orderType.set('llevar')">🥡 Para llevar</button>
             </div>
-            <button class="flavor-cancel" (click)="pendingProduct.set(null)">Cancelar</button>
-          </div>
-        </div>
-      }
-
-      @if (pendingComboItem()) {
-        <div class="flavor-overlay" (click)="pendingComboItem.set(null)">
-          <div class="flavor-sheet" (click)="$event.stopPropagation()">
-            <div class="flavor-header">{{ pendingComboItem()!.product.name }}</div>
-            <p class="flavor-prompt">¿La deseas en combo? ({{ pendingComboItem()!.product.comboDescription }})</p>
-            <div class="combo-toggle">
-              <button class="combo-toggle-btn" [class.active]="comboAccepted() === true" (click)="comboAccepted.set(true)">Sí</button>
-              <button class="combo-toggle-btn" [class.active]="comboAccepted() === false" (click)="comboAccepted.set(false)">No</button>
-            </div>
-            @if (comboAccepted() === true) {
-              <p class="flavor-prompt" style="margin-top:0.75em">Bebida del combo:</p>
-              <select class="combo-select" [ngModel]="comboDrink()" (ngModelChange)="comboDrink.set($event); comboDrinkFlavor.set('')">
-                <option value="">Selecciona la bebida...</option>
-                @for (d of comboDrinks(); track d.label) {
-                  <option [value]="d.label">{{ d.label }}</option>
+            @if (orderType() === 'mesa') {
+              <select class="ob-select" [ngModel]="tableNumber()" (ngModelChange)="tableNumber.set($event)">
+                <option value="">Selecciona una mesa…</option>
+                @for (t of tables; track t) { <option [value]="t">{{ t }}</option> }
+              </select>
+            }
+            @if (orderType() === 'llevar') {
+              <select class="ob-select" [ngModel]="selectedZoneName()" (ngModelChange)="selectedZoneName.set($event)">
+                <option value="">Selecciona ubicación…</option>
+                @for (z of deliveryZones(); track z.name) {
+                  <option [value]="z.name">{{ z.name }}{{ z.price > 0 ? ' — ' + (z.price | currency:'COP':'symbol-narrow':'1.0-0') : '' }}</option>
                 }
               </select>
-              @if (comboDrink()) {
-                <p class="flavor-prompt" style="margin-top:0.75em">Sabor de la bebida:</p>
-                <select class="combo-select" [ngModel]="comboDrinkFlavor()" (ngModelChange)="comboDrinkFlavor.set($event)">
-                  <option value="">Selecciona el sabor...</option>
-                  @for (f of selectedComboDrinkFlavors(); track f) {
-                    <option [value]="f">{{ f }}</option>
-                  }
-                </select>
-              }
             }
-            <div class="flavor-options" style="margin-top:0.75em">
-              <button class="flavor-btn" style="background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:600"
-                      [disabled]="!canConfirmCombo()"
-                      (click)="confirmCombo()">Confirmar</button>
-              <button class="flavor-cancel" (click)="pendingComboItem.set(null)">Cancelar</button>
-            </div>
           </div>
-        </div>
-      }
 
-      @if (pendingAdditionsItem()) {
-        <div class="flavor-overlay" (click)="cancelAdditions()">
-          <div class="flavor-sheet" (click)="$event.stopPropagation()">
-            <div class="flavor-header">{{ pendingAdditionsItem()!.product.name }}</div>
-            <p class="flavor-prompt">¿Deseas agregar alguna adición?</p>
-            <div class="combo-toggle">
-              <button class="combo-toggle-btn" [class.active]="additionsAccepted() === true" (click)="additionsAccepted.set(true)">Sí</button>
-              <button class="combo-toggle-btn" [class.active]="additionsAccepted() === false" (click)="additionsAccepted.set(false)">No</button>
-            </div>
-            @if (additionsAccepted() === true) {
-              <div class="addition-list">
-                @for (a of pendingAdditionsItem()!.product.additions!; track a.id) {
-                  <button
-                    type="button"
-                    class="addition-choice"
-                    [class.selected]="selectedPendingAdditionIds().has(a.id)"
-                    (click)="togglePendingAdditionId(a.id)">
-                    <span class="addition-name">{{ a.name }}</span>
-                    <span class="addition-price">+{{ a.effectivePrice | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
-                  </button>
-                }
+          <div builderFooter>
+            @if (builder.itemCount() > 0) {
+              @if (deliveryFee() > 0) {
+                <div class="ob-line"><span>Subtotal</span><span>{{ builder.total() | currency:'COP':'symbol-narrow':'1.0-0' }}</span></div>
+                <div class="ob-line ob-line--delivery">
+                  <span>Domicilio ({{ selectedZone()!.name }})</span>
+                  <span>+ {{ deliveryFee() | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
+                </div>
+              }
+              <div class="ob-total">
+                <span>Total</span>
+                <span>{{ builder.total() + deliveryFee() | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
               </div>
+              <button type="button" class="ob-submit" [disabled]="!canSubmit()" (click)="submitOrder()">
+                {{ submitting() ? 'Enviando…' : (orderType() ? 'Confirmar pedido' : 'Elige mesa o para llevar') }}
+              </button>
             }
-            <div class="flavor-options" style="margin-top:0.75em">
-              <button class="flavor-btn" style="background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:600" [disabled]="additionsAccepted() === null" (click)="confirmAdditions()">Confirmar</button>
-              <button class="flavor-cancel" (click)="cancelAdditions()">Cancelar</button>
-            </div>
+            @if (successMsg()) { <div class="ob-msg ob-msg--ok">✓ {{ successMsg() }} · se imprime en caja</div> }
+            @if (errorMsg()) { <div class="ob-msg ob-msg--error">{{ errorMsg() }}</div> }
           </div>
+        </app-order-builder>
+      }
+    }
+
+    <!-- ── EDITAR ── -->
+    @if (view() === 'edit') {
+      @if (loadingEditOrders()) {
+        <div class="empty">Cargando pedidos…</div>
+      } @else if (editableOrders().length === 0) {
+        <div class="empty">
+          <span class="empty-icon"><app-icon name="pencil" [size]="36" /></span>
+          <p>No hay pedidos activos para editar</p>
+        </div>
+      } @else {
+        <div class="cards">
+          @for (order of editableOrders(); track order.id) {
+            <article class="dcard">
+              <div class="dcard__head">
+                <span class="dcard__id">#{{ order.id }}</span>
+                <span class="pill" [class.pill--route]="order.status === 'ON_THE_WAY'" [class.pill--prep]="order.status === 'PREPARING'">
+                  {{ statusLabel(order.status) }}
+                </span>
+                <span class="dcard__time">{{ order.createdAt | date:'HH:mm' }}</span>
+              </div>
+              <div class="dcard__customer">{{ order.customerName }}</div>
+              <ul class="items">
+                @for (item of order.items; track item.id) {
+                  <li class="items__row">
+                    <span class="items__qty">{{ item.quantity }}×</span>
+                    <span class="items__name">{{ item.productName }}</span>
+                  </li>
+                }
+              </ul>
+              <div class="dcard__foot">
+                <span class="dcard__total">{{ order.total | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
+                <button type="button" class="btn-ghost" (click)="openEdit(order)">
+                  <app-icon name="pencil" [size]="16" /> Editar
+                </button>
+              </div>
+            </article>
+          }
         </div>
       }
+    }
+  </main>
+
+  <!-- Hoja: editar un pedido -->
+  @if (editingOrder(); as order) {
+    <div class="sheet-overlay" (click)="closeEdit()">
+      <div class="sheet sheet--tall" (click)="$event.stopPropagation()">
+        <div class="sheet__head">
+          <div>
+            <div class="sheet__title">Pedido #{{ order.id }}</div>
+            <div class="sheet__sub">{{ order.customerName }}</div>
+          </div>
+          <button type="button" class="icon-btn" (click)="closeEdit()" aria-label="Cerrar"><app-icon name="close" /></button>
+        </div>
+
+        <div class="edit-items">
+          @for (item of editItems(); track item.id + '-' + $index) {
+            <div class="edit-item">
+              <div class="edit-item__top">
+                <span class="edit-item__name">{{ item.productName }}</span>
+                <span class="edit-item__price">{{ item.unitPrice * item.quantity | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
+              </div>
+              <div class="edit-item__row">
+                <div class="stepper">
+                  <button type="button" (click)="updateEditQty($index, -1)" aria-label="Quitar uno">−</button>
+                  <span>{{ item.quantity }}</span>
+                  <button type="button" (click)="updateEditQty($index, 1)" aria-label="Agregar uno">+</button>
+                </div>
+                <input class="field" type="text" placeholder="Sabor" [value]="item.flavor"
+                       (input)="updateEditItemField($index, 'flavor', $any($event.target).value)" />
+              </div>
+              <input class="field" type="text" placeholder="Adiciones" [value]="item.additions"
+                     (input)="updateEditItemField($index, 'additions', $any($event.target).value)" />
+            </div>
+          }
+        </div>
+
+        <button type="button" class="btn-dashed" (click)="editShowSearch.set(!editShowSearch())">
+          {{ editShowSearch() ? '✕ Cerrar búsqueda' : '+ Agregar producto' }}
+        </button>
+
+        @if (editShowSearch()) {
+          <input class="field" type="text" placeholder="Buscar producto…" [value]="editSearchTerm()"
+                 (input)="editSearchTerm.set($any($event.target).value)" />
+          <div class="product-list">
+            @for (p of filteredEditProducts(); track p.id) {
+              <button type="button" class="product-list__item" (click)="addEditProduct(p)">
+                <span>{{ p.name }}</span>
+                <span class="product-list__price">{{ p.price | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
+              </button>
+            } @empty {
+              <p class="muted">Sin resultados</p>
+            }
+          </div>
+        }
+
+        <textarea class="field" rows="2" placeholder="Notas del pedido…" [value]="editNotes()"
+                  (input)="editNotes.set($any($event.target).value)"></textarea>
+
+        @if (editError()) { <div class="ob-msg ob-msg--error">{{ editError() }}</div> }
+
+        <div class="sheet__foot">
+          <span class="sheet__total">{{ editTotal() | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
+          <button type="button" class="btn-primary" [disabled]="savingEdit() || editItems().length === 0" (click)="saveEdit()">
+            {{ savingEdit() ? 'Guardando…' : 'Guardar cambios' }}
+          </button>
+        </div>
+      </div>
     </div>
+  }
+
+  <!-- Hoja: adiciones al agregar un producto en Editar -->
+  @if (editPendingProduct(); as p) {
+    <div class="sheet-overlay sheet-overlay--top" (click)="editPendingProduct.set(null)">
+      <div class="sheet" (click)="$event.stopPropagation()">
+        <div class="sheet__title">{{ p.name }}</div>
+        <p class="sheet__sub">Adiciones (opcional)</p>
+        <div class="additions">
+          @for (a of p.additions!; track a.id) {
+            <button type="button" class="additions__item" [class.selected]="editPendingAdditionIds().has(a.id)" (click)="toggleEditAdditionId(a.id)">
+              <span class="additions__check">{{ editPendingAdditionIds().has(a.id) ? '✓' : '' }}</span>
+              <span class="additions__name">{{ a.name }}</span>
+              <span class="additions__price">+{{ a.effectivePrice | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
+            </button>
+          }
+        </div>
+        <div class="sheet__foot">
+          <button type="button" class="btn-ghost" (click)="editPendingProduct.set(null)">Cancelar</button>
+          <button type="button" class="btn-primary" (click)="confirmEditProduct()">Agregar al pedido</button>
+        </div>
+      </div>
+    </div>
+  }
+</div>
