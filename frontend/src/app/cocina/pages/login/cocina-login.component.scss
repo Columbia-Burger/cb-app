@@ -1,6 +1,6 @@
 .page {
   min-height: 100vh;
-  background: #0d1117;
+  background: var(--staff-bg);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -8,8 +8,8 @@
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 .card {
-  background: #161b22;
-  border: 1px solid #21262d;
+  background: var(--staff-surface);
+  border: 1px solid var(--staff-border);
   border-radius: 16px;
   padding: 2.5em 2em;
   width: 100%;
@@ -27,23 +27,23 @@
   object-fit: contain;
   margin-bottom: 0.5em;
 }
-.title { font-size: 1.5em; font-weight: 700; color: #e6edf3; margin: 0; }
-.sub { font-size: 0.85em; color: #8b949e; margin: 0 0 1em; }
+.title { font-size: 1.5em; font-weight: 700; color: var(--staff-text); margin: 0; }
+.sub { font-size: 0.85em; color: var(--staff-muted); margin: 0 0 1em; }
 .form { width: 100%; display: flex; flex-direction: column; gap: 1em; }
 .field { display: flex; flex-direction: column; gap: 0.4em; }
-.field label { font-size: 0.8em; color: #8b949e; font-weight: 600; }
+.field label { font-size: 0.8em; color: var(--staff-muted); font-weight: 600; }
 .field input {
   padding: 0.7em 1em;
-  background: #0d1117;
-  border: 1px solid #30363d;
+  background: var(--staff-bg);
+  border: 1px solid var(--staff-border-strong);
   border-radius: 8px;
-  color: #e6edf3;
+  color: var(--staff-text);
   font-size: 0.9em;
   outline: none;
   transition: border-color 0.2s;
 }
 .field input:focus { border-color: var(--accent); }
-.error { color: #f85149; font-size: 0.82em; margin: 0; text-align: center; }
+.error { color: var(--staff-danger); font-size: 0.82em; margin: 0; text-align: center; }
 .btn {
   padding: 0.8em;
   background: var(--accent);

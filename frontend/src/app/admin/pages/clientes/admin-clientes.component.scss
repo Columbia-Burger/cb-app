@@ -1,14 +1,14 @@
-.page { color: #c9d1d9; }
+.page { color: var(--staff-text-2); }
 .page-header {
   display: flex;
   align-items: center;
   gap: 1em;
   margin-bottom: 1.25em;
 }
-.page-title { font-size: 1.5em; font-weight: 700; color: #e6edf3; margin: 0; }
+.page-title { font-size: 1.5em; font-weight: 700; color: var(--staff-text); margin: 0; }
 .total-badge {
-  background: #21262d;
-  color: #8b949e;
+  background: var(--staff-border);
+  color: var(--staff-muted);
   font-size: 0.8em;
   padding: 0.25em 0.6em;
   border-radius: 20px;
@@ -20,10 +20,10 @@
   width: 100%;
   max-width: 400px;
   padding: 0.65em 1em;
-  background: #161b22;
-  border: 1px solid #30363d;
+  background: var(--staff-surface);
+  border: 1px solid var(--staff-border-strong);
   border-radius: 8px;
-  color: #c9d1d9;
+  color: var(--staff-text-2);
   font-size: 0.9em;
   box-sizing: border-box;
 }
@@ -31,41 +31,41 @@
   outline: none;
   border-color: var(--accent);
 }
-.loading { color: #8b949e; }
+.loading { color: var(--staff-muted); }
 .table-wrapper {
-  background: #161b22;
-  border: 1px solid #21262d;
+  background: var(--staff-surface);
+  border: 1px solid var(--staff-border);
   border-radius: 12px;
   overflow: hidden;
 }
 table { width: 100%; border-collapse: collapse; }
-thead tr { background: #0d1117; }
+thead tr { background: var(--staff-bg); }
 th {
   padding: 0.75em 1em;
   text-align: left;
   font-size: 0.78em;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: #8b949e;
-  border-bottom: 1px solid #21262d;
+  color: var(--staff-muted);
+  border-bottom: 1px solid var(--staff-border);
 }
 td {
   padding: 0.75em 1em;
   font-size: 0.9em;
-  border-bottom: 1px solid #21262d;
+  border-bottom: 1px solid var(--staff-border);
 }
 tr:last-child td { border-bottom: none; }
 tr:hover td { background: rgba(255,255,255,0.02); }
-.id-cell { color: #8b949e; }
-.name-cell { font-weight: 500; color: #e6edf3; }
-.date-cell { color: #8b949e; font-size: 0.82em; }
+.id-cell { color: var(--staff-muted); }
+.name-cell { font-weight: 500; color: var(--staff-text); }
+.date-cell { color: var(--staff-muted); font-size: 0.82em; }
 .whatsapp-link {
-  color: #3fb950;
+  color: var(--staff-success);
   text-decoration: none;
 }
 .whatsapp-link:hover { text-decoration: underline; }
 .empty {
   text-align: center;
-  color: #8b949e;
+  color: var(--staff-muted);
   padding: 2em !important;
 }

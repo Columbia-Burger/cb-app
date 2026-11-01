@@ -59,8 +59,12 @@ html {
   --staff-surface: #12161c;
   --staff-surface-2: #181d25;
   --staff-border: #232a34;
+  --staff-border-strong: #2f3743;
   --staff-text: #e8ebf0;
+  --staff-text-2: #c3c9d2;
   --staff-muted: #8b94a2;
+  --staff-subtle: #5f6875;
+  --staff-info: #58a6ff;
   --staff-danger: #f0524f;
   --staff-success: #3fb950;
   --font-ui: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
@@ -74,6 +78,29 @@ html {
   *:not([class*='fa-']):not(.fa):not(.fab):not(.fas):not(.far) {
   font-family: var(--font-ui);
   font-feature-settings: 'cv11', 'ss01';
+}
+
+// Bootstrap (cargado para el sitio público) pinta .table y .card de blanco con texto oscuro.
+// Dentro de las apps del personal se reconfiguran sus variables al tema oscuro.
+:is(app-admin-layout, app-cocina-board, app-domicilio-board) {
+  .table {
+    --bs-table-bg: transparent;
+    --bs-table-accent-bg: transparent;
+    --bs-table-striped-bg: rgb(255 255 255 / 0.02);
+    --bs-table-hover-bg: rgb(255 255 255 / 0.03);
+    --bs-table-color: var(--staff-text);
+    --bs-table-striped-color: var(--staff-text);
+    --bs-table-hover-color: var(--staff-text);
+    --bs-table-border-color: var(--staff-border);
+    color: var(--staff-text);
+  }
+  .card {
+    --bs-card-bg: var(--staff-surface);
+    --bs-card-color: var(--staff-text);
+    --bs-card-border-color: var(--staff-border);
+    --bs-card-cap-bg: transparent;
+    color: var(--staff-text);
+  }
 }
 
 body {

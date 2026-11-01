@@ -1,16 +1,16 @@
 * { box-sizing: border-box; }
 
-$surface: #161b22;
-$surface-sunken: #0d1117;
-$border: #21262d;
-$border-strong: #30363d;
-$ink: #e6edf3;
-$ink-2: #c9d1d9;
-$muted: #8b949e;
+$surface: var(--staff-surface);
+$surface-sunken: var(--staff-bg);
+$border: var(--staff-border);
+$border-strong: var(--staff-border-strong);
+$ink: var(--staff-text);
+$ink-2: var(--staff-text-2);
+$muted: var(--staff-muted);
 $accent: var(--accent);
 $series: #3987e5;
-$good: #3fb950;
-$bad: #f85149;
+$good: var(--staff-success);
+$bad: var(--staff-danger);
 
 .page { color: $ink-2; }
 
@@ -42,7 +42,7 @@ $bad: #f85149;
   flex-shrink: 0; padding: 0.45em 0.95em; border-radius: 999px;
   background: $surface; border: 1px solid $border-strong; color: $muted;
   font-size: 0.85em; cursor: pointer; transition: all 0.15s; white-space: nowrap;
-  &:hover { color: $ink; border-color: #484f58; }
+  &:hover { color: $ink; border-color: var(--staff-subtle); }
   &--active { background: $accent; border-color: $accent; color: var(--accent-ink); font-weight: 600; &:hover { color: var(--accent-ink); border-color: $accent; } }
 }
 .custom-range {
@@ -205,6 +205,6 @@ $bad: #f85149;
 .code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; color: $ink; background: $surface-sunken; padding: 0.15em 0.45em; border-radius: 5px; }
 
 .link-btn {
-  background: none; border: none; color: #58a6ff; cursor: pointer; font-size: 0.85em;
+  background: none; border: none; color: var(--staff-info); cursor: pointer; font-size: 0.85em;
   padding: 0.8em 0 0; &:hover { text-decoration: underline; }
 }
