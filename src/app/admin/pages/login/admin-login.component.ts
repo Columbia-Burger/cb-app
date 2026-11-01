@@ -14,7 +14,7 @@ export class AdminLoginComponent {
   private adminService = inject(AdminService);
   private router = inject(Router);
 
-  email = '';
+  username = '';
   password = '';
   loading = signal(false);
   error = signal('');
@@ -26,13 +26,13 @@ export class AdminLoginComponent {
   }
 
   onSubmit(): void {
-    if (!this.email || !this.password) return;
+    if (!this.username.trim() || !this.password) return;
     this.loading.set(true);
     this.error.set('');
-    this.adminService.login({ email: this.email, password: this.password }).subscribe({
+    this.adminService.login({ username: this.username.trim(), password: this.password }).subscribe({
       next: () => this.router.navigate(['/admin/dashboard']),
       error: () => {
-        this.error.set('Credenciales inválidas. Verifica tu correo y contraseña.');
+        this.error.set('Credenciales inválidas. Verifica tu usuario y contraseña.');
         this.loading.set(false);
       }
     });

@@ -8,7 +8,8 @@
         <form (ngSubmit)="login()" class="form">
           <div class="field">
             <label>Usuario</label>
-            <input type="email" [(ngModel)]="email" name="email" placeholder="correo@ejemplo.com" autocomplete="username" />
+            <input type="text" [(ngModel)]="username" name="username" placeholder="Tu usuario"
+                   autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false" />
           </div>
           <div class="field">
             <label>Contraseña</label>

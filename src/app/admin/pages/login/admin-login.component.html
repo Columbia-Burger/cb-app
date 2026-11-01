@@ -17,17 +17,21 @@
             <p>Ingresa tus credenciales para continuar</p>
           </div>
 
-          <form (ngSubmit)="onSubmit()" autocomplete="off">
+          <form (ngSubmit)="onSubmit()">
             <div class="field">
-              <label for="email">Correo electrónico</label>
+              <label for="username">Usuario</label>
               <div class="input-wrap">
-                <span class="input-icon">✉</span>
+                <span class="input-icon">👤</span>
                 <input
-                  id="email"
-                  type="email"
-                  [(ngModel)]="email"
-                  name="email"
-                  placeholder="admin@columbiaburger.com"
+                  id="username"
+                  type="text"
+                  [(ngModel)]="username"
+                  name="username"
+                  placeholder="Tu usuario"
+                  autocomplete="username"
+                  autocapitalize="none"
+                  autocorrect="off"
+                  spellcheck="false"
                   required
                   [disabled]="loading()"
                 />
@@ -41,6 +45,7 @@
                 <input
                   id="password"
                   type="password"
+                  autocomplete="current-password"
                   [(ngModel)]="password"
                   name="password"
                   placeholder="••••••••"

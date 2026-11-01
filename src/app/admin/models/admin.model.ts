@@ -1,11 +1,34 @@
 export interface LoginRequest {
-  email: string;
+  username: string;
   password: string;
 }
 
 export interface LoginResponse {
   token: string;
-  email: string;
+  username: string;
+  displayName: string;
+  role: string;
+}
+
+export type StaffRole = 'ADMIN' | 'KITCHEN' | 'DELIVERY';
+
+export interface StaffUser {
+  id: number;
+  username: string;
+  displayName: string;
+  role: StaffRole;
+  active: boolean;
+  lastLoginAt: string | null;
+  createdAt: string;
+}
+
+/** Al editar solo se envían los campos que cambian; password vacío = no cambiarla. */
+export interface StaffUserRequest {
+  username?: string;
+  displayName?: string;
+  role?: StaffRole;
+  password?: string;
+  active?: boolean;
 }
 
 export type OrderStatus = 'RECEIVED' | 'PREPARING' | 'ON_THE_WAY' | 'DELIVERED' | 'CANCELLED';

@@ -14,7 +14,7 @@ export class CocinaLoginComponent {
   private svc = inject(CocinaService);
   private router = inject(Router);
 
-  email = '';
+  username = '';
   password = '';
   loading = signal(false);
   error = signal<string | null>(null);
@@ -28,7 +28,7 @@ export class CocinaLoginComponent {
   login(): void {
     this.loading.set(true);
     this.error.set(null);
-    this.svc.login({ email: this.email, password: this.password }).subscribe({
+    this.svc.login({ username: this.username.trim(), password: this.password }).subscribe({
       next: () => this.router.navigate(['/cocina']),
       error: () => {
         this.error.set('Usuario o contraseña incorrectos');

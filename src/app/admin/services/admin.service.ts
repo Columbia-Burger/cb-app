@@ -9,7 +9,7 @@ import {
   CreateOrderRequest, UpdateOrderRequest, CatalogProduct, FlavorItem, AdditionItem, ShiftResponse, DailyStatResponse,
   SourceStatResponse, HourlyStatResponse, CategoryItem, CreateProductRequest, CreateAdditionRequest,
   DeliveryZone, CreateDeliveryZoneRequest, SocialPost, GeneratePostRequest, UpdatePostRequest, PostStatus,
-  ElectronicInvoiceDetailResponse
+  ElectronicInvoiceDetailResponse, StaffUser, StaffUserRequest
 } from '../models/admin.model';
 import { ProductResponse } from '../../models/api.model';
 
@@ -382,5 +382,23 @@ export class AdminService {
 
   validateCoupon(code: string, total: number): Observable<{ code: string; type: 'PERCENTAGE' | 'FIXED'; value: number; discountAmount: number }> {
     return this.http.post<any>(`${this.base}/api/coupons/validate`, { code, total }, { headers: this.authHeaders() });
+  }
+
+  // ── Usuarios ─────────────────────────────────────────────────
+  getUsers(): Observable<StaffUser[]> {
+    return this.http.get<StaffUser[]>(`${this.base}/api/users`, { headers: this.authHeaders() });
+  }
+
+  createUser(body: StaffUserRequest): Observable<StaffUser> {
+    return this.http.post<StaffUser>(`${this.base}/api/users`, body, { headers: this.authHeaders() });
+  }
+
+  updateUser(id: number, body: StaffUserRequest): Observable<StaffUser> {
+    return this.http.put<StaffUser>(`${this.base}/api/users/${id}`, body, { headers: this.authHeaders() });
+  }
+
+  /** Username de la sesión actual (subject del token). */
+  getCurrentUsername(): string | null {
+    return (this.getPayload() as { sub?: string } | null)?.sub ?? null;
   }
 }
