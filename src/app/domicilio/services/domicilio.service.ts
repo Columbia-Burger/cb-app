@@ -2,6 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
 import { map } from 'rxjs/operators';
+import { hasValidSession } from '../../shared/session';
 import { environment } from '../../../environments/environment';
 import { OrderResponse, OrderStatus, LoginRequest, LoginResponse, CatalogProduct, CreateOrderRequest, DeliveryZone, UpdateOrderRequest } from '../../admin/models/admin.model';
 import { ProductResponse } from '../../models/api.model';
@@ -27,7 +28,7 @@ export class DomicilioService {
   }
 
   isLoggedIn(): boolean {
-    return this.getRole() === 'DELIVERY';
+    return hasValidSession(this.TOKEN_KEY, ['DELIVERY']);
   }
 
   getRole(): string | null {

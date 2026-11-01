@@ -1,5 +1,5 @@
 import { Component, inject, signal } from '@angular/core';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AdminService } from '../../services/admin.service';
 
@@ -18,6 +18,12 @@ export class AdminLoginComponent {
   password = '';
   loading = signal(false);
   error = signal('');
+
+  constructor() {
+    if (inject(ActivatedRoute).snapshot.queryParamMap.has('expired')) {
+      this.error.set('Tu sesión expiró. Vuelve a iniciar sesión.');
+    }
+  }
 
   onSubmit(): void {
     if (!this.email || !this.password) return;

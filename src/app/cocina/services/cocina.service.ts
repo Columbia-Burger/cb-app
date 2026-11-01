@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, forkJoin, map, tap } from 'rxjs';
+import { hasValidSession } from '../../shared/session';
 import { environment } from '../../../environments/environment';
 import { OrderResponse, OrderStatus, LoginRequest, LoginResponse } from '../../admin/models/admin.model';
 import { getCurrentBusinessDayStartParam } from '../../shared/business-hours';
@@ -26,7 +27,7 @@ export class CocinaService {
   }
 
   isLoggedIn(): boolean {
-    return this.getRole() === 'KITCHEN';
+    return hasValidSession(this.TOKEN_KEY, ['KITCHEN']);
   }
 
   getRole(): string | null {
