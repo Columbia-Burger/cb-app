@@ -24,8 +24,8 @@
 .stat.inactive { background: rgba(248,81,73,0.12); color: #f85149; }
 
 .create-btn {
-  background: #e94560;
-  color: #fff;
+  background: var(--accent);
+  color: var(--accent-ink);
   border: none;
   border-radius: 8px;
   padding: 0.5em 1em;
@@ -34,7 +34,7 @@
   cursor: pointer;
   white-space: nowrap;
 }
-.create-btn:hover { background: #c73652; }
+.create-btn:hover { background: var(--accent-hover); }
 
 .search-bar { margin-bottom: 1.5em; }
 .search-bar input {
@@ -49,7 +49,7 @@
   outline: none;
   transition: border-color 0.2s;
 }
-.search-bar input:focus { border-color: #e94560; }
+.search-bar input:focus { border-color: var(--accent); }
 
 .loading {
   display: flex;
@@ -61,7 +61,7 @@
 .spinner {
   width: 20px; height: 20px;
   border: 2px solid #30363d;
-  border-top-color: #e94560;
+  border-top-color: var(--accent);
   border-radius: 50%;
   animation: spin 0.7s linear infinite;
 }
@@ -162,8 +162,8 @@
 
 .empty { color: #8b949e; text-align: center; padding: 3em; }
 .toggle-error {
-  background: rgba(233,69,96,0.12); border: 1px solid #e94560;
-  color: #e94560; padding: 0.7em 1em; border-radius: 8px;
+  background: rgb(var(--accent-rgb) / 0.12); border: 1px solid var(--accent);
+  color: var(--accent); padding: 0.7em 1em; border-radius: 8px;
   font-size: 0.85em; margin-bottom: 1em;
 }
 
@@ -183,7 +183,7 @@
   cursor: pointer;
   white-space: nowrap;
 }
-.flavors-btn:hover { border-color: #e94560; color: #e94560; }
+.flavors-btn:hover { border-color: var(--accent); color: var(--accent); }
 
 .additions-btn {
   background: none;
@@ -195,7 +195,7 @@
   cursor: pointer;
   white-space: nowrap;
 }
-.additions-btn:hover { border-color: #e94560; color: #e94560; }
+.additions-btn:hover { border-color: var(--accent); color: var(--accent); }
 
 .combo-btn {
   background: none;
@@ -251,10 +251,10 @@
   background: #21262d; border-radius: 8px;
   cursor: pointer; font-size: 0.9em; color: #e6edf3;
 }
-.fl-option input { accent-color: #e94560; width: 16px; height: 16px; cursor: pointer; }
+.fl-option input { accent-color: var(--accent); width: 16px; height: 16px; cursor: pointer; }
 .fl-actions { display: flex; gap: 0.75em; margin-top: 1em; }
 .fl-save {
-  flex: 1; padding: 0.75em; background: #e94560; color: #fff;
+  flex: 1; padding: 0.75em; background: var(--accent); color: var(--accent-ink);
   border: none; border-radius: 8px; font-size: 0.9em; font-weight: 600; cursor: pointer;
 }
 .fl-save:disabled { opacity: 0.5; cursor: wait; }
@@ -282,7 +282,7 @@
 }
 .create-form input:focus,
 .create-form textarea:focus,
-.create-form select:focus { border-color: #e94560; }
+.create-form select:focus { border-color: var(--accent); }
 .create-form textarea { resize: vertical; font-family: inherit; }
 .create-form select option { background: #21262d; }
 .create-error { color: #f85149; font-size: 0.82em; margin: 0; }

@@ -1,23 +1,39 @@
-import { Component, inject, signal, OnInit, AfterViewInit, ElementRef, ViewChild, OnDestroy } from '@angular/core';
+import { Component, inject, signal, computed, OnInit, ElementRef, ViewChild, OnDestroy } from '@angular/core';
 import { CurrencyPipe, DecimalPipe } from '@angular/common';
+import { RouterLink } from '@angular/router';
 import { AdminService } from '../../services/admin.service';
 import { DashboardStats, TopProduct, DailyStatResponse, SourceStatResponse } from '../../models/admin.model';
 import { Chart, registerables } from 'chart.js';
+import { IconComponent } from '../../../shared/icon.component';
 
 Chart.register(...registerables);
 
+const SOURCE_LABELS: Record<string, string> = { WEB: 'Web', WHATSAPP: 'WhatsApp', WAITER: 'Mesero', DELIVERY: 'Domicilio' };
+// Misma paleta categórica validada que Reportes
+const SOURCE_COLORS: Record<string, string> = { WEB: '#3987e5', WHATSAPP: '#d95926', WAITER: '#199e70', DELIVERY: '#c98500' };
+
 @Component({
     selector: 'app-admin-dashboard',
-    imports: [CurrencyPipe, DecimalPipe],
+    imports: [CurrencyPipe, DecimalPipe, RouterLink, IconComponent],
     templateUrl: './admin-dashboard.component.html',
     styleUrl: './admin-dashboard.component.scss'
 })
-export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy {
+export class AdminDashboardComponent implements OnInit, OnDestroy {
   private adminService = inject(AdminService);
 
-  @ViewChild('ordersChart') ordersChartRef!: ElementRef<HTMLCanvasElement>;
-  @ViewChild('revenueChart') revenueChartRef!: ElementRef<HTMLCanvasElement>;
-  @ViewChild('sourceChart') sourceChartRef!: ElementRef<HTMLCanvasElement>;
+  private salesChart?: Chart;
+  private salesCanvas?: ElementRef<HTMLCanvasElement>;
+
+  // El canvas aparece cuando llegan los datos (está dentro de @if): se dibuja al recibirlo
+  @ViewChild('salesChart') set salesChartRef(ref: ElementRef<HTMLCanvasElement> | undefined) {
+    this.salesCanvas = ref;
+    if (ref) requestAnimationFrame(() => this.renderSalesChart());
+  }
+
+  readonly username = this.adminService.getCurrentUsername() ?? '';
+  readonly today = new Intl.DateTimeFormat('es-CO', {
+    weekday: 'long', day: 'numeric', month: 'long', timeZone: 'America/Bogota',
+  }).format(new Date());
 
   loading = signal(true);
   stats = signal<DashboardStats | null>(null);
@@ -25,153 +41,114 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
   dailyStats = signal<DailyStatResponse[]>([]);
   sourceStats = signal<SourceStatResponse[]>([]);
 
-  private ordersChart?: Chart;
-  private revenueChart?: Chart;
-  private sourceChart?: Chart;
+  ticketPromedio = computed(() => {
+    const s = this.stats();
+    return s && s.ordersToday > 0 ? s.revenueToday / s.ordersToday : 0;
+  });
+
+  weekRevenue = computed(() => this.dailyStats().reduce((sum, d) => sum + Number(d.revenue), 0));
+  weekOrders = computed(() => this.dailyStats().reduce((sum, d) => sum + d.orders, 0));
+  maxSource = computed(() => Math.max(1, ...this.sourceStats().map(s => s.orders)));
+  totalSource = computed(() => this.sourceStats().reduce((sum, s) => sum + s.orders, 0));
+  maxProduct = computed(() => Math.max(1, ...this.topProducts().map(p => p.totalQuantity)));
 
   ngOnInit(): void {
     this.adminService.getStats().subscribe({
       next: data => { this.stats.set(data); this.loading.set(false); },
       error: () => this.loading.set(false)
     });
-
-    this.adminService.getTopProducts(10).subscribe({
-      next: data => this.topProducts.set(data)
-    });
-
+    this.adminService.getTopProducts(8).subscribe({ next: data => this.topProducts.set(data) });
     this.adminService.getDailyStats(7).subscribe({
       next: data => {
         this.dailyStats.set(data);
-        setTimeout(() => this.renderBarCharts(data), 0);
+        requestAnimationFrame(() => this.renderSalesChart());
       }
     });
-
-    this.adminService.getStatsBySource().subscribe({
-      next: data => {
-        this.sourceStats.set(data);
-        setTimeout(() => this.renderSourceChart(data), 0);
-      }
-    });
+    this.adminService.getStatsBySource().subscribe({ next: data => this.sourceStats.set(data) });
   }
-
-  ngAfterViewInit(): void { }
 
   ngOnDestroy(): void {
-    this.ordersChart?.destroy();
-    this.revenueChart?.destroy();
-    this.sourceChart?.destroy();
-  }
-
-  starsArray(rating: number | null): number[] {
-    if (!rating) return [];
-    return Array.from({ length: 5 }, (_, i) => i + 1);
-  }
-
-  starFill(index: number, rating: number | null): string {
-    if (!rating) return 'empty';
-    if (index <= Math.floor(rating)) return 'full';
-    if (index <= rating + 0.5) return 'half';
-    return 'empty';
+    this.salesChart?.destroy();
   }
 
   roundRating(rating: number): number {
     return Math.round(rating);
   }
 
-  ticketPromedio(): number {
-    const s = this.stats();
-    if (!s || s.ordersToday === 0) return 0;
-    return s.revenueToday / s.ordersToday;
-  }
-
   sourceLabel(source: string): string {
-    const map: Record<string, string> = { WEB: 'Web', WHATSAPP: 'WhatsApp', WAITER: 'Mesero' };
-    return map[source] ?? source;
+    return SOURCE_LABELS[source] ?? source;
   }
 
-  private renderBarCharts(data: DailyStatResponse[]): void {
-    if (!this.ordersChartRef || !this.revenueChartRef) return;
+  sourceColor(source: string): string {
+    return SOURCE_COLORS[source] ?? '#6e7681';
+  }
 
+  private renderSalesChart(): void {
+    const data = this.dailyStats();
+    if (!this.salesCanvas || !data.length) return;
+    const accent = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#f3a51f';
+    const weekday = new Intl.DateTimeFormat('es-CO', { weekday: 'short', timeZone: 'UTC' });
     const labels = data.map(d => {
-      const [, month, day] = d.date.split('-');
-      return `${day}/${month}`;
+      const [, m, day] = d.date.split('-');
+      return `${weekday.format(new Date(d.date + 'T12:00:00Z')).replace('.', '')} ${day}/${m}`;
     });
+    const money = (v: number) => '$' + Math.round(v).toLocaleString('es-CO');
 
-    this.ordersChart?.destroy();
-    this.ordersChart = new Chart(this.ordersChartRef.nativeElement, {
+    this.salesChart?.destroy();
+    this.salesChart = new Chart(this.salesCanvas.nativeElement, {
       type: 'bar',
       data: {
         labels,
         datasets: [{
-          label: 'Pedidos',
-          data: data.map(d => d.orders),
-          backgroundColor: 'rgba(233, 69, 96, 0.7)',
-          borderColor: '#e94560',
-          borderWidth: 1,
-          borderRadius: 6,
+          data: data.map(d => Number(d.revenue)),
+          backgroundColor: accent,
+          hoverBackgroundColor: '#ffb836',
+          borderRadius: { topLeft: 6, topRight: 6 },
+          borderSkipped: 'bottom',
+          maxBarThickness: 44,
         }]
       },
       options: {
         responsive: true,
-        plugins: { legend: { display: false } },
-        scales: {
-          x: { ticks: { color: '#8b949e' }, grid: { color: '#21262d' } },
-          y: { ticks: { color: '#8b949e', stepSize: 1 }, grid: { color: '#21262d' }, beginAtZero: true }
-        }
-      }
-    });
-
-    this.revenueChart?.destroy();
-    this.revenueChart = new Chart(this.revenueChartRef.nativeElement, {
-      type: 'bar',
-      data: {
-        labels,
-        datasets: [{
-          label: 'Ingresos COP',
-          data: data.map(d => d.revenue),
-          backgroundColor: 'rgba(63, 185, 80, 0.7)',
-          borderColor: '#3fb950',
-          borderWidth: 1,
-          borderRadius: 6,
-        }]
-      },
-      options: {
-        responsive: true,
-        plugins: { legend: { display: false } },
-        scales: {
-          x: { ticks: { color: '#8b949e' }, grid: { color: '#21262d' } },
-          y: {
-            ticks: { color: '#8b949e', callback: (v) => '$' + Number(v).toLocaleString('es-CO') },
-            grid: { color: '#21262d' },
-            beginAtZero: true
-          }
-        }
-      }
-    });
-  }
-
-  private renderSourceChart(data: SourceStatResponse[]): void {
-    if (!this.sourceChartRef || data.length === 0) return;
-
-    this.sourceChart?.destroy();
-    this.sourceChart = new Chart(this.sourceChartRef.nativeElement, {
-      type: 'doughnut',
-      data: {
-        labels: data.map(d => this.sourceLabel(d.source)),
-        datasets: [{
-          data: data.map(d => d.orders),
-          backgroundColor: ['rgba(233,69,96,0.8)', 'rgba(63,185,80,0.8)', 'rgba(56,139,253,0.8)'],
-          borderColor: ['#e94560', '#3fb950', '#388bfd'],
-          borderWidth: 2,
-        }]
-      },
-      options: {
-        responsive: true,
+        maintainAspectRatio: false,
+        interaction: { mode: 'index', intersect: false },
         plugins: {
-          legend: { position: 'bottom', labels: { color: '#8b949e', padding: 16, font: { size: 12 } } }
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: '#0b0e13',
+            borderColor: '#232a34',
+            borderWidth: 1,
+            padding: 10,
+            displayColors: false,
+            titleColor: '#e8ebf0',
+            bodyColor: '#e8ebf0',
+            footerColor: '#8b94a2',
+            footerFont: { weight: 'normal' },
+            callbacks: {
+              label: ctx => money(Number(ctx.raw)),
+              footer: items => `${data[items[0].dataIndex].orders} pedidos`,
+            },
+          },
         },
-        cutout: '65%',
-      }
+        scales: {
+          x: { ticks: { color: '#8b94a2', font: { size: 11 } }, grid: { display: false }, border: { color: '#232a34' } },
+          y: {
+            beginAtZero: true,
+            border: { display: false },
+            grid: { color: '#1b2029' },
+            ticks: {
+              color: '#8b94a2',
+              font: { size: 11 },
+              maxTicksLimit: 5,
+              callback: v => {
+                const n = Number(v);
+                return n >= 1_000_000 ? '$' + (n / 1_000_000).toLocaleString('es-CO', { maximumFractionDigits: 1 }) + ' M'
+                  : n >= 1000 ? '$' + Math.round(n / 1000) + ' mil' : '$' + n;
+              },
+            },
+          },
+        },
+      },
     });
   }
 }

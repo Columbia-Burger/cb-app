@@ -21,7 +21,7 @@
 }
 .spinner {
   width: 18px; height: 18px;
-  border: 2px solid #30363d; border-top-color: #e94560;
+  border: 2px solid #30363d; border-top-color: var(--accent);
   border-radius: 50%; animation: spin 0.7s linear infinite;
 }
 @keyframes spin { to { transform: rotate(360deg); } }

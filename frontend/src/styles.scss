@@ -47,6 +47,35 @@ html {
   font-size: 16px;
 }
 
+// ── Apps del personal (panel, cocina, domicilio) ──────────────────────────────
+// Tokens de color compartidos. El acento es el naranja de la marca (#f3a51f): se lee bien
+// como texto sobre fondo oscuro; los botones rellenos llevan texto oscuro (--accent-ink).
+:root {
+  --accent: #f3a51f;
+  --accent-rgb: 243 165 31;
+  --accent-hover: #ffb836;
+  --accent-ink: #1b1305;
+  --staff-bg: #0b0e13;
+  --staff-surface: #12161c;
+  --staff-surface-2: #181d25;
+  --staff-border: #232a34;
+  --staff-text: #e8ebf0;
+  --staff-muted: #8b94a2;
+  --staff-danger: #f0524f;
+  --staff-success: #3fb950;
+  --font-ui: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+}
+
+// Las apps del personal usan una fuente sans moderna; el sitio público conserva Playfair/Lora.
+// Los :not() suben la especificidad por encima de reglas globales como `.btn` o `h1`
+// (que ponen Playfair) y a la vez dejan en paz los íconos de Font Awesome.
+:is(app-admin-layout, app-admin-login, app-cocina-board, app-cocina-login, app-domicilio-board, app-domicilio-login),
+:is(app-admin-layout, app-admin-login, app-cocina-board, app-cocina-login, app-domicilio-board, app-domicilio-login)
+  *:not([class*='fa-']):not(.fa):not(.fab):not(.fas):not(.far) {
+  font-family: var(--font-ui);
+  font-feature-settings: 'cv11', 'ss01';
+}
+
 body {
   font-size: 1.6rem;
   background-color: #f3a51f;

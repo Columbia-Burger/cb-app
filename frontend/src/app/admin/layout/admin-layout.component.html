@@ -1,90 +1,56 @@
+<div class="admin-shell">
 
-    <div class="admin-shell">
-
-      <!-- Topbar móvil -->
-      <header class="topbar">
-        <button class="hamburger" (click)="sidebarOpen.set(!sidebarOpen())">☰</button>
-        <div class="topbar-brand">
-          <img src="assets/logo.png" alt="CB" class="topbar-logo" />
-          <span>CB Admin</span>
-        </div>
-      </header>
-
-      <!-- Overlay -->
-      @if (sidebarOpen()) {
-        <div class="overlay" (click)="sidebarOpen.set(false)"></div>
-      }
-
-      <aside class="sidebar" [class.open]="sidebarOpen()">
-        <div class="sidebar-brand">
-          <img src="assets/logo.png" alt="Columbia Burger" class="sidebar-logo" />
-          <div class="sidebar-brand-text">
-            <span class="brand-name">Columbia</span>
-            <span class="brand-sub">Burger Admin</span>
-          </div>
-        </div>
-
-        <nav class="sidebar-nav">
-          <a routerLink="/admin/dashboard" routerLinkActive="active" (click)="sidebarOpen.set(false)">
-            <span class="nav-icon">📊</span>
-            <span>Dashboard</span>
-          </a>
-          <a routerLink="/admin/pedidos" routerLinkActive="active" (click)="sidebarOpen.set(false)">
-            <span class="nav-icon">📦</span>
-            <span>Pedidos</span>
-          </a>
-          <a routerLink="/admin/facturas" routerLinkActive="active" (click)="sidebarOpen.set(false)">
-            <span class="nav-icon">🧾</span>
-            <span>Facturas</span>
-          </a>
-          <a routerLink="/admin/turno" routerLinkActive="active" (click)="sidebarOpen.set(false)">
-            <span class="nav-icon">🕐</span>
-            <span>Turno</span>
-          </a>
-          <a routerLink="/admin/mesero" routerLinkActive="active" (click)="sidebarOpen.set(false)">
-            <span class="nav-icon">🍽️</span>
-            <span>Tomar Pedido</span>
-          </a>
-          <a routerLink="/admin/clientes" routerLinkActive="active" (click)="sidebarOpen.set(false)">
-            <span class="nav-icon">👥</span>
-            <span>Clientes</span>
-          </a>
-          <a routerLink="/admin/menu" routerLinkActive="active" (click)="sidebarOpen.set(false)">
-            <span class="nav-icon">🍔</span>
-            <span>Menú</span>
-          </a>
-          <a routerLink="/admin/adiciones" routerLinkActive="active" (click)="sidebarOpen.set(false)">
-            <span class="nav-icon">🧩</span>
-            <span>Adiciones</span>
-          </a>
-          <a routerLink="/admin/zonas" routerLinkActive="active" (click)="sidebarOpen.set(false)">
-            <span class="nav-icon">🗺️</span>
-            <span>Zonas</span>
-          </a>
-          <a routerLink="/admin/social" routerLinkActive="active" (click)="sidebarOpen.set(false)">
-            <span class="nav-icon">📸</span>
-            <span>Social Media</span>
-          </a>
-          <a routerLink="/admin/cupones" routerLinkActive="active" (click)="sidebarOpen.set(false)">
-            <span class="nav-icon">🎟️</span>
-            <span>Cupones</span>
-          </a>
-          <a routerLink="/admin/reportes" routerLinkActive="active" (click)="sidebarOpen.set(false)">
-            <span class="nav-icon">📈</span>
-            <span>Reportes</span>
-          </a>
-          <a routerLink="/admin/usuarios" routerLinkActive="active" (click)="sidebarOpen.set(false)">
-            <span class="nav-icon">🔑</span>
-            <span>Usuarios</span>
-          </a>
-        </nav>
-
-        <button class="logout-btn" (click)="logout()">
-          <span class="logout-icon">↩</span> Cerrar sesión
-        </button>
-      </aside>
-
-      <main class="admin-content">
-        <router-outlet />
-      </main>
+  <!-- Barra superior: solo en celular -->
+  <header class="topbar">
+    <button class="icon-btn" (click)="sidebarOpen.set(!sidebarOpen())" [attr.aria-label]="sidebarOpen() ? 'Cerrar menú' : 'Abrir menú'">
+      <app-icon [name]="sidebarOpen() ? 'close' : 'hamburger'" [size]="22" />
+    </button>
+    <div class="topbar-brand">
+      <img src="assets/icons/favicon-48.png" alt="" class="brand-logo brand-logo--sm" />
+      <span>Columbia Burger</span>
     </div>
+  </header>
+
+  @if (sidebarOpen()) {
+    <div class="overlay" (click)="sidebarOpen.set(false)"></div>
+  }
+
+  <aside class="sidebar" [class.open]="sidebarOpen()">
+    <div class="sidebar-brand">
+      <img src="assets/icons/favicon-48.png" alt="" class="brand-logo" />
+      <div class="brand-text">
+        <span class="brand-name">Columbia Burger</span>
+        <span class="brand-sub">Administración</span>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav" aria-label="Secciones del panel">
+      @for (group of nav; track group.title) {
+        <div class="nav-group">
+          <span class="nav-group__title">{{ group.title }}</span>
+          @for (item of group.items; track item.path) {
+            <a [routerLink]="item.path" routerLinkActive="active" (click)="sidebarOpen.set(false)">
+              <app-icon [name]="item.icon" />
+              <span>{{ item.label }}</span>
+            </a>
+          }
+        </div>
+      }
+    </nav>
+
+    <div class="sidebar-user">
+      <div class="avatar">{{ username.charAt(0).toUpperCase() }}</div>
+      <div class="user-text">
+        <span class="user-name">{{ username }}</span>
+        <span class="user-role">Administrador</span>
+      </div>
+      <button class="icon-btn icon-btn--subtle" (click)="logout()" title="Cerrar sesión" aria-label="Cerrar sesión">
+        <app-icon name="logout" />
+      </button>
+    </div>
+  </aside>
+
+  <main class="admin-content">
+    <router-outlet />
+  </main>
+</div>

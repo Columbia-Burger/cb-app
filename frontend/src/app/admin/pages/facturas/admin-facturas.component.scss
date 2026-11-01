@@ -22,7 +22,7 @@
   cursor: pointer;
 
   &:hover { color: #e6edf3; border-color: #8b949e; }
-  &--active { color: #fff; background: #e94560; border-color: #e94560; }
+  &--active { color: var(--accent-ink); background: var(--accent); border-color: var(--accent); }
 }
 
 .paginator {
@@ -80,7 +80,7 @@
   white-space: nowrap;
 
   input {
-    accent-color: #e94560;
+    accent-color: var(--accent);
     cursor: pointer;
   }
 }
@@ -192,7 +192,7 @@
   transition: all 0.15s;
 
   &:hover { color: #e6edf3; border-color: #8b949e; }
-  &--active { background: #e94560; border-color: #e94560; color: #fff; }
+  &--active { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
 }
 
 .tab-badge {
@@ -209,7 +209,7 @@
 }
 .spinner {
   width: 18px; height: 18px;
-  border: 2px solid #30363d; border-top-color: #e94560;
+  border: 2px solid #30363d; border-top-color: var(--accent);
   border-radius: 50%; animation: spin 0.7s linear infinite;
 }
 @keyframes spin { to { transform: rotate(360deg); } }
@@ -303,7 +303,7 @@
   &.btn-void:hover:not(:disabled)        { border-color: #f85149; color: #f85149; }
   &.btn-print:hover:not(:disabled)       { border-color: #58a6ff; color: #58a6ff; }
   &.btn-edit:hover:not(:disabled)        { border-color: #e3b341; color: #e3b341; }
-  &.btn-electronic:hover:not(:disabled)  { border-color: #e94560; color: #e94560; }
+  &.btn-electronic:hover:not(:disabled)  { border-color: var(--accent); color: var(--accent); }
   &.btn-pdf:hover:not(:disabled)         { border-color: #f85149; color: #f85149; }
   &.btn-xml:hover:not(:disabled)         { border-color: #3fb950; color: #3fb950; }
 }

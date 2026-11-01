@@ -429,15 +429,15 @@ input, textarea, select { margin: 0; padding: 0; }
 .btn-save {
   flex: 1;
   padding: 0.75em;
-  background: #e94560;
-  color: #fff;
+  background: var(--accent);
+  color: var(--accent-ink);
   border: none;
   border-radius: 8px;
   font-size: 0.9em;
   font-weight: 700;
   cursor: pointer;
   &:disabled { opacity: 0.5; cursor: wait; }
-  &:hover:not(:disabled) { background: #c73652; }
+  &:hover:not(:disabled) { background: var(--accent-hover); }
 }
 
 .btn-cancel {
@@ -509,7 +509,7 @@ input, textarea, select { margin: 0; padding: 0; }
   text-align: left;
   transition: border-color 0.15s, background 0.15s;
   &:hover { border-color: #58a6ff; }
-  &.selected { border-color: #e94560; background: rgba(233,69,96,0.1); color: #e6edf3; }
+  &.selected { border-color: var(--accent); background: rgb(var(--accent-rgb) / 0.1); color: #e6edf3; }
 }
 
 .addition-price {

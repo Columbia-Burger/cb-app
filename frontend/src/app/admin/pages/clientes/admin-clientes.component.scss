@@ -29,7 +29,7 @@
 }
 .search-bar input:focus {
   outline: none;
-  border-color: #e94560;
+  border-color: var(--accent);
 }
 .loading { color: #8b949e; }
 .table-wrapper {

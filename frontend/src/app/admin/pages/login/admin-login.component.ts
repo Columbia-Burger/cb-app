@@ -2,10 +2,11 @@ import { Component, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AdminService } from '../../services/admin.service';
+import { IconComponent } from '../../../shared/icon.component';
 
 @Component({
     selector: 'app-admin-login',
-    imports: [FormsModule],
+    imports: [FormsModule, IconComponent],
     templateUrl: './admin-login.component.html',
     styleUrl: './admin-login.component.scss'
 })
@@ -16,6 +17,7 @@ export class AdminLoginComponent {
   username = '';
   password = '';
   loading = signal(false);
+  showPassword = signal(false);
   error = signal('');
 
   constructor() {

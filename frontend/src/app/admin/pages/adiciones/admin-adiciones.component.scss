@@ -7,16 +7,16 @@
 .page-title { font-size: 1.5em; font-weight: 700; color: #e6edf3; margin: 0 0 0.2em; }
 .page-sub { color: #8b949e; font-size: 0.85em; margin: 0; }
 .create-btn {
-  background: #e94560; color: #fff; border: none; border-radius: 8px;
+  background: var(--accent); color: var(--accent-ink); border: none; border-radius: 8px;
   padding: 0.5em 1em; font-size: 0.85em; font-weight: 600; cursor: pointer;
   white-space: nowrap;
 }
-.create-btn:hover { background: #c73652; }
+.create-btn:hover { background: var(--accent-hover); }
 
 .loading { display: flex; align-items: center; gap: 0.75em; color: #8b949e; padding: 3em 0; }
 .spinner {
   width: 20px; height: 20px; border: 2px solid #30363d;
-  border-top-color: #e94560; border-radius: 50%;
+  border-top-color: var(--accent); border-radius: 50%;
   animation: spin 0.7s linear infinite;
 }
 @keyframes spin { to { transform: rotate(360deg); } }
@@ -53,7 +53,7 @@
   background: none; border: 1px solid #30363d; border-radius: 6px;
   color: #8b949e; font-size: 0.78em; padding: 0.3em 0.6em; cursor: pointer;
 }
-.action-btn:hover { border-color: #e94560; color: #e94560; }
+.action-btn:hover { border-color: var(--accent); color: var(--accent); }
 .toggle-action { font-size: 0.75em; }
 .toggle-action.deactivate:hover { border-color: #f85149; color: #f85149; }
 .action-btn:disabled { opacity: 0.4; cursor: wait; }
@@ -74,11 +74,11 @@
   background: #21262d; border: 1px solid #30363d; border-radius: 8px;
   color: #e6edf3; font-size: 0.9em; padding: 0.6em 0.75em; outline: none; width: 100%;
 }
-.form input:focus { border-color: #e94560; }
+.form input:focus { border-color: var(--accent); }
 .form-error { color: #f85149; font-size: 0.82em; margin: 0; }
 .sheet-actions { display: flex; gap: 0.75em; }
 .btn-save {
-  flex: 1; padding: 0.75em; background: #e94560; color: #fff;
+  flex: 1; padding: 0.75em; background: var(--accent); color: var(--accent-ink);
   border: none; border-radius: 8px; font-size: 0.9em; font-weight: 600; cursor: pointer;
 }
 .btn-save:disabled { opacity: 0.5; cursor: wait; }

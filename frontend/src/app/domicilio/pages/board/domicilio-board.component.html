@@ -340,7 +340,7 @@
             }
 
             <div class="flavor-options">
-              <button class="flavor-btn" style="background:#e94560;border-color:#e94560;color:#fff"
+              <button class="flavor-btn" style="background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:600"
                       [disabled]="savingEdit() || editItems().length === 0"
                       (click)="saveEdit()">
                 {{ savingEdit() ? 'Guardando...' : 'Guardar cambios' }}
@@ -368,7 +368,7 @@
               }
             </div>
             <div class="flavor-options" style="margin-top:0.75em">
-              <button class="flavor-btn" style="background:#e94560;border-color:#e94560;color:#fff"
+              <button class="flavor-btn" style="background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:600"
                       (click)="confirmEditProduct()">Agregar al pedido</button>
               <button class="flavor-cancel" (click)="editPendingProduct.set(null)">Cancelar</button>
             </div>
@@ -419,7 +419,7 @@
               }
             }
             <div class="flavor-options" style="margin-top:0.75em">
-              <button class="flavor-btn" style="background:#e94560;border-color:#e94560;color:#fff"
+              <button class="flavor-btn" style="background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:600"
                       [disabled]="!canConfirmCombo()"
                       (click)="confirmCombo()">Confirmar</button>
               <button class="flavor-cancel" (click)="pendingComboItem.set(null)">Cancelar</button>
@@ -452,7 +452,7 @@
               </div>
             }
             <div class="flavor-options" style="margin-top:0.75em">
-              <button class="flavor-btn" style="background:#e94560;border-color:#e94560;color:#fff" [disabled]="additionsAccepted() === null" (click)="confirmAdditions()">Confirmar</button>
+              <button class="flavor-btn" style="background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:600" [disabled]="additionsAccepted() === null" (click)="confirmAdditions()">Confirmar</button>
               <button class="flavor-cancel" (click)="cancelAdditions()">Cancelar</button>
             </div>
           </div>

@@ -7,7 +7,7 @@ $border-strong: #30363d;
 $ink: #e6edf3;
 $ink-2: #c9d1d9;
 $muted: #8b949e;
-$accent: #e94560;
+$accent: var(--accent);
 $series: #3987e5;
 $good: #3fb950;
 $bad: #f85149;
@@ -43,7 +43,7 @@ $bad: #f85149;
   background: $surface; border: 1px solid $border-strong; color: $muted;
   font-size: 0.85em; cursor: pointer; transition: all 0.15s; white-space: nowrap;
   &:hover { color: $ink; border-color: #484f58; }
-  &--active { background: $accent; border-color: $accent; color: #fff; &:hover { color: #fff; border-color: $accent; } }
+  &--active { background: $accent; border-color: $accent; color: var(--accent-ink); font-weight: 600; &:hover { color: var(--accent-ink); border-color: $accent; } }
 }
 .custom-range {
   display: flex; flex-wrap: wrap; align-items: flex-end; gap: 0.75em;
@@ -56,8 +56,8 @@ $bad: #f85149;
   }
 }
 .btn-apply {
-  padding: 0.6em 1.1em; border-radius: 8px; border: none; background: $accent; color: #fff;
-  font-weight: 600; cursor: pointer; &:hover { background: #c73652; }
+  padding: 0.6em 1.1em; border-radius: 8px; border: none; background: $accent; color: var(--accent-ink);
+  font-weight: 600; cursor: pointer; &:hover { background: var(--accent-hover); }
 }
 
 .alert-error {
