@@ -23,7 +23,7 @@
   background: #fff;
   padding: 4px;
   object-fit: contain;
-  box-shadow: 0 2px 12px rgba(233,69,96,0.25);
+  box-shadow: 0 2px 12px rgba(243, 165, 31, 0.25);
 }
 .brand-name { display: block; font-weight: 700; font-size: 1em; color: #e6edf3; }
 .brand-sub  { display: block; font-size: 0.75em; color: #8b949e; }
@@ -39,7 +39,7 @@
 .spinner {
   width: 32px; height: 32px;
   border: 3px solid #21262d;
-  border-top-color: #e94560;
+  border-top-color: #f3a51f;
   border-radius: 50%;
   animation: spin 0.7s linear infinite;
 }
@@ -119,9 +119,9 @@
   border-color: #3fb950;
 }
 .timeline-step.active .step-icon {
-  background: rgba(233,69,96,0.15);
-  border-color: #e94560;
-  box-shadow: 0 0 0 4px rgba(233,69,96,0.15);
+  background: rgba(243, 165, 31, 0.15);
+  border-color: #f3a51f;
+  box-shadow: 0 0 0 4px rgba(243, 165, 31, 0.15);
 }
 .step-line {
   flex: 1;
@@ -167,7 +167,7 @@
 
 .items-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.5em; }
 .item-row { display: flex; align-items: center; gap: 0.5em; font-size: 0.88em; }
-.item-qty { color: #e94560; font-weight: 700; min-width: 1.8em; }
+.item-qty { color: #f3a51f; font-weight: 700; min-width: 1.8em; }
 .item-name { color: #e6edf3; flex: 1; }
 .item-flavor { color: #8b949e; font-size: 0.85em; }
 

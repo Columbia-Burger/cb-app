@@ -3,14 +3,14 @@ $brand-dark: #1a1a1a;
 
 // ── Sección contenedor ───────────────────────────────────────────────────────
 .section-contact {
-  margin: 3rem 2rem;
-  background-color: $brand-dark;
-  border-radius: 1.6rem;
-  padding: 3.2rem 2.8rem;
+  // A todo el ancho sobre el fondo oscuro de la página (antes: tarjeta flotante sobre naranja)
+  width: min(120rem, 100%);
+  margin: 0 auto;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  padding: 7.2rem 2rem;
   display: flex;
   flex-direction: column;
-  gap: 3rem;
-  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.18);
+  gap: 3.6rem;
 }
 
 // ── Header ───────────────────────────────────────────────────────────────────

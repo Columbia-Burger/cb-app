@@ -9,10 +9,10 @@
 }
 
 // ── Tipografía global ─────────────────────────────────────────────────────────
-// Playfair Display: títulos, precios, badges, botones, labels
-// Lora: texto corrido, descripciones
+// Playfair Display: títulos y nombres de producto (personalidad de la marca)
+// Inter: texto corrido, descripciones, botones y precios (legibilidad)
 $font-display: 'Playfair Display', Georgia, serif;
-$font-body:    'Lora', Georgia, serif;
+$font-body:    'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
 
 * {
   box-sizing: border-box;
@@ -28,13 +28,14 @@ h1, h2, h3, h4, h5, h6,
 .detail-modal__name,
 .cart-drawer__title,
 .menu-hero__title,
-.menu-section__title,
-button,
-.btn,
+.menu-section__title {
+  font-family: $font-display;
+}
+
 .cart-total__value,
 .menu-card__price,
 .detail-modal__price {
-  font-family: $font-display;
+  font-variant-numeric: tabular-nums;
 }
 
 html {
@@ -105,7 +106,7 @@ html {
 
 body {
   font-size: 1.6rem;
-  background-color: #f3a51f;
+  background-color: #111214;
 }
 
 // Animación compartida para imágenes
@@ -175,4 +176,11 @@ textarea.form-control {
 .invalid-feedback {
   font-size: 0.875em;
   color: #e3342f;
+}
+
+// Las partes resaltadas de un título (p. ej. <span class="...--highlight">) heredan la fuente
+// del título; sin esto la regla global `*` les ponía la fuente del cuerpo.
+:is(h1, h2, h3, h4, h5, h6, .menu-card__name, .detail-modal__name, .menu-hero__title, .menu-section__title)
+  *:not([class*='fa-']):not(.fa):not(.fab):not(.fas):not(.far) {
+  font-family: inherit;
 }
