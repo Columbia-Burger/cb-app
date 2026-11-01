@@ -28,8 +28,7 @@ public class CreateOrderRequest {
     private Double customerLongitude;
 
     @NotEmpty
-    @Valid
-    private List<OrderItemRequest> items;
+    private List<@Valid OrderItemRequest> items;
 
     private BigDecimal deliveryFee;
 

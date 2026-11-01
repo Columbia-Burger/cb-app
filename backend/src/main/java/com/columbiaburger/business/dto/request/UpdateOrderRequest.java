@@ -9,8 +9,7 @@ import java.util.List;
 
 @Getter @Setter
 public class UpdateOrderRequest {
-    @Valid
-    private List<OrderItemRequest> items;
+    private List<@Valid OrderItemRequest> items;
     private BigDecimal deliveryFee;
     private String deliveryZone;
     private String notes;
