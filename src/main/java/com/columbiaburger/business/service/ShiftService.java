@@ -76,7 +76,8 @@ public class ShiftService {
                 .build();
     }
 
-    private ShiftResponse toResponseWithSummary(Shift s) {
+    // También lo usa ReportService para listar los turnos de un rango
+    ShiftResponse toResponseWithSummary(Shift s) {
         LocalDateTime to = s.getClosedAt() != null ? s.getClosedAt() : LocalDateTime.now();
         BigDecimal totalRevenue = orderRepository.sumTotalBetween(s.getOpenedAt(), to);
         long totalOrders = orderRepository.countByCreatedAtBetweenExcludingCancelled(s.getOpenedAt(), to);

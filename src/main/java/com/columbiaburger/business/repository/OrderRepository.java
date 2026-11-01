@@ -29,6 +29,15 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
             """)
     List<Order> findInvoicesForDay(@Param("from") LocalDateTime from, @Param("to") LocalDateTime to);
 
+    /** Todos los pedidos (incluidos cancelados) creados en [from, to), con cliente e ítems, para reportes. */
+    @EntityGraph(attributePaths = {"customer", "items"})
+    @Query("""
+            SELECT DISTINCT o FROM Order o
+            WHERE o.createdAt >= :from AND o.createdAt < :to
+            ORDER BY o.createdAt ASC
+            """)
+    List<Order> findForReport(@Param("from") LocalDateTime from, @Param("to") LocalDateTime to);
+
     long countByCreatedAtBetween(LocalDateTime from, LocalDateTime to);
     long countByStatus(OrderStatus status);
 
