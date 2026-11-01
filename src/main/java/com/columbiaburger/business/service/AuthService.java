@@ -7,6 +7,8 @@ import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -61,5 +63,19 @@ public class AuthService {
             return new LoginResponse(jwtUtil.generateToken(deliveryEmail, "DELIVERY"), deliveryEmail);
         }
         throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Credenciales inválidas");
+    }
+
+    public LoginResponse refresh(Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Sesión no válida");
+        }
+        String role = authentication.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .filter(a -> a.startsWith("ROLE_"))
+                .map(a -> a.substring("ROLE_".length()))
+                .findFirst()
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Sesión sin rol"));
+        String subject = authentication.getName();
+        return new LoginResponse(jwtUtil.generateToken(subject, role), subject);
     }
 }
