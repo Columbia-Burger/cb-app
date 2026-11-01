@@ -31,20 +31,20 @@ public class AdminService {
     private final CustomerRepository customerRepository;
 
     private static final ZoneId BOGOTA = ZoneId.of("America/Bogota");
-    private static final ZoneId UTC   = ZoneId.of("UTC");
 
-    private LocalDateTime toUtc(LocalDate date) {
-        return date.atStartOfDay(BOGOTA).withZoneSameInstant(UTC).toLocalDateTime();
+    // Los timestamps se guardan en hora de Bogotá (JVM con zona America/Bogota desde 2026-07-13)
+    private LocalDateTime dayStart(LocalDate date) {
+        return date.atStartOfDay();
     }
 
     @Transactional(readOnly = true)
     public DashboardStatsResponse getStats() {
         LocalDate today = LocalDate.now(BOGOTA);
-        LocalDateTime startOfDay = toUtc(today);
-        LocalDateTime endOfDay   = toUtc(today.plusDays(1));
+        LocalDateTime startOfDay = dayStart(today);
+        LocalDateTime endOfDay   = dayStart(today.plusDays(1));
 
-        LocalDateTime startOfWeek = toUtc(today.with(WeekFields.of(Locale.getDefault()).dayOfWeek(), 1));
-        LocalDateTime startOfMonth = toUtc(today.withDayOfMonth(1));
+        LocalDateTime startOfWeek = dayStart(today.with(WeekFields.of(Locale.getDefault()).dayOfWeek(), 1));
+        LocalDateTime startOfMonth = dayStart(today.withDayOfMonth(1));
         LocalDateTime endOfMonth = startOfMonth.plusMonths(1);
 
         BigDecimal revenueToday = orderRepository.sumTotalBetween(startOfDay, endOfDay);
@@ -77,8 +77,8 @@ public class AdminService {
         return IntStream.range(0, days)
                 .mapToObj(i -> LocalDate.now(BOGOTA).minusDays(days - 1 - i))
                 .map(date -> {
-                    LocalDateTime from = toUtc(date);
-                    LocalDateTime to   = toUtc(date.plusDays(1));
+                    LocalDateTime from = dayStart(date);
+                    LocalDateTime to   = dayStart(date.plusDays(1));
                     return DailyStatResponse.builder()
                             .date(date.toString())
                             .orders(orderRepository.countByCreatedAtBetweenExcludingCancelled(from, to))

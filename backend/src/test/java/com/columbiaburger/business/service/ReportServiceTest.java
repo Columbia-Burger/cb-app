@@ -45,9 +45,9 @@ class ReportServiceTest {
                 .thenReturn(List.of());
     }
 
-    /** Hora de Bogotá → UTC, como se guardan los pedidos. */
+    /** Los pedidos se guardan en hora de Bogotá. */
     private static LocalDateTime bogota(LocalDate date, int hour) {
-        return date.atTime(hour, 0).plusHours(5);
+        return date.atTime(hour, 0);
     }
 
     private Order order(long id, LocalDateTime createdAtUtc, OrderStatus status, OrderSource source,
@@ -71,9 +71,9 @@ class ReportServiceTest {
     }
 
     private void givenOrders(List<Order> current, List<Order> previous) {
-        when(orderRepository.findForReport(eq(ReportService.toUtc(DAY1)), eq(ReportService.toUtc(DAY2.plusDays(1)))))
+        when(orderRepository.findForReport(eq(ReportService.dayStart(DAY1)), eq(ReportService.dayStart(DAY2.plusDays(1)))))
                 .thenReturn(current);
-        when(orderRepository.findForReport(eq(ReportService.toUtc(DAY1.minusDays(2))), eq(ReportService.toUtc(DAY1))))
+        when(orderRepository.findForReport(eq(ReportService.dayStart(DAY1.minusDays(2))), eq(ReportService.dayStart(DAY1))))
                 .thenReturn(previous);
     }
 
@@ -86,8 +86,8 @@ class ReportServiceTest {
         b.setElectronicInvoiceNumber("CB138");
         b.setElectronicPaymentMethodCode("48");
         b.setRating(5);
-        // 23:30 en Bogotá del día 2 = día 3 en UTC: debe contar como día 2
-        Order c = order(3, DAY2.atTime(23, 30).plusHours(5), OrderStatus.DELIVERED, OrderSource.WEB, "20000", null, null,
+        // 23:30 del día 2 debe contar en el día 2 (y una de la madrugada del 3, en el 3)
+        Order c = order(3, DAY2.atTime(23, 30), OrderStatus.DELIVERED, OrderSource.WEB, "20000", null, null,
                 item("Papas", 2, "10000"));
         Order cancelled = order(4, bogota(DAY2, 13), OrderStatus.CANCELLED, OrderSource.WEB, "99000", null, null,
                 item("Clásica", 5, "19800"));

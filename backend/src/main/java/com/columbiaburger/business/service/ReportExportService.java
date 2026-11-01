@@ -185,7 +185,7 @@ public class ReportExportService {
         for (int i = 0; i < cols.length; i++) cell(h, i, cols[i], s.header);
         int row = 1;
         for (Order o : orders) {
-            LocalDateTime at = ReportService.toBogota(o.getCreatedAt());
+            LocalDateTime at = o.getCreatedAt();
             Row r = sh.createRow(row++);
             number(r, 0, o.getId(), null);
             cell(r, 1, at.format(DATE), null);

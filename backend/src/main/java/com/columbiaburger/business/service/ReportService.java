@@ -27,14 +27,14 @@ import java.util.stream.Collectors;
 
 /**
  * Reportes por rango de fechas. Las fechas del rango son días de Bogotá; en la base los pedidos
- * se guardan en hora UTC (igual que en AdminService), así que se convierte en ambos sentidos.
+ * se guardan en hora de Bogotá (la JVM corre con zona America/Bogota desde 2026-07-13), así que
+ * las fechas se usan tal cual, sin conversión.
  */
 @Service
 @RequiredArgsConstructor
 public class ReportService {
 
     static final ZoneId BOGOTA = ZoneId.of("America/Bogota");
-    private static final ZoneId UTC = ZoneId.of("UTC");
     static final int MAX_DAYS = 366;
 
     private static final String[] WEEKDAYS = {"Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"};
@@ -54,7 +54,7 @@ public class ReportService {
     @Transactional(readOnly = true)
     public ReportData load(LocalDate from, LocalDate to) {
         validateRange(from, to);
-        List<Order> orders = orderRepository.findForReport(toUtc(from), toUtc(to.plusDays(1)));
+        List<Order> orders = orderRepository.findForReport(dayStart(from), dayStart(to.plusDays(1)));
         List<Order> valid = orders.stream().filter(o -> o.getStatus() != OrderStatus.CANCELLED).toList();
         List<Order> cancelled = orders.stream().filter(o -> o.getStatus() == OrderStatus.CANCELLED).toList();
 
@@ -67,7 +67,7 @@ public class ReportService {
         long days = ChronoUnit.DAYS.between(from, to) + 1;
         LocalDate prevTo = from.minusDays(1);
         LocalDate prevFrom = prevTo.minusDays(days - 1);
-        List<Order> previousOrders = orderRepository.findForReport(toUtc(prevFrom), toUtc(prevTo.plusDays(1)))
+        List<Order> previousOrders = orderRepository.findForReport(dayStart(prevFrom), dayStart(prevTo.plusDays(1)))
                 .stream().filter(o -> o.getStatus() != OrderStatus.CANCELLED).toList();
         BigDecimal prevRevenue = sum(previousOrders, Order::getTotal);
 
@@ -142,7 +142,7 @@ public class ReportService {
     }
 
     private List<HourRow> buildHourly(List<Order> valid) {
-        Map<Integer, List<Order>> byHour = valid.stream().collect(Collectors.groupingBy(o -> toBogota(o.getCreatedAt()).getHour()));
+        Map<Integer, List<Order>> byHour = valid.stream().collect(Collectors.groupingBy(o -> o.getCreatedAt().getHour()));
         return byHour.keySet().stream().sorted()
                 .map(h -> HourRow.builder().hour(h).orders(byHour.get(h).size()).revenue(sum(byHour.get(h), Order::getTotal)).build())
                 .toList();
@@ -185,7 +185,7 @@ public class ReportService {
 
     private List<ShiftRow> buildShifts(LocalDate from, LocalDate to) {
         return shiftRepository
-                .findByOpenedAtGreaterThanEqualAndOpenedAtLessThanOrderByOpenedAtDesc(toUtc(from), toUtc(to.plusDays(1)))
+                .findByOpenedAtGreaterThanEqualAndOpenedAtLessThanOrderByOpenedAtDesc(dayStart(from), dayStart(to.plusDays(1)))
                 .stream()
                 .map(shiftService::toResponseWithSummary)
                 .map(this::toShiftRow)
@@ -195,8 +195,8 @@ public class ReportService {
     private ShiftRow toShiftRow(ShiftResponse s) {
         return ShiftRow.builder()
                 .id(s.getId())
-                .openedAt(s.getOpenedAt() != null ? toBogota(s.getOpenedAt()).toString() : null)
-                .closedAt(s.getClosedAt() != null ? toBogota(s.getClosedAt()).toString() : null)
+                .openedAt(s.getOpenedAt() != null ? s.getOpenedAt().toString() : null)
+                .closedAt(s.getClosedAt() != null ? s.getClosedAt().toString() : null)
                 .active(s.isActive())
                 .orders(s.getTotalOrders() != null ? s.getTotalOrders() : 0)
                 .revenue(s.getTotalRevenue())
@@ -242,15 +242,12 @@ public class ReportService {
         return value != null && value.signum() > 0;
     }
 
-    static LocalDateTime toUtc(LocalDate bogotaDate) {
-        return bogotaDate.atStartOfDay(BOGOTA).withZoneSameInstant(UTC).toLocalDateTime();
+    /** Inicio del día en la base (los timestamps se guardan en hora de Bogotá). */
+    static LocalDateTime dayStart(LocalDate bogotaDate) {
+        return bogotaDate.atStartOfDay();
     }
 
-    static LocalDateTime toBogota(LocalDateTime utc) {
-        return utc.atZone(UTC).withZoneSameInstant(BOGOTA).toLocalDateTime();
-    }
-
-    static LocalDate bogotaDate(LocalDateTime utc) {
-        return toBogota(utc).toLocalDate();
+    static LocalDate bogotaDate(LocalDateTime stored) {
+        return stored.toLocalDate();
     }
 }
