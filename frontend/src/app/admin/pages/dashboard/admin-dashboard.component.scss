@@ -167,3 +167,16 @@
   animation: shimmer 1.2s linear infinite;
 }
 @keyframes shimmer { to { background-position: -200% 0; } }
+
+/* Tarjeta de turno: lleva a Turno y caja */
+.kpi--link {
+  text-decoration: none;
+  color: inherit;
+  transition: border-color 0.15s, transform 0.1s;
+  &:hover { border-color: var(--staff-border-strong); }
+  &:active { transform: scale(0.99); }
+}
+.kpi__foot--accent { color: var(--accent); font-weight: 600; }
+.delta { font-weight: 700; color: var(--staff-muted); margin-right: 0.15em; }
+.delta--up { color: var(--staff-success); }
+.delta--down { color: var(--staff-danger); }

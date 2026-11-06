@@ -4,6 +4,7 @@ import com.columbiaburger.business.entity.Order;
 import com.columbiaburger.business.entity.OrderStatus;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -40,6 +41,22 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
 
     long countByCreatedAtBetween(LocalDateTime from, LocalDateTime to);
     long countByStatus(OrderStatus status);
+
+    /**
+     * Cierra como entregados los pedidos de días anteriores que nadie movió de estado.
+     * Marca la calificación como ya solicitada para no escribirle al cliente por pedidos viejos.
+     */
+    @Modifying
+    @Query("""
+            UPDATE Order o
+               SET o.status = com.columbiaburger.business.entity.OrderStatus.DELIVERED,
+                   o.ratingRequestSent = true
+             WHERE o.status IN (com.columbiaburger.business.entity.OrderStatus.RECEIVED,
+                                com.columbiaburger.business.entity.OrderStatus.PREPARING,
+                                com.columbiaburger.business.entity.OrderStatus.ON_THE_WAY)
+               AND o.createdAt < :before
+            """)
+    int closeStaleOrders(@Param("before") LocalDateTime before);
 
     @Query("SELECT COALESCE(SUM(o.total), 0) FROM Order o WHERE o.createdAt BETWEEN :from AND :to AND o.status != 'CANCELLED'")
     BigDecimal sumTotalBetween(@Param("from") LocalDateTime from, @Param("to") LocalDateTime to);

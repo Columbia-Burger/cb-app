@@ -1,8 +1,8 @@
 import { Component, inject, signal, computed, OnInit, ElementRef, ViewChild, OnDestroy } from '@angular/core';
-import { CurrencyPipe, DecimalPipe } from '@angular/common';
+import { CurrencyPipe, DatePipe, DecimalPipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { AdminService } from '../../services/admin.service';
-import { DashboardStats, TopProduct, DailyStatResponse, SourceStatResponse } from '../../models/admin.model';
+import { DashboardStats, TopProduct, DailyStatResponse, SourceStatResponse, ShiftResponse } from '../../models/admin.model';
 import { Chart, registerables } from 'chart.js';
 import { IconComponent } from '../../../shared/icon.component';
 
@@ -14,7 +14,7 @@ const SOURCE_COLORS: Record<string, string> = { WEB: '#3987e5', WHATSAPP: '#d959
 
 @Component({
     selector: 'app-admin-dashboard',
-    imports: [CurrencyPipe, DecimalPipe, RouterLink, IconComponent],
+    imports: [CurrencyPipe, DatePipe, DecimalPipe, RouterLink, IconComponent],
     templateUrl: './admin-dashboard.component.html',
     styleUrl: './admin-dashboard.component.scss'
 })
@@ -40,6 +40,17 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
   topProducts = signal<TopProduct[]>([]);
   dailyStats = signal<DailyStatResponse[]>([]);
   sourceStats = signal<SourceStatResponse[]>([]);
+  /** Turno abierto; null = no hay turno abierto; undefined = cargando. */
+  shift = signal<ShiftResponse | null | undefined>(undefined);
+  /** Ventas de los mismos días del mes pasado (1 al día de hoy). */
+  private previousMonth = signal<{ revenue: number; label: string } | null>(null);
+
+  monthDelta = computed(() => {
+    const prev = this.previousMonth();
+    const s = this.stats();
+    if (!prev || !s || prev.revenue <= 0) return null;
+    return { pct: Math.round(((Number(s.revenueThisMonth) - prev.revenue) / prev.revenue) * 100), label: prev.label };
+  });
 
   ticketPromedio = computed(() => {
     const s = this.stats();
@@ -65,6 +76,28 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
       }
     });
     this.adminService.getStatsBySource().subscribe({ next: data => this.sourceStats.set(data) });
+    this.adminService.getCurrentShift().subscribe({
+      next: t => this.shift.set('openedAt' in t && t.active ? t : null),
+      error: () => this.shift.set(null),
+    });
+    this.loadPreviousMonth();
+  }
+
+  /** Pide a Reportes las ventas del 1 al mismo día del mes pasado (o su último día si es más corto). */
+  private loadPreviousMonth(): void {
+    const today = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Bogota' }).format(new Date());
+    const [y, m, d] = today.split('-').map(Number);
+    const py = m === 1 ? y - 1 : y;
+    const pm = m === 1 ? 12 : m - 1;
+    const lastDay = new Date(Date.UTC(py, pm, 0)).getUTCDate();
+    const pd = Math.min(d, lastDay);
+    const pad = (n: number) => String(n).padStart(2, '0');
+    const from = `${py}-${pad(pm)}-01`;
+    const to = `${py}-${pad(pm)}-${pad(pd)}`;
+    const month = new Intl.DateTimeFormat('es-CO', { month: 'short', timeZone: 'UTC' }).format(new Date(Date.UTC(py, pm - 1, 1))).replace('.', '');
+    this.adminService.getReport(from, to).subscribe({
+      next: r => this.previousMonth.set({ revenue: Number(r.summary.revenue), label: pd === 1 ? `1 ${month}` : `1–${pd} ${month}` }),
+    });
   }
 
   ngOnDestroy(): void {

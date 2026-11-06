@@ -28,26 +28,38 @@
         <div class="kpi__value">{{ s.ordersToday }}</div>
         <div class="kpi__foot">{{ s.ordersThisWeek }} esta semana · {{ s.ordersThisMonth }} este mes</div>
       </div>
-      <div class="kpi" [class.kpi--alert]="s.pendingOrders > 0">
-        <div class="kpi__head"><span class="kpi__label">En cocina</span><app-icon name="clock" /></div>
-        <div class="kpi__value">{{ s.pendingOrders }}</div>
-        <div class="kpi__foot">
-          <app-icon name="truck" [size]="14" /> {{ s.onTheWayOrders }} en camino
-        </div>
-      </div>
-      <div class="kpi">
-        <div class="kpi__head"><span class="kpi__label">Calificación</span><app-icon name="star" /></div>
-        @if (s.averageRating) {
-          <div class="kpi__value">{{ s.averageRating | number:'1.1-1' }}<span class="kpi__unit">/ 5</span></div>
+      <!-- Turno y caja: lo que hay que cuadrar al cerrar -->
+      <a class="kpi kpi--link" routerLink="/admin/turno" [class.kpi--alert]="shift() === null">
+        <div class="kpi__head"><span class="kpi__label">Turno y caja</span><app-icon name="shift" /></div>
+        @if (shift(); as t) {
+          <div class="kpi__value">{{ (t.totalRevenue ?? 0) | currency:'COP':'symbol-narrow':'1.0-0' }}</div>
           <div class="kpi__foot">
-            <span class="stars" [attr.aria-label]="'Promedio ' + (s.averageRating | number:'1.1-1') + ' de 5'">
-              @for (i of [1, 2, 3, 4, 5]; track i) { <span [class.on]="i <= roundRating(s.averageRating)">★</span> }
-            </span>
-            {{ s.ratedOrdersCount }} reseñas
+            Abierto desde {{ t.openedAt | date:'h:mm a' }} · {{ t.totalOrders ?? 0 }} pedidos
           </div>
+          @if (t.expectedCash !== null) {
+            <div class="kpi__foot">Efectivo esperado {{ t.expectedCash | currency:'COP':'symbol-narrow':'1.0-0' }}</div>
+          }
+        } @else if (shift() === null) {
+          <div class="kpi__value kpi__value--muted">Sin turno</div>
+          <div class="kpi__foot kpi__foot--accent">Abrir turno →</div>
         } @else {
           <div class="kpi__value kpi__value--muted">—</div>
-          <div class="kpi__foot">Sin calificaciones aún</div>
+        }
+      </a>
+
+      <!-- Ventas del mes vs. los mismos días del mes pasado -->
+      <div class="kpi">
+        <div class="kpi__head"><span class="kpi__label">Ventas del mes</span><app-icon name="trend-up" /></div>
+        <div class="kpi__value">{{ s.revenueThisMonth | currency:'COP':'symbol-narrow':'1.0-0' }}</div>
+        @if (monthDelta(); as d) {
+          <div class="kpi__foot">
+            <span class="delta" [class.delta--up]="d.pct > 0" [class.delta--down]="d.pct < 0">
+              {{ d.pct > 0 ? '▲ +' : d.pct < 0 ? '▼ ' : '= ' }}{{ d.pct }}%
+            </span>
+            vs {{ d.label }}
+          </div>
+        } @else {
+          <div class="kpi__foot">{{ s.ordersThisMonth }} pedidos este mes</div>
         }
       </div>
     </section>
@@ -60,7 +72,6 @@
             <h2 class="dcard__title">Ventas de los últimos 7 días</h2>
             <p class="dcard__sub">{{ weekRevenue() | currency:'COP':'symbol-narrow':'1.0-0' }} · {{ weekOrders() }} pedidos</p>
           </div>
-          <span class="dcard__meta">Mes: {{ s.revenueThisMonth | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
         </div>
         @if (dailyStats().length) {
           <div class="chart-box"><canvas #salesChart aria-label="Ventas por día, últimos 7 días"></canvas></div>
