@@ -3,6 +3,7 @@ import { CurrencyPipe, DatePipe, DecimalPipe, NgTemplateOutlet } from '@angular/
 import { HttpResponse } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { Chart, ChartConfiguration, registerables } from 'chart.js';
+import { forkJoin } from 'rxjs';
 import { AdminService } from '../../services/admin.service';
 import { ReportGroupRow, ReportResponse } from '../../models/admin.model';
 
@@ -34,6 +35,13 @@ function addDays(iso: string, days: number): string {
 function shortDate(iso: string): string {
   const [, m, d] = iso.split('-');
   return `${d}/${m}`;
+}
+
+function monthBounds(month: string): [string, string] {
+  const [year, value] = month.split('-').map(Number);
+  const first = `${year}-${String(value).padStart(2, '0')}-01`;
+  const last = new Date(Date.UTC(year, value, 0));
+  return [first, last.toISOString().slice(0, 10)];
 }
 
 @Component({
@@ -93,6 +101,13 @@ export class AdminReportesComponent implements OnInit, OnDestroy {
   error = signal('');
   exporting = signal(false);
   showAllProducts = signal(false);
+  showMonthComparison = signal(false);
+  comparingMonths = signal(false);
+  monthA = bogotaToday().slice(0, 7);
+  monthB = addDays(`${bogotaToday().slice(0, 7)}-01`, -1).slice(0, 7);
+  monthReportA = signal<ReportResponse | null>(null);
+  monthReportB = signal<ReportResponse | null>(null);
+  readonly maxMonth = bogotaToday().slice(0, 7);
 
   private dailyChart?: Chart;
   private hourChart?: Chart;
@@ -115,9 +130,6 @@ export class AdminReportesComponent implements OnInit, OnDestroy {
     const all = this.report()?.topProducts ?? [];
     return this.showAllProducts() ? all : all.slice(0, 10);
   });
-
-  topFoodProducts = computed(() => (this.report()?.topFoodProducts ?? []).slice(0, 10));
-  maxFoodProductQty = computed(() => Math.max(1, ...this.topFoodProducts().map(p => p.quantity)));
 
   maxProductQty = computed(() => Math.max(1, ...(this.report()?.topProducts ?? []).map(p => p.quantity)));
 
@@ -163,6 +175,35 @@ export class AdminReportesComponent implements OnInit, OnDestroy {
       ? [this.customFrom, this.customTo]
       : [this.customTo, this.customFrom];
     this.load(f, t);
+  }
+
+  toggleMonthComparison(): void {
+    this.showMonthComparison.update(show => !show);
+    if (this.showMonthComparison() && !this.monthReportA()) this.compareMonths();
+  }
+
+  compareMonths(): void {
+    if (!this.monthA || !this.monthB) return;
+    const [fromA, toA] = monthBounds(this.monthA);
+    const [fromB, toB] = monthBounds(this.monthB);
+    this.comparingMonths.set(true);
+    this.error.set('');
+    forkJoin([this.svc.getReport(fromA, toA), this.svc.getReport(fromB, toB)]).subscribe({
+      next: ([a, b]) => {
+        this.monthReportA.set(a);
+        this.monthReportB.set(b);
+        this.comparingMonths.set(false);
+      },
+      error: err => {
+        this.error.set(err?.error?.message ?? 'No se pudieron comparar los meses');
+        this.comparingMonths.set(false);
+      },
+    });
+  }
+
+  monthLabel(month: string): string {
+    return new Intl.DateTimeFormat('es-CO', { month: 'long', year: 'numeric', timeZone: 'UTC' })
+      .format(new Date(`${month}-01T12:00:00Z`));
   }
 
   private load(from: string, to: string): void {

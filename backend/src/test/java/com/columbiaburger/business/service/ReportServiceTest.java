@@ -149,6 +149,17 @@ class ReportServiceTest {
     }
 
     @Test
+    void topProductsExcludesDrinks() {
+        givenOrders(List.of(order(10, bogota(DAY1, 12), OrderStatus.DELIVERED, OrderSource.WEB, "30000", null, null,
+                item("Hamburguesa clásica", 1, "25000"), item("Gaseosa Postobón 400ml", 1, "5000"))), List.of());
+
+        ReportResponse report = service.build(DAY1, DAY2);
+
+        assertThat(report.getTopProducts()).extracting(ReportResponse.ProductRow::getName)
+                .containsExactly("Hamburguesa clásica");
+    }
+
+    @Test
     void rejectsInvalidRanges() {
         assertThatThrownBy(() -> service.build(DAY2, DAY1)).isInstanceOf(ResponseStatusException.class);
         assertThatThrownBy(() -> service.build(DAY1, DAY1.plusDays(400))).isInstanceOf(ResponseStatusException.class);
@@ -161,7 +172,7 @@ class ReportServiceTest {
         byte[] xlsx = new ReportExportService(service).exportXlsx(DAY1, DAY2);
 
         try (Workbook wb = new XSSFWorkbook(new ByteArrayInputStream(xlsx))) {
-            assertThat(wb.getNumberOfSheets()).isEqualTo(6);
+            assertThat(wb.getNumberOfSheets()).isEqualTo(5);
             assertThat(wb.getSheetName(0)).isEqualTo("Resumen");
             Sheet orders = wb.getSheet("Pedidos");
             assertThat(orders.getLastRowNum()).isEqualTo(4); // encabezado + 4 pedidos (incluye cancelado)

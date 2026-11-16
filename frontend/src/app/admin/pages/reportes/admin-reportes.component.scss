@@ -60,6 +60,25 @@ $bad: var(--staff-danger);
   font-weight: 600; cursor: pointer; &:hover { background: var(--accent-hover); }
 }
 
+.compare-toggle {
+  align-self: flex-start; background: transparent; color: $ink-2; border: 1px solid $border-strong;
+  padding: .55em .9em; border-radius: 8px; cursor: pointer; font-weight: 600;
+  &:hover, &--active { border-color: $series; color: $ink; }
+}
+.month-compare {
+  background: $surface; border: 1px solid $border-strong; border-radius: 12px; padding: 1em;
+  &__form { display: flex; flex-wrap: wrap; align-items: end; gap: .75em; }
+  label { display: flex; flex-direction: column; gap: .3em; color: $muted; font-size: .75em; text-transform: uppercase; letter-spacing: .04em; }
+  input { background: $surface-sunken; border: 1px solid $border-strong; border-radius: 8px; color: $ink; padding: .5em .7em; color-scheme: dark; }
+  &__versus { color: $muted; padding-bottom: .5em; font-size: .85em; }
+  &__table { margin-top: 1em; border-top: 1px solid $border; }
+  &__table > div { display: grid; grid-template-columns: 1.25fr 1fr 1fr; gap: .75em; padding: .65em 0; border-bottom: 1px solid $border; font-size: .88em; }
+  &__table span { color: $muted; }
+  &__table strong { color: $ink; text-align: right; font-variant-numeric: tabular-nums; }
+  &__head strong { color: $series; text-transform: capitalize; font-size: .9em; }
+  @media (max-width: 480px) { &__table > div { grid-template-columns: 1fr .85fr .85fr; gap: .35em; } }
+}
+
 .alert-error {
   background: rgba(248, 81, 73, 0.1); border: 1px solid rgba(248, 81, 73, 0.35);
   color: #ff7b72; border-radius: 10px; padding: 0.75em 1em; margin-bottom: 1em; font-size: 0.9em;

@@ -46,7 +46,6 @@ public class ReportExportService {
             writeSummary(wb, s, r);
             writeDaily(wb, s, r.getDaily());
             writeProducts(wb, s, r.getTopProducts());
-            writeProducts(wb, s, r.getTopFoodProducts(), "Más vendidos sin bebidas");
             writeOrders(wb, s, data.orders());
             writeShifts(wb, s, r.getShifts());
             wb.write(out);
@@ -162,11 +161,7 @@ public class ReportExportService {
     }
 
     private void writeProducts(Workbook wb, Styles s, List<ProductRow> products) {
-        writeProducts(wb, s, products, "Productos");
-    }
-
-    private void writeProducts(Workbook wb, Styles s, List<ProductRow> products, String sheetName) {
-        Sheet sh = wb.createSheet(sheetName);
+        Sheet sh = wb.createSheet("Productos");
         Row h = sh.createRow(0);
         String[] cols = {"Producto", "Cantidad", "Ventas"};
         for (int i = 0; i < cols.length; i++) cell(h, i, cols[i], s.header);

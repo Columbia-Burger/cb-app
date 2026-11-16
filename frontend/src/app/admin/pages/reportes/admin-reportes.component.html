@@ -30,6 +30,28 @@
         <button class="btn-apply" (click)="applyCustom()">Ver reporte</button>
       </div>
     }
+    <button type="button" class="compare-toggle" [class.compare-toggle--active]="showMonthComparison()" (click)="toggleMonthComparison()">
+      {{ showMonthComparison() ? 'Ocultar comparación mensual' : 'Comparar dos meses' }}
+    </button>
+    @if (showMonthComparison()) {
+      <section class="month-compare" aria-label="Comparar meses">
+        <div class="month-compare__form">
+          <label>Mes A <input type="month" [(ngModel)]="monthA" [max]="maxMonth" /></label>
+          <span class="month-compare__versus">vs.</span>
+          <label>Mes B <input type="month" [(ngModel)]="monthB" [max]="maxMonth" /></label>
+          <button class="btn-apply" [disabled]="comparingMonths()" (click)="compareMonths()">{{ comparingMonths() ? 'Comparando…' : 'Comparar' }}</button>
+        </div>
+        @if (monthReportA(); as a) { @if (monthReportB(); as b) {
+          <div class="month-compare__table">
+            <div class="month-compare__head"><span>Indicador</span><strong>{{ monthLabel(monthA) }}</strong><strong>{{ monthLabel(monthB) }}</strong></div>
+            <div><span>Ventas</span><strong>{{ a.summary.revenue | currency:'COP':'symbol-narrow':'1.0-0' }}</strong><strong>{{ b.summary.revenue | currency:'COP':'symbol-narrow':'1.0-0' }}</strong></div>
+            <div><span>Pedidos</span><strong>{{ a.summary.orders }}</strong><strong>{{ b.summary.orders }}</strong></div>
+            <div><span>Ticket promedio</span><strong>{{ a.summary.averageTicket | currency:'COP':'symbol-narrow':'1.0-0' }}</strong><strong>{{ b.summary.averageTicket | currency:'COP':'symbol-narrow':'1.0-0' }}</strong></div>
+            <div><span>Productos vendidos</span><strong>{{ a.summary.itemsSold }}</strong><strong>{{ b.summary.itemsSold }}</strong></div>
+          </div>
+        } }
+      </section>
+    }
   </div>
 
   @if (error()) {
@@ -176,22 +198,7 @@
 
       <!-- Productos -->
       <section class="card">
-        <h3 class="card__title">Más vendidos sin bebidas <span class="count">{{ r.topFoodProducts.length }}</span></h3>
-        @if (r.topFoodProducts.length) {
-          <div class="table-wrap"><table class="rtable">
-            <thead><tr><th class="num">#</th><th>Producto</th><th class="num">Cantidad</th><th class="hide-sm"></th><th class="num">Ventas</th></tr></thead>
-            <tbody>@for (p of topFoodProducts(); track p.name; let i = $index) {
-              <tr><td class="num muted">{{ i + 1 }}</td><td>{{ p.name }}</td><td class="num">{{ p.quantity }}</td>
-                <td class="hide-sm bar-cell"><div class="track"><div class="fill fill--series" [style.width.%]="(p.quantity / maxFoodProductQty()) * 100"></div></div></td>
-                <td class="num">{{ p.revenue | currency:'COP':'symbol-narrow':'1.0-0' }}</td></tr>
-            }</tbody>
-          </table></div>
-          @if (r.topFoodProducts.length > 10) { <p class="muted small">Se muestran los 10 primeros de {{ r.topFoodProducts.length }} productos.</p> }
-        } @else { <p class="muted small">No hay productos diferentes de bebidas en este periodo.</p> }
-      </section>
-
-      <section class="card">
-        <h3 class="card__title">Productos vendidos <span class="count">{{ r.topProducts.length }}</span></h3>
+        <h3 class="card__title">Productos más vendidos <span class="count">{{ r.topProducts.length }}</span></h3>
         <div class="table-wrap">
           <table class="rtable">
             <thead>

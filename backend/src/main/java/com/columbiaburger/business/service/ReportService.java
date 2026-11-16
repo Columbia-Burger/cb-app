@@ -160,7 +160,7 @@ public class ReportService {
     }
 
     private List<ProductRow> buildTopProducts(List<Order> valid) {
-        return buildProducts(valid, false);
+        return buildProducts(valid, true);
     }
 
     private List<ProductRow> buildTopFoodProducts(List<Order> valid) {
@@ -190,7 +190,9 @@ public class ReportService {
         return name.contains("gaseosa") || name.contains("bebida") || name.contains("jugo")
                 || name.contains("agua") || name.contains("cerveza") || name.contains("postob")
                 || name.contains("hit") || name.contains("té") || name.contains("te ")
-                || name.contains("malta") || name.contains("limonada") || name.contains("coca cola");
+                || name.contains("malta") || name.contains("limonada") || name.contains("coca cola")
+                || name.contains("coca-cola") || name.contains("colombiana") || name.contains("soda")
+                || name.contains("tea");
     }
 
     private List<CouponRow> buildCoupons(List<Order> valid) {
