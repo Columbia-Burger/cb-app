@@ -69,7 +69,23 @@ public class AdminService {
 
     @Transactional(readOnly = true)
     public List<TopProductResponse> getTopProducts(int limit) {
-        return orderItemRepository.findTopProducts(limit);
+        int safeLimit = Math.max(1, Math.min(limit, 50));
+        return orderItemRepository.findTopProducts(Math.max(safeLimit * 5, 50)).stream()
+                .filter(product -> !isDrink(product.getProductName()))
+                .limit(safeLimit)
+                .toList();
+    }
+
+    /** Los pedidos históricos conservan el nombre del producto, usado para omitir bebidas del ranking. */
+    private boolean isDrink(String productName) {
+        if (productName == null) return false;
+        String name = productName.toLowerCase(Locale.ROOT);
+        return name.contains("gaseosa") || name.contains("bebida") || name.contains("jugo")
+                || name.contains("agua") || name.contains("cerveza") || name.contains("postob")
+                || name.contains("hit") || name.contains("té") || name.contains("te ")
+                || name.contains("malta") || name.contains("limonada") || name.contains("coca cola")
+                || name.contains("coca-cola") || name.contains("colombiana") || name.contains("soda")
+                || name.contains("tea");
     }
 
     @Transactional(readOnly = true)
