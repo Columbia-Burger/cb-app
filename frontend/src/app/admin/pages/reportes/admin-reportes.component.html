@@ -176,6 +176,21 @@
 
       <!-- Productos -->
       <section class="card">
+        <h3 class="card__title">Más vendidos sin bebidas <span class="count">{{ r.topFoodProducts.length }}</span></h3>
+        @if (r.topFoodProducts.length) {
+          <div class="table-wrap"><table class="rtable">
+            <thead><tr><th class="num">#</th><th>Producto</th><th class="num">Cantidad</th><th class="hide-sm"></th><th class="num">Ventas</th></tr></thead>
+            <tbody>@for (p of topFoodProducts(); track p.name; let i = $index) {
+              <tr><td class="num muted">{{ i + 1 }}</td><td>{{ p.name }}</td><td class="num">{{ p.quantity }}</td>
+                <td class="hide-sm bar-cell"><div class="track"><div class="fill fill--series" [style.width.%]="(p.quantity / maxFoodProductQty()) * 100"></div></div></td>
+                <td class="num">{{ p.revenue | currency:'COP':'symbol-narrow':'1.0-0' }}</td></tr>
+            }</tbody>
+          </table></div>
+          @if (r.topFoodProducts.length > 10) { <p class="muted small">Se muestran los 10 primeros de {{ r.topFoodProducts.length }} productos.</p> }
+        } @else { <p class="muted small">No hay productos diferentes de bebidas en este periodo.</p> }
+      </section>
+
+      <section class="card">
         <h3 class="card__title">Productos vendidos <span class="count">{{ r.topProducts.length }}</span></h3>
         <div class="table-wrap">
           <table class="rtable">

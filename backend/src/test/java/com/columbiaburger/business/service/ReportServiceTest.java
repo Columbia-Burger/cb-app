@@ -161,7 +161,7 @@ class ReportServiceTest {
         byte[] xlsx = new ReportExportService(service).exportXlsx(DAY1, DAY2);
 
         try (Workbook wb = new XSSFWorkbook(new ByteArrayInputStream(xlsx))) {
-            assertThat(wb.getNumberOfSheets()).isEqualTo(5);
+            assertThat(wb.getNumberOfSheets()).isEqualTo(6);
             assertThat(wb.getSheetName(0)).isEqualTo("Resumen");
             Sheet orders = wb.getSheet("Pedidos");
             assertThat(orders.getLastRowNum()).isEqualTo(4); // encabezado + 4 pedidos (incluye cancelado)

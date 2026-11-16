@@ -153,6 +153,13 @@ export class OrderBuilderComponent {
     this.pendingProduct.set(null);
   }
 
+  /** Restaura un borrador validado por la pantalla contenedora y evita reutilizar identificadores. */
+  restoreCart(items: CartItem[]): void {
+    const valid = items.filter(item => item && item.product && item.product.id && item.quantity > 0);
+    this.cart.set(valid);
+    this.nextUid = Math.max(1, ...valid.map(item => item.uid || 0)) + 1;
+  }
+
   // ── Agregar productos: un toque ──────────────────────────────
 
   addToCart(product: CatalogProduct): void {

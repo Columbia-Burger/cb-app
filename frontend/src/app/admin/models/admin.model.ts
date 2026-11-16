@@ -400,6 +400,7 @@ export interface ReportResponse {
   byHour: ReportHourRow[];
   byWeekday: ReportGroupRow[];
   topProducts: ReportProductRow[];
+  topFoodProducts: ReportProductRow[];
   electronicByPaymentMethod: ReportGroupRow[];
   coupons: ReportCouponRow[];
   shifts: ReportShiftRow[];

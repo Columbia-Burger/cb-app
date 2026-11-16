@@ -42,5 +42,13 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./pages/privacidad/privacidad.component').then(m => m.PrivacidadComponent)
   },
+  {
+    path: 'terminos',
+    loadComponent: () => import('./pages/terminos/terminos.component').then(m => m.TerminosComponent)
+  },
+  {
+    path: 'aviso-privacidad',
+    loadComponent: () => import('./pages/aviso-privacidad/aviso-privacidad.component').then(m => m.AvisoPrivacidadComponent)
+  },
   { path: '**', redirectTo: '' },
 ];

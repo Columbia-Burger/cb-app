@@ -111,6 +111,7 @@ public class ReportService {
                 .byHour(buildHourly(valid))
                 .byWeekday(buildWeekday(valid))
                 .topProducts(buildTopProducts(valid))
+                .topFoodProducts(buildTopFoodProducts(valid))
                 .electronicByPaymentMethod(group(electronic, o -> paymentMethodLabel(o.getElectronicPaymentMethodCode())))
                 .coupons(buildCoupons(valid))
                 .shifts(buildShifts(from, to))
@@ -159,10 +160,19 @@ public class ReportService {
     }
 
     private List<ProductRow> buildTopProducts(List<Order> valid) {
+        return buildProducts(valid, false);
+    }
+
+    private List<ProductRow> buildTopFoodProducts(List<Order> valid) {
+        return buildProducts(valid, true);
+    }
+
+    private List<ProductRow> buildProducts(List<Order> valid, boolean withoutDrinks) {
         Map<String, long[]> qty = new HashMap<>();
         Map<String, BigDecimal> revenue = new HashMap<>();
         for (Order o : valid) {
             for (OrderItem i : items(o)) {
+                if (withoutDrinks && isDrink(i.getProductName())) continue;
                 qty.computeIfAbsent(i.getProductName(), k -> new long[1])[0] += i.getQuantity();
                 revenue.merge(i.getProductName(), i.getUnitPrice().multiply(BigDecimal.valueOf(i.getQuantity())), BigDecimal::add);
             }
@@ -171,6 +181,16 @@ public class ReportService {
                 .map(name -> ProductRow.builder().name(name).quantity(qty.get(name)[0]).revenue(revenue.get(name)).build())
                 .sorted(Comparator.comparingLong(ProductRow::getQuantity).reversed().thenComparing(ProductRow::getName))
                 .toList();
+    }
+
+    /** Los pedidos históricos guardan el nombre del producto; se identifican las bebidas por él. */
+    private boolean isDrink(String productName) {
+        if (productName == null) return false;
+        String name = productName.toLowerCase(Locale.ROOT);
+        return name.contains("gaseosa") || name.contains("bebida") || name.contains("jugo")
+                || name.contains("agua") || name.contains("cerveza") || name.contains("postob")
+                || name.contains("hit") || name.contains("té") || name.contains("te ")
+                || name.contains("malta") || name.contains("limonada") || name.contains("coca cola");
     }
 
     private List<CouponRow> buildCoupons(List<Order> valid) {

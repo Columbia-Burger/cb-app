@@ -21,6 +21,8 @@ public class ReportResponse {
     private List<HourRow> byHour;
     private List<GroupRow> byWeekday;
     private List<ProductRow> topProducts;
+    /** Productos más vendidos excluyendo bebidas. */
+    private List<ProductRow> topFoodProducts;
     /** Medio de pago: solo disponible para pedidos con factura electrónica. */
     private List<GroupRow> electronicByPaymentMethod;
     private List<CouponRow> coupons;

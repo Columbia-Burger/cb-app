@@ -116,6 +116,9 @@ export class AdminReportesComponent implements OnInit, OnDestroy {
     return this.showAllProducts() ? all : all.slice(0, 10);
   });
 
+  topFoodProducts = computed(() => (this.report()?.topFoodProducts ?? []).slice(0, 10));
+  maxFoodProductQty = computed(() => Math.max(1, ...this.topFoodProducts().map(p => p.quantity)));
+
   maxProductQty = computed(() => Math.max(1, ...(this.report()?.topProducts ?? []).map(p => p.quantity)));
 
   hasSales = computed(() => (this.report()?.summary.orders ?? 0) > 0);

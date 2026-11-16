@@ -28,6 +28,13 @@ $brand-dark: #1a1a1a;
   gap: 1.2rem;
 }
 
+.footer__legal {
+  display: flex; justify-content: center; flex-wrap: wrap; gap: .65rem 1.35rem;
+  padding: 0 1.5rem 2.4rem;
+  a { color: rgba(255, 255, 255, .62); font-size: 1.05rem; text-decoration: none; }
+  a:hover, a:focus-visible { color: $brand-orange; text-decoration: underline; }
+}
+
 .footer__social-link {
   width: 4.4rem;
   height: 4.4rem;

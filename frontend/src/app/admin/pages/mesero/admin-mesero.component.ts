@@ -1,4 +1,4 @@
-import { Component, inject, signal, computed, OnInit, ViewChild } from '@angular/core';
+import { Component, inject, signal, computed, OnInit, OnDestroy, ViewChild } from '@angular/core';
 import { CurrencyPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AdminService } from '../../services/admin.service';
@@ -15,9 +15,10 @@ const PICKUP_OPTION: ZoneOption = { name: 'Recoger aquí', price: 0 };
   templateUrl: './admin-mesero.component.html',
   styleUrl: './admin-mesero.component.scss',
 })
-export class AdminMeseroComponent implements OnInit {
+export class AdminMeseroComponent implements OnInit, OnDestroy {
   private adminService = inject(AdminService);
   private printer = inject(PrintService);
+  private readonly draftKey = 'columbia:waiter-order-draft:v2';
 
   @ViewChild(OrderBuilderComponent) builder?: OrderBuilderComponent;
 
@@ -52,6 +53,41 @@ export class AdminMeseroComponent implements OnInit {
     });
   }
 
+  ngOnDestroy(): void {
+    this.saveDraft();
+  }
+
+  /** El pedido queda en este navegador al cambiar de vista, hasta que sea confirmado. */
+  private saveDraft(): void {
+    const builder = this.builder;
+    if (!builder) return;
+    const draft = {
+      cart: builder.cart(), orderType: this.orderType(), tableNumber: this.tableNumber(),
+      selectedZoneName: this.selectedZoneName(),
+    };
+    try { sessionStorage.setItem(this.draftKey, JSON.stringify(draft)); } catch { /* almacenamiento no disponible */ }
+  }
+
+  private restoreDraft(): void {
+    try {
+      const raw = sessionStorage.getItem(this.draftKey);
+      if (!raw || !this.builder) return;
+      const draft = JSON.parse(raw);
+      if (Array.isArray(draft.cart)) this.builder.restoreCart(draft.cart);
+      if (draft.orderType === 'mesa' || draft.orderType === 'llevar') this.orderType.set(draft.orderType);
+      if (typeof draft.tableNumber === 'string') this.tableNumber.set(draft.tableNumber);
+      if (typeof draft.selectedZoneName === 'string') this.selectedZoneName.set(draft.selectedZoneName);
+    } catch { sessionStorage.removeItem(this.draftKey); }
+  }
+
+  private clearDraft(): void {
+    try { sessionStorage.removeItem(this.draftKey); } catch { /* almacenamiento no disponible */ }
+  }
+
+  ngAfterViewInit(): void {
+    this.restoreDraft();
+  }
+
   submitOrder(): void {
     const builder = this.builder;
     const type = this.orderType();
@@ -80,6 +116,7 @@ export class AdminMeseroComponent implements OnInit {
         }
         this.successMsg.set(`Pedido #${order.id} — ${notes}`);
         builder.clear();
+        this.clearDraft();
         this.orderType.set('');
         this.tableNumber.set('');
         this.selectedZoneName.set('');
